@@ -1,13 +1,11 @@
 const mongoose = require('mongoose');
 
 /**
- * INVOICE MODEL - THE SINGLE SOURCE OF TRUTH FOR STUDENT DUES
- * Represents a monthly billing statement for a student
- * This is where all calculations happen - NOT in Payment or Receipt
+ * INVOICE MODEL - THE BILLING LAYER & SINGLE SOURCE OF TRUTH FOR STUDENT DUES
+ * Represents student fee dues per month/year
  */
 const InvoiceSchema = new mongoose.Schema(
   {
-    // Reference Information
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Student',
@@ -20,38 +18,33 @@ const InvoiceSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-
-    // Billing Period
     month: {
       type: Number,
-      required: true, // 1-12
+      required: true, // 1-12 representing school calendar billing months
       min: 1,
       max: 12,
     },
     academicYear: {
       type: String,
-      required: true, // e.g., "2024-2025"
+      required: true,
       index: true,
     },
 
-    // Denormalized for Quick Lookup (Reporting)
+    // Denormalized for quick reporting lookups
     rollNumber: String,
     studentName: String,
     className: String,
 
-    // Items (Breakdown of fees)
+    // Fee breakdown items
     items: [
       {
-        itemId: mongoose.Schema.Types.ObjectId,
-        name: String,
-        category: String, // e.g., "Tuition", "Bus", "Hostel"
-        amount: Number,
+        name: { type: String, required: true },
+        amount: { type: Number, required: true, min: 0 },
         paid: { type: Number, default: 0 },
-        _id: false,
       },
     ],
 
-    // Financial Summary (CALCULATED FIELDS)
+    // Financial calculations
     totalAmount: {
       type: Number,
       required: true,
@@ -59,8 +52,7 @@ const InvoiceSchema = new mongoose.Schema(
     },
     discount: {
       type: Number,
-      default: 0, // Scholarship/Concession
-      description: 'Total discount applied',
+      default: 0,
     },
     netAmount: {
       type: Number,
@@ -75,7 +67,6 @@ const InvoiceSchema = new mongoose.Schema(
       default: 0, // netAmount - paidAmount
     },
 
-    // Status Tracking
     status: {
       type: String,
       enum: ['unpaid', 'partial', 'paid'],
@@ -83,27 +74,11 @@ const InvoiceSchema = new mongoose.Schema(
       index: true,
     },
 
-    // Payment Related
-    paymentCount: {
-      type: Number,
-      default: 0,
-    },
-    lastPaymentDate: Date,
-
-    // Notes
     remarks: String,
     isActive: {
       type: Boolean,
       default: true,
     },
-
-    // Metadata
-    createdAt: {
-      type: Date,
-      default: Date.now,
-      index: true,
-    },
-    updatedAt: Date,
   },
   {
     timestamps: true,
@@ -111,18 +86,14 @@ const InvoiceSchema = new mongoose.Schema(
   }
 );
 
-// Compound index for finding invoices by student, month, year
+// Compound index to ensure only one invoice per student, month, and academic year
 InvoiceSchema.index({ studentId: 1, month: 1, academicYear: 1 }, { unique: true });
 
-// Index for reporting - pending invoices
-InvoiceSchema.index({ status: 1, academicYear: 1 });
-
-// Calculate net amount and due amount
+// Totals calculation helper
 InvoiceSchema.methods.calculateTotals = function () {
-  this.netAmount = this.totalAmount - (this.discount || 0);
+  this.netAmount = Math.max(0, this.totalAmount - (this.discount || 0));
   this.dueAmount = Math.max(0, this.netAmount - (this.paidAmount || 0));
 
-  // Update status
   if (this.dueAmount === 0) {
     this.status = 'paid';
   } else if (this.paidAmount > 0) {
@@ -134,21 +105,9 @@ InvoiceSchema.methods.calculateTotals = function () {
   return this;
 };
 
-// Get outstanding amount
-InvoiceSchema.methods.getOutstanding = function () {
-  return this.dueAmount || 0;
-};
-
-// Check if invoice can accept more payments
-InvoiceSchema.methods.canAcceptPayment = function () {
-  return this.dueAmount > 0;
-};
-
-// Add payment to invoice
+// Add payment helper
 InvoiceSchema.methods.addPayment = function (amount) {
   this.paidAmount = (this.paidAmount || 0) + amount;
-  this.paymentCount = (this.paymentCount || 0) + 1;
-  this.lastPaymentDate = new Date();
   this.calculateTotals();
   return this;
 };

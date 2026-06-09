@@ -1,77 +1,68 @@
 const Invoice = require('../models/Invoice');
-const FeeStructureV2 = require('../models/FeeStructureV2');
+const FeeStructure = require('../models/FeeStructure');
 const Student = require('../models/Student');
 const ClassModel = require('../models/Class');
 
-/**
- * INVOICE SERVICE
- * Handles all invoice creation, retrieval, and management
- * This is where the monthly billing logic lives
- */
-
 class InvoiceService {
   /**
-   * Create or retrieve monthly invoice for a student
+   * Create or fetch monthly invoice for a student
    * @param {ObjectId} studentId
    * @param {ObjectId} classId
-   * @param {Number} month
+   * @param {Number} month - 1-12
    * @param {String} academicYear
    * @returns {Promise<Invoice>}
    */
-  async createOrGetInvoice(studentId, classId, month, academicYear) {
+  async createSingleInvoice(studentId, classId, month, academicYear) {
     try {
-      // Check if invoice already exists
+      // 1. Check if invoice already exists
       let invoice = await Invoice.findOne({
         studentId,
-        classId,
         month,
         academicYear,
+        isActive: true,
       });
 
       if (invoice) {
         return invoice;
       }
 
-      // Get fee structure for this class
-      const feeStructure = await FeeStructureV2.findOne({
-        classId,
-        academicYear,
-        isActive: true,
-      });
-
+      // 2. Fetch Fee Structure for class
+      const feeStructure = await FeeStructure.findOne({ classId, academicYear });
       if (!feeStructure) {
-        throw new Error(`No active fee structure found for class ${classId} in year ${academicYear}`);
+        throw new Error(`Fee structure not found for class in academic year ${academicYear}`);
       }
 
-      // Get student and class info for denormalization
+      // 3. Fetch Student and Class details
       const student = await Student.findById(studentId);
-      const classInfo = await ClassModel.findById(classId);
+      const classObj = await ClassModel.findById(classId);
 
-      // Calculate total amount
-      const totalAmount = feeStructure.getTotalMandatoryAmount();
+      // 4. Construct invoice items (bill mandatory items by default)
+      const invoiceItems = feeStructure.items
+        .filter(item => item.type === 'mandatory')
+        .map(item => ({
+          name: item.name,
+          amount: item.amount,
+          paid: 0,
+        }));
 
-      // Build items array from fee structure
-      const items = feeStructure.getActiveItems().map((item) => ({
-        itemId: item._id,
-        name: item.name,
-        category: item.category,
-        amount: item.amount,
-        paid: 0,
-      }));
+      if (invoiceItems.length === 0) {
+        throw new Error('No mandatory fee items defined in the fee structure');
+      }
 
-      // Create invoice
+      const totalAmount = invoiceItems.reduce((sum, item) => sum + item.amount, 0);
+
+      // 5. Create invoice
       invoice = new Invoice({
         studentId,
         classId,
         month,
         academicYear,
-        rollNumber: student?.rollNumber || student?.admissionNumber,
-        studentName: student?.fullName || student?.name,
-        className: classInfo?.name,
-        items,
+        rollNumber: student?.rollNumber || student?.admissionNumber || '',
+        studentName: student?.fullName || student?.name || '',
+        className: classObj?.name || '',
+        items: invoiceItems,
         totalAmount,
         discount: 0,
-        netAmount: totalAmount,
         paidAmount: 0,
         dueAmount: totalAmount,
         status: 'unpaid',
@@ -80,207 +71,52 @@ class InvoiceService {
       await invoice.save();
       return invoice;
     } catch (error) {
-      throw new Error(`Error creating invoice: ${error.message}`);
+      throw new Error(`Failed to create invoice: ${error.message}`);
     }
   }
 
   /**
-   * Get invoice by ID
-   * @param {ObjectId} invoiceId
-   * @returns {Promise<Invoice>}
-   */
-  async getInvoiceById(invoiceId) {
-    return await Invoice.findById(invoiceId).populate('studentId', 'name email rollNumber');
-  }
-
-  /**
-   * Get all invoices for a student
-   * @param {ObjectId} studentId
-   * @param {Object} filters - { academicYear, status, month }
-   * @returns {Promise<Invoice[]>}
-   */
-  async getStudentInvoices(studentId, filters = {}) {
-    const query = { studentId, isActive: true };
-
-    if (filters.academicYear) query.academicYear = filters.academicYear;
-    if (filters.status) query.status = filters.status;
-    if (filters.month) query.month = filters.month;
-
-    return await Invoice.find(query).sort({ createdAt: -1 });
-  }
-
-  /**
-   * Get pending invoices for a student
-   * @param {ObjectId} studentId
-   * @returns {Promise<Invoice[]>}
-   */
-  async getPendingInvoices(studentId) {
-    return await Invoice.find({
-      studentId,
-      status: { $in: ['unpaid', 'partial'] },
-      isActive: true,
-    }).sort({ dueAmount: -1 });
-  }
-
-  /**
-   * Get summary of student's outstanding dues
-   * @param {ObjectId} studentId
-   * @returns {Promise<Object>}
-   */
-  async getStudentOutstanding(studentId) {
-    const invoices = await Invoice.find({
-      studentId,
-      status: { $in: ['unpaid', 'partial'] },
-      isActive: true,
-    });
-
-    return {
-      totalDue: invoices.reduce((sum, inv) => sum + inv.dueAmount, 0),
-      invoiceCount: invoices.length,
-      invoices: invoices.map((inv) => ({
-        id: inv._id,
-        month: inv.month,
-        academicYear: inv.academicYear,
-        dueAmount: inv.dueAmount,
-        status: inv.status,
-      })),
-    };
-  }
-
-  /**
-   * Apply discount to invoice
-   * @param {ObjectId} invoiceId
-   * @param {Number} discountAmount
-   * @param {String} reason
-   * @returns {Promise<Invoice>}
-   */
-  async applyDiscount(invoiceId, discountAmount, reason = '') {
-    const invoice = await Invoice.findById(invoiceId);
-
-    if (!invoice) {
-      throw new Error('Invoice not found');
-    }
-
-    invoice.discount = (invoice.discount || 0) + discountAmount;
-    invoice.remarks = (invoice.remarks || '') + `\nDiscount: ${discountAmount} (${reason})`;
-    invoice.calculateTotals();
-
-    await invoice.save();
-    return invoice;
-  }
-
-  /**
-   * Validate invoice and check if it can accept payment
-   * @param {ObjectId} invoiceId
-   * @returns {Promise<Object>}
-   */
-  async validateInvoice(invoiceId) {
-    const invoice = await Invoice.findById(invoiceId);
-
-    if (!invoice) {
-      throw new Error('Invoice not found');
-    }
-
-    if (!invoice.isActive) {
-      throw new Error('Invoice is inactive');
-    }
-
-    return {
-      valid: invoice.canAcceptPayment(),
-      outstanding: invoice.getOutstanding(),
-      invoice,
-    };
-  }
-
-  /**
-   * Get invoices by class for a specific month
-   * Useful for billing reports
+   * Generate monthly invoices in bulk for a class
    * @param {ObjectId} classId
    * @param {Number} month
    * @param {String} academicYear
-   * @returns {Promise<Array>}
+   * @returns {Promise<Object>} - summary of execution
    */
-  async getClassInvoicesByMonth(classId, month, academicYear) {
-    return await Invoice.find({
-      classId,
-      month,
-      academicYear,
-      isActive: true,
-    })
-      .select('studentId studentName rollNumber status totalAmount paidAmount dueAmount')
-      .sort({ rollNumber: 1 });
-  }
-
-  /**
-   * Get billing summary for a class
-   * @param {ObjectId} classId
-   * @param {String} academicYear
-   * @returns {Promise<Object>}
-   */
-  async getClassBillingSummary(classId, academicYear) {
-    const invoices = await Invoice.find({
-      classId,
-      academicYear,
-      isActive: true,
-    });
-
-    if (invoices.length === 0) {
-      return {
-        totalStudents: 0,
-        totalBilled: 0,
-        totalCollected: 0,
-        totalPending: 0,
-        paymentRate: 0,
-      };
-    }
-
-    const totalBilled = invoices.reduce((sum, inv) => sum + inv.netAmount, 0);
-    const totalCollected = invoices.reduce((sum, inv) => sum + inv.paidAmount, 0);
-    const totalPending = invoices.reduce((sum, inv) => sum + inv.dueAmount, 0);
-
-    return {
-      totalStudents: invoices.length,
-      totalBilled,
-      totalCollected,
-      totalPending,
-      paymentRate: totalBilled > 0 ? ((totalCollected / totalBilled) * 100).toFixed(2) : 0,
-      byStatus: {
-        paid: invoices.filter((inv) => inv.status === 'paid').length,
-        partial: invoices.filter((inv) => inv.status === 'partial').length,
-        unpaid: invoices.filter((inv) => inv.status === 'unpaid').length,
-      },
-    };
-  }
-
-  /**
-   * Auto-generate monthly invoices for all students in a class
-   * This would typically run as a cron job
-   * @param {ObjectId} classId
-   * @param {Number} month
-   * @param {String} academicYear
-   * @returns {Promise<Object>}
-   */
-  async generateMonthlyInvoices(classId, month, academicYear) {
+  async bulkCreateInvoices(classId, month, academicYear) {
     try {
-      const students = await Student.find({
-        classId,
-        isActive: true,
-      });
+      // Fetch all active students in this class
+      const students = await Student.find({ class: classId, status: 'active' });
 
       const results = {
+        total: students.length,
         created: 0,
+        skipped: 0,
         failed: 0,
         errors: [],
       };
 
       for (const student of students) {
         try {
-          await this.createOrGetInvoice(student._id, classId, month, academicYear);
+          // Check if invoice already exists
+          const existing = await Invoice.findOne({
+            studentId: student._id,
+            month,
+            academicYear,
+            isActive: true,
+          });
+
+          if (existing) {
+            results.skipped++;
+            continue;
+          }
+
+          await this.createSingleInvoice(student._id, classId, month, academicYear);
           results.created++;
         } catch (error) {
           results.failed++;
           results.errors.push({
             studentId: student._id,
+            studentName: student.fullName,
             error: error.message,
           });
         }
@@ -288,7 +124,57 @@ class InvoiceService {
 
       return results;
     } catch (error) {
-      throw new Error(`Error generating invoices: ${error.message}`);
+      throw new Error(`Bulk invoice generation failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get all invoices for a student
+   * @param {ObjectId} studentId
+   * @param {Object} filters
+   * @returns {Promise<Invoice[]>}
+   */
+  async getStudentInvoices(studentId, filters = {}) {
+    const query = { studentId, isActive: true };
+    if (filters.academicYear) query.academicYear = filters.academicYear;
+    if (filters.status) query.status = filters.status;
+    if (filters.month) query.month = filters.month;
+
+    return await Invoice.find(query).sort({ month: 1 });
+  }
+
+  /**
+   * Override invoice items or apply discount (Admin Override)
+   * @param {ObjectId} invoiceId
+   * @param {Array} newItems
+   * @param {Number} discount
+   * @returns {Promise<Invoice>}
+   */
+  async overrideInvoice(invoiceId, newItems, discount) {
+    try {
+      const invoice = await Invoice.findById(invoiceId);
+      if (!invoice) {
+        throw new Error('Invoice not found');
+      }
+
+      if (newItems && Array.isArray(newItems)) {
+        invoice.items = newItems.map(item => ({
+          name: item.name,
+          amount: item.amount,
+          paid: item.paid || 0,
+        }));
+        invoice.totalAmount = invoice.items.reduce((sum, item) => sum + item.amount, 0);
+      }
+
+      if (discount !== undefined) {
+        invoice.discount = discount;
+      }
+
+      invoice.calculateTotals();
+      await invoice.save();
+      return invoice;
+    } catch (error) {
+      throw new Error(`Invoice override failed: ${error.message}`);
     }
   }
 }

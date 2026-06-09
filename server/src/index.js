@@ -118,6 +118,15 @@ app.use('/api/download', require('./routes/download'));
 app.use('/api/cloudinary', require('./routes/cloudinaryCheck'));
 app.use('/api/events', require('./routes/events'));
 
+// Redesigned ERP Fee System Routes
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/accountant', require('./routes/accountant'));
+app.use('/api/student', require('./routes/student'));
+
+app.use('/admin', require('./routes/admin'));
+app.use('/accountant', require('./routes/accountant'));
+app.use('/student', require('./routes/student'));
+
 app.get('/api/dashboard', async (req, res) => {
   try {
     const Student = require('./models/Student');

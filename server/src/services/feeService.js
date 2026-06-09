@@ -1,50 +1,27 @@
-const FeeStructureV2 = require('../models/FeeStructureV2');
+const FeeStructure = require('../models/FeeStructure');
 const Receipt = require('../models/Receipt');
 const Invoice = require('../models/Invoice');
 
-/**
- * FEE SERVICE
- * High-level fee operations and utilities
- * Handles fee structure management and reporting
- */
-
 class FeeService {
   /**
-   * Create fee structure for a class
+   * Create or update class-wise fee structure
    * @param {Object} structureData
-   *   - classId: ObjectId
-   *   - academicYear: String
-   *   - items: Array of fee items
-   *   - createdBy: ObjectId
-   * @returns {Promise<FeeStructureV2>}
+   * @returns {Promise<FeeStructure>}
    */
-  async createFeeStructure(structureData) {
+  async createOrUpdateFeeStructure(structureData) {
+    const { classId, academicYear, items } = structureData;
+
     try {
-      // Check if active structure already exists
-      const existing = await FeeStructureV2.findOne({
-        classId: structureData.classId,
-        academicYear: structureData.academicYear,
-        isActive: true,
-      });
+      // Find and update or create new fee structure
+      const feeStructure = await FeeStructure.findOneAndUpdate(
+        { classId, academicYear },
+        { items },
+        { new: true, upsert: true, setDefaultsOnInsert: true }
+      );
 
-      if (existing) {
-        // Deactivate previous structure
-        existing.isActive = false;
-        await existing.save();
-      }
-
-      const feeStructure = new FeeStructureV2({
-        classId: structureData.classId,
-        academicYear: structureData.academicYear,
-        items: structureData.items,
-        createdBy: structureData.createdBy,
-        isActive: true,
-      });
-
-      await feeStructure.save();
       return feeStructure;
     } catch (error) {
-      throw new Error(`Error creating fee structure: ${error.message}`);
+      throw new Error(`Error setting fee structure: ${error.message}`);
     }
   }
 
@@ -52,53 +29,25 @@ class FeeService {
    * Get active fee structure for a class
    * @param {ObjectId} classId
    * @param {String} academicYear
-   * @returns {Promise<FeeStructureV2>}
+   * @returns {Promise<FeeStructure>}
    */
   async getFeeStructure(classId, academicYear) {
-    return await FeeStructureV2.findOne({
-      classId,
-      academicYear,
-      isActive: true,
-    });
+    return await FeeStructure.findOne({ classId, academicYear });
   }
 
   /**
-   * Get all fee structures (with version history)
+   * Delete fee structure for a class and year
    * @param {ObjectId} classId
    * @param {String} academicYear
-   * @returns {Promise<FeeStructureV2[]>}
+   * @returns {Promise<Boolean>}
    */
-  async getFeeStructureHistory(classId, academicYear) {
-    return await FeeStructureV2.find({
-      classId,
-      academicYear,
-    }).sort({ createdAt: -1 });
+  async deleteFeeStructure(classId, academicYear) {
+    const result = await FeeStructure.deleteOne({ classId, academicYear });
+    return result.deletedCount > 0;
   }
 
   /**
-   * Update fee structure
-   * @param {ObjectId} structureId
-   * @param {Object} updateData
-   * @returns {Promise<FeeStructureV2>}
-   */
-  async updateFeeStructure(structureId, updateData) {
-    try {
-      const structure = await FeeStructureV2.findByIdAndUpdate(structureId, updateData, {
-        new: true,
-      });
-
-      if (!structure) {
-        throw new Error('Fee structure not found');
-      }
-
-      return structure;
-    } catch (error) {
-      throw new Error(`Error updating fee structure: ${error.message}`);
-    }
-  }
-
-  /**
-   * Get receipt by ID
+   * Get receipt details by ID
    * @param {ObjectId} receiptId
    * @returns {Promise<Receipt>}
    */
@@ -106,7 +55,7 @@ class FeeService {
     return await Receipt.findById(receiptId)
       .populate('paymentId')
       .populate('invoiceId')
-      .populate('studentId', 'name email rollNumber');
+      .populate('studentId', 'fullName email rollNumber admissionNumber');
   }
 
   /**
@@ -118,7 +67,7 @@ class FeeService {
     return await Receipt.findOne({ receiptNumber })
       .populate('paymentId')
       .populate('invoiceId')
-      .populate('studentId');
+      .populate('studentId', 'fullName email rollNumber admissionNumber');
   }
 
   /**
@@ -127,10 +76,7 @@ class FeeService {
    * @returns {Promise<Receipt[]>}
    */
   async getStudentReceipts(studentId) {
-    return await Receipt.find({
-      studentId,
-      isArchived: false,
-    })
+    return await Receipt.find({ studentId })
       .populate('paymentId')
       .populate('invoiceId')
       .sort({ createdAt: -1 });
@@ -138,24 +84,19 @@ class FeeService {
 
   /**
    * Get student fee summary
-   * Comprehensive view of student's fee status
    * @param {ObjectId} studentId
    * @param {String} academicYear
    * @returns {Promise<Object>}
    */
   async getStudentFeeSummary(studentId, academicYear) {
     try {
-      // Get all invoices for student
-      const invoices = await Invoice.find({
-        studentId,
-        academicYear,
-        isActive: true,
-      });
+      const query = { studentId, isActive: true };
+      if (academicYear) query.academicYear = academicYear;
+
+      const invoices = await Invoice.find(query).sort({ month: 1 });
 
       if (invoices.length === 0) {
         return {
-          studentId,
-          academicYear,
           totalBilled: 0,
           totalPaid: 0,
           totalDue: 0,
@@ -169,147 +110,25 @@ class FeeService {
       const totalDue = invoices.reduce((sum, inv) => sum + inv.dueAmount, 0);
 
       return {
-        studentId,
-        academicYear,
         totalBilled,
         totalPaid,
         totalDue,
-        paymentPercentage: totalBilled > 0 ? ((totalPaid / totalBilled) * 100).toFixed(2) : 0,
+        paymentPercentage: totalBilled > 0 ? Number(((totalPaid / totalBilled) * 100).toFixed(2)) : 0,
         invoices: invoices.map((inv) => ({
-          id: inv._id,
+          invoiceId: inv._id,
           month: inv.month,
+          academicYear: inv.academicYear,
           totalAmount: inv.totalAmount,
           discount: inv.discount,
+          netAmount: inv.netAmount,
           paidAmount: inv.paidAmount,
           dueAmount: inv.dueAmount,
           status: inv.status,
+          items: inv.items,
         })),
       };
     } catch (error) {
-      throw new Error(`Error getting fee summary: ${error.message}`);
-    }
-  }
-
-  /**
-   * Get class-wise billing report
-   * @param {ObjectId} classId
-   * @param {String} academicYear
-   * @returns {Promise<Object>}
-   */
-  async getClassBillingReport(classId, academicYear) {
-    try {
-      const invoices = await Invoice.find({
-        classId,
-        academicYear,
-        isActive: true,
-      });
-
-      if (invoices.length === 0) {
-        return {
-          classId,
-          academicYear,
-          totalStudents: 0,
-          report: [],
-        };
-      }
-
-      const report = invoices.map((inv) => ({
-        studentId: inv.studentId,
-        studentName: inv.studentName,
-        rollNumber: inv.rollNumber,
-        totalBilled: inv.netAmount,
-        paid: inv.paidAmount,
-        due: inv.dueAmount,
-        status: inv.status,
-        paymentPercentage: inv.netAmount > 0 ? ((inv.paidAmount / inv.netAmount) * 100).toFixed(2) : 0,
-      }));
-
-      return {
-        classId,
-        academicYear,
-        totalStudents: invoices.length,
-        totalBilled: invoices.reduce((sum, inv) => sum + inv.netAmount, 0),
-        totalCollected: invoices.reduce((sum, inv) => sum + inv.paidAmount, 0),
-        totalPending: invoices.reduce((sum, inv) => sum + inv.dueAmount, 0),
-        report,
-      };
-    } catch (error) {
-      throw new Error(`Error getting billing report: ${error.message}`);
-    }
-  }
-
-  /**
-   * Export class billing data
-   * @param {ObjectId} classId
-   * @param {String} academicYear
-   * @returns {Promise<Array>}
-   */
-  async exportClassBillingData(classId, academicYear) {
-    try {
-      const report = await this.getClassBillingReport(classId, academicYear);
-
-      return report.report.map((row) => ({
-        'Student Name': row.studentName,
-        'Roll Number': row.rollNumber,
-        'Total Billed': row.totalBilled,
-        'Paid': row.paid,
-        'Due': row.due,
-        'Status': row.status,
-        'Payment %': row.paymentPercentage,
-      }));
-    } catch (error) {
-      throw new Error(`Error exporting data: ${error.message}`);
-    }
-  }
-
-  /**
-   * Validate if fee can be collected
-   * @param {ObjectId} studentId
-   * @param {ObjectId} invoiceId
-   * @returns {Promise<Object>}
-   */
-  async validateFeeCollection(studentId, invoiceId) {
-    try {
-      const invoice = await Invoice.findById(invoiceId);
-
-      if (!invoice) {
-        return {
-          valid: false,
-          message: 'Invoice not found',
-        };
-      }
-
-      if (invoice.studentId.toString() !== studentId.toString()) {
-        return {
-          valid: false,
-          message: 'Invoice does not belong to this student',
-        };
-      }
-
-      if (!invoice.isActive) {
-        return {
-          valid: false,
-          message: 'Invoice is inactive',
-        };
-      }
-
-      if (!invoice.canAcceptPayment()) {
-        return {
-          valid: false,
-          message: 'Invoice cannot accept more payments',
-        };
-      }
-
-      return {
-        valid: true,
-        invoice,
-        outstanding: invoice.dueAmount,
-      };
-    } catch (error) {
-      return {
-        valid: false,
-        message: error.message,
-      };
+      throw new Error(`Error getting student fee summary: ${error.message}`);
     }
   }
 }
