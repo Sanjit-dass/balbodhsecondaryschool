@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: balbodhschool-api
+    env: node
+    plan: starter
+    region: oregon
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm run start
+    envVars:
+      - key: PORT
+        value: "5000"
+      - key: NODE_ENV
+        value: "production"
+      - key: CORS_ORIGIN
+        value: "https://your-frontend-url.com"
+  - type: static_site
+    name: balbodhschool-frontend
+    env: static
+    plan: starter
+    region: oregon
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    publishDirectory: dist
+    envVars:
+      - key: VITE_API_URL
+        value: "https://your-backend-url.com"

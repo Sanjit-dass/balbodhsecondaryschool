@@ -1,0 +1,30 @@
+/* Print styles for receipts */
+@media print {
+  /* Hide everything by default, show only receipt-root */
+  body * { visibility: hidden !important; }
+  .receipt-root, .receipt-root * { visibility: visible !important; }
+  .receipt-root { position: absolute !important; left: 0; top: 0; width: 100% !important; }
+
+  /* Ensure logo prints and is not clipped */
+  .receipt-root img { display: block !important; max-width: 120px !important; height: auto !important; }
+
+  /* Table and border fixes for print */
+  .receipt-root table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
+  .receipt-root th, .receipt-root td { border: 1px solid #ddd !important; padding: 8px !important; word-break: break-word !important; }
+  .receipt-root thead tr { background: #f5f5f5 !important; }
+
+  /* Prevent thick unexpected lines from collapsing */
+  .receipt-root tr { border-bottom: 1px solid #ddd !important; }
+
+  /* Improve spacing for summary */
+  .receipt-root .summary-line { line-height: 1.6 !important; margin: 6px 0 !important; }
+
+  @page { size: A4; margin: 12mm; }
+}
+
+/* Also apply nicer table layout and spacing for receipt-root on screen */
+.receipt-root table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+.receipt-root th, .receipt-root td { border: 1px solid #e6e6e6; padding: 8px; word-break: break-word; }
+.receipt-root thead tr { background: #fafafa; }
+.receipt-root .summary-line { line-height: 1.6; margin: 6px 0; }
+

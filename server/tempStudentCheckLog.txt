@@ -1,0 +1,6 @@
+(node:12944) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:12944) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+Class docs for 10: [ { id: '6a1efa90a8a62c07bdadf7b1', name: '10', numeric: undefined } ]
+Counts: { className10: 4, class10regex: 0, classIdMatch: 0, classAny: 4 }
+Sample student records (max 20):

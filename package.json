@@ -1,0 +1,26 @@
+{
+  "name": "balbodh-school-system",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "server"
+  ],
+  "scripts": {
+    "dev:frontend": "npm --workspace frontend run dev",
+    "build:frontend": "npm --workspace frontend run build",
+    "dev:server": "npm --workspace server run dev",
+    "start:server": "npm --workspace server run start"
+  },
+  "dependencies": {
+    "exceljs": "3.4.0",
+    "firebase-admin": "^10.3.0",
+    "hpp": "^0.2.3",
+    "mongodb": "^7.2.0",
+    "nodemailer": "8.0.10",
+    "react-countup": "^6.5.3",
+    "react-intersection-observer": "^10.0.3",
+    "swiper": "12.2.0",
+    "vite": "8.0.14",
+    "xss-clean": "^0.1.4"
+  }
+}
