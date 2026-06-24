@@ -81,22 +81,22 @@ export const ACADEMIC_PROGRAMS = [
 
 export const TESTIMONIALS = [
   {
-    name: 'Anita Sharma',
-    role: 'Alumni (Class of 2078)',
-    text: 'Bal Bodh helped me grow academically and personally. The teachers were supportive and the programs helped me prepare for higher studies.',
-    image: 'student2.png',
+    name: 'Er. Sanjit Das',
+    role: 'Senior Faculty',
+    text: 'Bal Bodh has consistently demonstrated a commitment to quality education and student success. Its collaborative environment and skilled staff make a real difference.',
+    image: 'sanjitPhoto.jpeg',
   },
   {
-    name: 'Ramesh Thapa',
-    role: 'Current Student (Grade 12)',
-    text: 'The learning environment is encouraging and the practical approach to teaching made concepts easier to grasp.',
-    image: 'studentlife.jpeg',
+    name: 'Er. Puspendra Birajee',
+    role: 'Technical Mentor',
+    text: 'The school blends traditional values with modern teaching practices, preparing students well for higher education and careers.',
+    image: 'puspendra.png',
   },
   {
-    name: 'Sita Koirala',
-    role: 'Parent',
-    text: 'I appreciate the school’s discipline and focus on holistic development. My child has improved tremendously since joining.',
-    image: 'topper1.png',
+    name: 'Dhiraj Sah',
+    role: 'Alumni',
+    text: 'Joining Bal Bodh was a turning point for me. The guidance and exposure helped me achieve my academic goals.',
+    image: 'Dhiraj.png',
   },
 ];
 
