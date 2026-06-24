@@ -242,7 +242,8 @@ export default function Exams() {
                 <img src="/logo.png" alt="School Logo" className="h-12 mx-auto" onError={(e) => e.target.style.display = 'none'} />
               </div>
               <div className="text-2xl font-bold text-red-600">BAL BODH SECONDARY SCHOOL</div>
-              <div className="text-sm text-blue-600 mt-1">Kanchanpur-08, Saptari</div>
+              <p className="mt-1 text-sm font-semibold text-[#2563EB]">Kanchanrup Municipality-08, Kanchanpur</p>
+              <p className="text-sm font-semibold text-[#64748B]">ESTD. 2055</p>
             </div>
 
             <div className="space-y-2 text-sm text-slate-700 text-center border-b border-slate-300 pb-4">

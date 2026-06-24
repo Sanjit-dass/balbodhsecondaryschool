@@ -59,8 +59,7 @@ export default function NotificationCenter() {
                 key={note._id}
                 type="button"
                 onClick={() => openNotification(note)}
-                className={`w-full rounded-3xl border p-5 text-left shadow-sm transition ${note.isRead ? 'border-slate-200 bg-white hover:border-indigo-200' : 'border-indigo-200 bg-slate-50 hover:bg-slate-100'}`}
-              >
+                className={`w-full rounded-3xl border p-5 text-left shadow-sm transition ${note.isRead ? 'border-slate-200 bg-white hover:border-indigo-200' : 'border-indigo-200 bg-slate-50 hover:bg-slate-100'}`}>
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2 text-lg font-semibold text-slate-900">

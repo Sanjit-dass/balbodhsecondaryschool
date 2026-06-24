@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PremiumTable from '../components/fee/PremiumTable';
+import api from '../services/api';
 
 export default function ClassStudents({ classId }){
   const [rows, setRows] = useState([]);
@@ -9,7 +10,65 @@ export default function ClassStudents({ classId }){
     (async ()=>{
       try{
         const studentsRes = await fetch(`/api/fees/class/${classId}/students`).then(r=>r.json());
-        setRows(studentsRes.data||[]);
+        const list = studentsRes.data||[];
+        // Enrich each row with authoritative fee summary (same logic as FeePayment)
+        try{
+          const enriched = await Promise.all(list.map(async (r)=>{
+            const sid = r.studentId || r._id || r.id || r.student || r.studentId;
+            if (!sid) return r;
+            try{
+              const resp = await api.get(`/fees/student/${encodeURIComponent(sid)}`);
+              const data = resp.data || resp;
+              const summary = data.summary || {};
+              // Prefer backend totals when present
+              let totalFee = Number(summary.totalFee || 0);
+              let totalPaid = Number(summary.totalPaid || 0);
+              let totalDue = Number(summary.totalDue || 0);
+              let status = summary.status || '';
+
+              // If backend totals missing, compute from feeBreakdown
+              if (!totalFee && Array.isArray(summary.feeBreakdown) && summary.feeBreakdown.length>0) {
+                totalFee = summary.feeBreakdown.reduce((s,it)=>s+Number(it?.actualFee ?? it?.amount ?? 0),0);
+              }
+
+              // try receipts for totalPaid if backend doesn't provide
+              try{
+                const hist = await api.get(`/fees/student/${encodeURIComponent(sid)}/history`);
+                const histData = Array.isArray(hist.data) ? hist.data : (hist.data && Array.isArray(hist.data.data) ? hist.data.data : []);
+                const paidSum = histData.reduce((s,rec)=>{
+                  try{
+                    const breakdown = rec.breakdown || rec.data?.breakdown || rec.data || {};
+                    if (Array.isArray(breakdown)) return s + breakdown.reduce((ss,it)=>ss + Number(it?.amount ?? it?.paid ?? 0),0);
+                    if (breakdown && typeof breakdown === 'object') return s + Object.values(breakdown).reduce((ss,v)=>ss + Number(v||0),0);
+                  }catch(e){}
+                  return s;
+                },0);
+                if (paidSum>0) totalPaid = paidSum;
+              }catch(e){}
+
+              // If still missing totalFee, try class categories
+              if (!totalFee) {
+                try{
+                  const classIdVal = data.student?.classId || data.student?.class || r.classId || null;
+                  if (classIdVal) {
+                    const cats = await api.get('/fees/categories', { params: { classId: classIdVal } });
+                    const catsData = Array.isArray(cats.data) ? cats.data : (cats.data && Array.isArray(cats.data.data) ? cats.data.data : []);
+                    totalFee = catsData.reduce((s,it)=>s + Number(it?.amount ?? it?.defaultAmount ?? 0),0);
+                  }
+                }catch(e){}
+              }
+
+              totalDue = Math.max(0, Number(totalFee || 0) - Number(totalPaid || 0));
+              // compute status per rules
+              if (Number(totalDue) === 0 && Number(totalFee) > 0) status = Number(totalPaid) > 0 ? 'Paid' : 'Unpaid';
+              else if (Number(totalPaid) === 0) status = 'Unpaid';
+              else status = 'Partial';
+
+              return { ...r, totalFee, paidAmount: totalPaid, dueAmount: totalDue, feeStatus: status };
+            }catch(e){ return r; }
+          }));
+          setRows(enriched);
+        }catch(err){ console.error('Failed to enrich roster rows', err); setRows(list); }
       }catch(err){ console.error(err); }
     })();
   },[classId]);

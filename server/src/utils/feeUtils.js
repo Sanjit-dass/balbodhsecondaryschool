@@ -64,7 +64,7 @@ const CalculationUtils = {
         if (type === 'mandatory') return item.type === 'mandatory';
         if (type === 'optional') return item.type === 'optional';
       })
-      .reduce((sum, item) => sum + (item.amount || 0), 0);
+      .reduce((sum, item) => sum + Number(item.amount || 0), 0);
   },
 
   /**
@@ -79,8 +79,11 @@ const CalculationUtils = {
    * Calculate payment percentage
    */
   calculatePaymentPercentage: (paidAmount, totalAmount) => {
-    if (totalAmount === 0) return 0;
-    return ((paidAmount / totalAmount) * 100).toFixed(2);
+    const paid = Number(paidAmount || 0);
+    const total = Number(totalAmount || 0);
+    if (total === 0) return 0;
+    // return number rounded to 2 decimal places
+    return Number(((paid / total) * 100).toFixed(2));
   },
 
   /**
@@ -88,9 +91,9 @@ const CalculationUtils = {
    */
   calculateBatchTotals: (invoices) => {
     return {
-      totalBilled: invoices.reduce((sum, inv) => sum + inv.netAmount, 0),
-      totalPaid: invoices.reduce((sum, inv) => sum + inv.paidAmount, 0),
-      totalDue: invoices.reduce((sum, inv) => sum + inv.dueAmount, 0),
+      totalBilled: invoices.reduce((sum, inv) => sum + Number(inv.netAmount || 0), 0),
+      totalPaid: invoices.reduce((sum, inv) => sum + Number(inv.paidAmount || 0), 0),
+      totalDue: invoices.reduce((sum, inv) => sum + Number(inv.dueAmount || 0), 0),
     };
   },
 };

@@ -13,6 +13,15 @@ const ReceiptSchema = new mongoose.Schema(
       unique: true,
       index: true,
     },
+      studentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Student',
+        index: true,
+      },
+      // denormalized fields for quick public lookup
+      rollNumber: String,
+      studentName: String,
+      className: String,
     invoiceId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Invoice',

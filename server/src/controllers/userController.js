@@ -8,11 +8,22 @@ async function listUsers(req, res) {
     if (q) filter.$or = [{ name: new RegExp(q, 'i') }, { email: new RegExp(q, 'i') }];
     if (role) filter.role = role;
     const total = await User.countDocuments(filter);
-    const users = await User.find(filter)
-      .select('-password')
+    // Include password in the query temporarily so we can compute whether a user has login credentials.
+    // We will NOT return the password in the API response.
+    const usersRaw = await User.find(filter)
+      .select('+password')
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Add hasLogin flag and strip password before sending to client
+    const users = usersRaw.map(u => {
+      const hasLogin = !!(u.password);
+      if (u.password) delete u.password;
+      return { ...u, hasLogin };
+    });
+
     res.json({ users, total, page: parseInt(page), limit: parseInt(limit) });
   } catch (err) {
     console.error(err);

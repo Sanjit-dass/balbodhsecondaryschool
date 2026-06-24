@@ -2,17 +2,39 @@ import axios from "axios";
 
 const normalizeApiUrl = (value) => {
   const raw = String(value || '').trim();
-  if (!raw) return 'http://localhost:5000';
+  // In production require an explicit API URL to avoid accidental localhost usage
+  if (!raw) {
+    if (import.meta.env && import.meta.env.MODE === 'production') {
+      throw new Error('VITE_API_URL must be set in production builds');
+    }
+    // allow a developer-friendly default in local dev only
+    return 'http://localhost:5003';
+  }
   if (/^:\d+$/.test(raw)) return `http://localhost${raw}`;
   if (/^\/\//.test(raw)) return `http:${raw}`;
   const normalized = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(raw) ? raw : `http://${raw}`;
   return normalized.replace(/\/+$/, '');
 };
 
-export const apiRoot = normalizeApiUrl(import.meta.env.VITE_API_URL || 'http://localhost:5000');
-export const apiBaseURL = apiRoot.endsWith("/api")
-  ? apiRoot
-  : `${apiRoot}/api`;
+export const apiRoot = normalizeApiUrl(import.meta.env.VITE_API_URL);
+export const apiBaseURL = apiRoot.endsWith("/api") ? apiRoot : `${apiRoot}/api`;
+
+export function getImageUrl(p) {
+  if (!p) return '/default-placeholder.png';
+  try {
+    if (typeof p === 'object') {
+      if (p.url) return p.url;
+      if (p.path) return `${apiRoot.replace(/\/api$/, '')}/${p.path}`;
+      if (p.filename) return `${apiRoot.replace(/\/api$/, '')}/uploads/gallery/${p.filename}`;
+    }
+    const s = String(p || '').trim();
+    if (!s) return '/default-placeholder.png';
+    if (/^https?:\/\//i.test(s) || s.startsWith('/')) return s;
+    return `${apiRoot.replace(/\/api$/, '')}/uploads/gallery/${s}`;
+  } catch (e) {
+    return '/default-placeholder.png';
+  }
+}
 
 const api = axios.create({
   baseURL: apiBaseURL,

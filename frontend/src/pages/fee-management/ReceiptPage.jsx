@@ -3,6 +3,7 @@ import { useParams, useSearchParams, useNavigate, useLocation } from 'react-rout
 import api from '../../services/api';
 import ReceiptViewer from '../../components/fee/ReceiptViewer';
 import ReceiptHtml from '../../components/fee/ReceiptHtml';
+import html2pdf from 'html2pdf.js';
 
 export default function ReceiptPage(){
   const { receiptId } = useParams();
@@ -151,6 +152,29 @@ export default function ReceiptPage(){
       URL.revokeObjectURL(url);
       return;
     }
+    // If we have rendered receipt HTML, generate a PDF from the DOM as a fallback
+    const element = receiptRef.current;
+    if (element) {
+      const filename = `${receipt.receiptNumber || 'receipt'}.pdf`;
+      const container = element.cloneNode(true);
+      container.style.maxWidth = '180mm';
+      container.style.padding = '12px';
+      container.style.background = '#fff';
+      container.style.boxSizing = 'border-box';
+      // append off-screen so html2pdf can render it
+      container.style.position = 'fixed';
+      container.style.left = '-9999px';
+      document.body.appendChild(container);
+      const opts = {
+        margin: 10,
+        filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      };
+      html2pdf().set(opts).from(container).save().finally(() => { try { document.body.removeChild(container); } catch (e) {} });
+      return;
+    }
     alert('PDF not available. You can print the receipt to PDF using the Print action.');
   }, [pdf.base64, pdf.url, receipt?.receiptNumber]);
 
@@ -291,7 +315,7 @@ export default function ReceiptPage(){
           Back
         </button>
         <button onClick={handlePrint} className="rounded-2xl bg-indigo-600 px-4 py-2 text-white font-semibold">Print Receipt</button>
-        <button onClick={handleDownloadPdf} className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-slate-700 font-semibold">Download PDF</button>
+        <button onClick={handleDownloadPdf} className="no-print rounded-2xl border border-slate-200 bg-white px-4 py-2 text-slate-700 font-semibold">Download PDF</button>
       </div>
 
       {pdf.base64 ? (

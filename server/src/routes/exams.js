@@ -527,18 +527,30 @@ router.post('/:examId/generate-results', auth, roles(['admin', 'examcontroller',
       const subjectMarks = [];
 
       marks.forEach(m => {
-        totalMarksObtained += m.marksObtained;
-        totalMaxMarks += m.maxMarks;
+        // Determine max marks for this entry with fallbacks: saved mark -> subject definition -> exam default -> 100
+        const entryMax = (m.maxMarks != null && !isNaN(Number(m.maxMarks))) ? Number(m.maxMarks) :
+                         (m.subject && m.subject.maxMarks != null && !isNaN(Number(m.subject.maxMarks)) ? Number(m.subject.maxMarks) :
+                           (exam.maxMarks != null && !isNaN(Number(exam.maxMarks)) ? Number(exam.maxMarks) : 0));
+
+        const entryPass = (m.passMarks != null && !isNaN(Number(m.passMarks))) ? Number(m.passMarks) :
+                         (m.subject && m.subject.passMarks != null && !isNaN(Number(m.subject.passMarks)) ? Number(m.subject.passMarks) :
+                           (exam.passMarks != null && !isNaN(Number(exam.passMarks)) ? Number(exam.passMarks) : 0));
+
+        const obtained = Number(m.marksObtained) || 0;
+        totalMarksObtained += obtained;
+        totalMaxMarks += entryMax;
+        const percentageForSubject = entryMax > 0 ? (obtained / entryMax) * 100 : 0;
         subjectMarks.push({
           subject: m.subject._id,
-          marksObtained: m.marksObtained,
-          maxMarks: m.maxMarks,
-          percentage: (m.marksObtained / m.maxMarks) * 100,
+          marksObtained: obtained,
+          maxMarks: entryMax,
+          passMarks: entryPass,
+          percentage: percentageForSubject,
           grade: m.grade
         });
       });
 
-      const totalPercentage = (totalMarksObtained / totalMaxMarks) * 100;
+      const totalPercentage = totalMaxMarks > 0 ? (totalMarksObtained / totalMaxMarks) * 100 : 0;
       let totalGrade = 'F';
       if (totalPercentage >= 90) totalGrade = 'A+';
       else if (totalPercentage >= 80) totalGrade = 'A';
@@ -546,8 +558,8 @@ router.post('/:examId/generate-results', auth, roles(['admin', 'examcontroller',
       else if (totalPercentage >= 60) totalGrade = 'B';
       else if (totalPercentage >= 50) totalGrade = 'C';
 
-      const passMarks = Number(exam.passMarks ?? 40);
-      const failedAnySubject = marks.some(m => Number(m.marksObtained) < passMarks);
+      // Determine pass status per subject using subject/exam/pass fallback
+      const failedAnySubject = subjectMarks.some(s => Number(s.marksObtained) < (s.passMarks != null ? Number(s.passMarks) : (exam.passMarks != null ? Number(exam.passMarks) : 0)));
       const passStatus = failedAnySubject ? 'Fail' : 'Pass';
 
       const result = new ExamResult({
@@ -565,14 +577,22 @@ router.post('/:examId/generate-results', auth, roles(['admin', 'examcontroller',
       await result.save();
     }
 
-    // Calculate class positions for all students by total percentage
-    const results = await ExamResult.find({ exam: req.params.examId }).sort({ totalPercentage: -1 });
-    for (let i = 0; i < results.length; i++) {
-      results[i].classPosition = i + 1;
-      await results[i].save();
+    // Calculate class positions: pass students first (by percentage), then fail students (by percentage)
+    const allResults = await ExamResult.find({ exam: req.params.examId });
+    allResults.sort((a, b) => {
+      const pa = (a.passStatus === 'Pass') ? 0 : 1;
+      const pb = (b.passStatus === 'Pass') ? 0 : 1;
+      if (pa !== pb) return pa - pb; // passers first
+      return (b.totalPercentage || 0) - (a.totalPercentage || 0); // then percentage desc
+    });
+    for (let i = 0; i < allResults.length; i++) {
+      allResults[i].classPosition = i + 1;
+      await allResults[i].save();
     }
 
-    res.json({ message: 'Results generated successfully', count: results.length });
+    // Return the number of results computed
+    const generatedCount = Array.isArray(allResults) ? allResults.length : await ExamResult.countDocuments({ exam: req.params.examId });
+    res.json({ message: 'Results generated successfully', count: generatedCount });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error generating results', error: err.message });

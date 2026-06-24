@@ -86,7 +86,7 @@ export default function Students() {
   };
 
   const handleDelete = async (studentId) => {
-    if (!window.confirm('Delete this student permanently?')) return;
+    if (!window.confirm('Are you sure you want to permanently delete this record? This action cannot be undone.')) return;
     try {
       await api.delete(`/students/${studentId}`);
       fetchStudents(selectedClass, filter);

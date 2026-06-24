@@ -14,6 +14,9 @@ import Attendance from './pages/Attendance';
 import AttendanceHistory from './pages/AttendanceHistory';
 import Exams from './pages/Exams';
 import Fees from './pages/Fees';
+import FeeOverview from './pages/FeeOverview';
+import StudentFeeCollectView from './pages/StudentFeeCollectView';
+import StudentFeeReceiptView from './pages/StudentFeeReceiptView';
 import FeeDashboard from './pages/FeeDashboard';
 import FeeCategories from './pages/fee-management/FeeCategories';
 import FeeCollect from './pages/fee-management/FeeCollect';
@@ -35,8 +38,15 @@ import Library from './pages/Library';
 import Vehicles from './pages/Vehicles';
 import Notifications from './pages/Notifications';
 import CreateNotification from './pages/notifications/CreateNotification';
-import NotificationCenter from './pages/notifications/NotificationCenter';
 import Results from './pages/Results';
+import AdminAchievements from './pages/AdminAchievements';
+import AdminStudentAchievements from './pages/AdminStudentAchievements';
+import AdminFacilities from './pages/AdminFacilities';
+import AdminEvents from './pages/AdminEvents';
+import AdminSchoolLeadership from './pages/admin/SchoolLeadership';
+import AdminPhotoGallery from './pages/admin/AdminPhotoGallery';
+import AdminAdmissions from './pages/admin/Admissions';
+import UserRoles from './pages/admin/UserRoles';
 import StudentResults from './pages/StudentResults';
 import StudentAdmitCard from './pages/StudentAdmitCard';
 import StudentPortal from './pages/StudentPortal';
@@ -64,7 +74,9 @@ import PublicStudentLife from './pages/public/StudentLife';
 import PublicGallery from './pages/public/Gallery';
 import PublicNoticeBoard from './pages/public/NoticeBoard';
 import PublicEvents from './pages/public/Events';
+import EventView from './pages/public/EventView';
 import PublicStaff from './pages/public/Staff';
+import PublicSchoolLeadership from './pages/public/SchoolLeadership';
 import PublicContact from './pages/public/Contact';
 import PrincipalMessage from './pages/public/PrincipalMessage';
 import StudentAchievements from './pages/public/StudentAchievements';
@@ -93,7 +105,9 @@ export default function App(){
         <Route path="/gallery" element={<PublicLayout><PublicGallery /></PublicLayout>} />
         <Route path="/notice-board" element={<PublicLayout><PublicNoticeBoard /></PublicLayout>} />
         <Route path="/events" element={<PublicLayout><PublicEvents /></PublicLayout>} />
+        <Route path="/events/:id" element={<PublicLayout><EventView /></PublicLayout>} />
         <Route path="/staff" element={<PublicLayout><PublicStaff /></PublicLayout>} />
+        <Route path="/school-leadership" element={<PublicLayout><PublicSchoolLeadership /></PublicLayout>} />
         <Route path="/test-language" element={<PublicLayout><LanguageToggleTest /></PublicLayout>} />
         <Route path="/contact" element={<PublicLayout><PublicContact /></PublicLayout>} />
         <Route path="/student-results" element={<PublicLayout><StudentResultsPublic /></PublicLayout>} />
@@ -104,6 +118,29 @@ export default function App(){
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/login/:role" element={<Navigate to="/login" replace />} />
         <Route path="/admin/login" element={<Navigate to="/login" replace />} />
+
+        {/* Student-facing fee overview routes (protected) */}
+        <Route path="/fees/overview" element={
+          <PrivateRoute roles={['student','parent','superadmin','admin','accountant']}>
+            <Layout>
+              <FeeOverview />
+            </Layout>
+          </PrivateRoute>
+        } />
+        <Route path="/fees/overview/collect" element={
+          <PrivateRoute roles={['student','parent','superadmin','admin','accountant']}>
+            <Layout>
+              <StudentFeeCollectView />
+            </Layout>
+          </PrivateRoute>
+        } />
+        <Route path="/fees/overview/receipt" element={
+          <PrivateRoute roles={['student','parent','superadmin','admin','accountant']}>
+            <Layout>
+              <StudentFeeReceiptView />
+            </Layout>
+          </PrivateRoute>
+        } />
         <Route
           path="/register"
           element={
@@ -142,6 +179,9 @@ export default function App(){
           <Route path="attendance/history" element={<AttendanceHistory />} />
           <Route path="exams" element={<Exams />} />
           <Route path="fees" element={<Fees />} />
+          <Route path="fees/overview" element={<FeeOverview />} />
+          <Route path="fees/overview/collect" element={<StudentFeeCollectView />} />
+          <Route path="fees/overview/receipt" element={<StudentFeeReceiptView />} />
           <Route path="fees/dashboard" element={<FeeDashboard />} />
           <Route path="fees/class/:classId/students" element={(() => {
             const Wrapper = () => { const { classId } = useParams(); return <ClassStudents classId={classId} />; };
@@ -164,23 +204,27 @@ export default function App(){
           <Route path="audit-log" element={<AuditLog />} />
           <Route path="admit-cards" element={<AdminAdmitCardNew />} />
           <Route path="admit-cards/view/:studentId" element={<AdmitCardView />} />
+          <Route path="achievements" element={<AdminAchievements />} />
+          <Route path="student-achievements" element={<AdminStudentAchievements />} />
+          <Route path="photo-gallery" element={<AdminPhotoGallery />} />
+          <Route path="admissions" element={<AdminAdmissions />} />
+          <Route path="user-roles" element={<UserRoles />} />
+          <Route path="facilities" element={<AdminFacilities />} />
+          <Route path="events" element={<AdminEvents />} />
+          <Route path="school-leadership" element={<AdminSchoolLeadership />} />
+          <Route path="collect-fee" element={<CollectFee />} />
+          <Route path="fee-categories" element={<FeeCategories />} />
+          <Route path="payment-history" element={<FeeHistory />} />
+          <Route path="fees-reports" element={<FeeReports />} />
           <Route path="student-portal" element={<StudentPortal />} />
           <Route path="teacher-portal" element={<TeacherPortal />} />
           <Route path="parent-portal" element={<ParentPortal />} />
           <Route path="uploads" element={<Uploads />} />
-          <Route path="settings" element={<AccountSettings />} />
+          
+          
         </Route>
 
-        <Route
-          path="/notifications/center"
-          element={
-            <PrivateRoute>
-              <Layout>
-                <NotificationCenter />
-              </Layout>
-            </PrivateRoute>
-          }
-        />
+        {/* Notification center route removed */}
 
         <Route
           path="/fee-management"
@@ -192,7 +236,8 @@ export default function App(){
             </PrivateRoute>
           }
         >
-          <Route index element={<Navigate to="categories" replace />} />
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<FeeDashboard />} />
           <Route path="categories" element={<FeeCategories />} />
           <Route path="structure" element={<Navigate to="categories" replace />} />
           <Route path="collect" element={<FeeCollect />} />

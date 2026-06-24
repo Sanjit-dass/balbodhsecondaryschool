@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { FaBars, FaTimes, FaPhone, FaEnvelope, FaChevronDown } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import Sidebar from '../Sidebar';
+import { useContext } from 'react';
+import { AuthContext } from '../../contexts/AuthContext';
+import { FaBars, FaTimes, FaPhone, FaEnvelope } from 'react-icons/fa';
 import { SCHOOL_INFO, COLORS } from '../../constants/schoolData';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTranslate } from '../../hooks/useTranslate';
@@ -25,282 +29,216 @@ const PublicHeader = () => {
   const navItems = [
     { label: t('home'), path: '/' },
     { label: t('about'), path: '/about' },
-    {
-      label: t('academics'),
-      path: '/academics',
-      submenu: [
-        { label: t('curriculum'), path: '/academics' },
-        { label: t('classes'), path: '/academics' },
-        { label: t('programs'), path: '/academics' },
-      ],
-    },
+    { label: t('academics'), path: '/academics' },
     { label: t('admissions'), path: '/admissions' },
     { label: t('facilities'), path: '/facilities' },
-    {
-      label: t('studentLife'),
-      path: '/student-life',
-      submenu: [
-        { label: t('sports'), path: '/student-life' },
-        { label: t('activities'), path: '/student-life' },
-        { label: t('clubs'), path: '/student-life' },
-      ],
-    },
+    { label: t('studentLife'), path: '/student-life' },
     { label: t('gallery'), path: '/gallery' },
     { label: t('staff'), path: '/staff' },
     { label: t('contact'), path: '/contact' },
   ];
 
   const toggleMobileMenu = () => {
+    try { console.log('[PublicHeader] toggleMobileMenu before=', isOpen); } catch (e) {}
     setIsOpen(!isOpen);
+    try { setTimeout(() => { console.log('[PublicHeader] toggleMobileMenu after=', !isOpen); }, 50); } catch (e) {}
   };
+
+  useEffect(() => {
+    try { console.log('[PublicHeader] mobileMenuOpen:', isOpen); } catch (e) {}
+  }, [isOpen]);
 
   const isActive = (path) => location.pathname === path;
 
+  const navigate = useNavigate();
+  // No submenus: all nav items link to their full pages
+
+  const handleMobileNavClick = (e, path) => {
+    e && e.preventDefault();
+    navigate(path);
+    setIsOpen(false);
+  };
+
+  const { user } = useContext(AuthContext);
+  const isPortalRoute = location.pathname.startsWith('/admin') || location.pathname.startsWith('/teacher') || location.pathname.startsWith('/student') || location.pathname.startsWith('/fee-management') || location.pathname.startsWith('/exam') || location.pathname.startsWith('/account');
+
   return (
     <>
-      {/* Top Info Bar */}
-      <div className="hidden md:block relative z-[9998] bg-gradient-to-r from-blue-900 via-sky-800 to-cyan-700 text-white py-3 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center text-sm">
-          <div className="flex gap-6 text-white/90">
-            <div className="flex items-center gap-2">
-              <FaPhone className="text-yellow-300" size={14} />
-              <span>{SCHOOL_INFO.phone}</span>
+      <motion.header initial={{ y: -6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.22 }} className="relative z-50">
+        {/* Mobile fast bar: logo, centered name/address/ESTD, hamburger */}
+        <div className="md:hidden w-full bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white" style={{ zIndex: 2147483647, position: 'fixed', top: 0, left: 0, right: 0 }}>
+          <div className="w-full px-0 py-3 flex items-center" style={{ paddingTop: 8 }}>
+            <div className="flex items-center">
+              <Link to="/">
+                <img src="/logo.png" alt="logo" loading="eager" decoding="sync" fetchPriority="high" className="rounded-md object-cover" style={{ width: '48px', height: '48px', marginLeft: '6px' }} />
+              </Link>
+            </div>
+            <div className="flex-1 text-center">
+              <div className="text-[16px] leading-tight font-semibold tracking-wide text-white">{SCHOOL_INFO.name}</div>
+              <div className="mobile-location mt-0.5">{SCHOOL_INFO.address}</div>
+              <div className="mt-1"><span className="inline-block text-xs text-white font-bold">ESTD. {SCHOOL_INFO.established}</span></div>
             </div>
             <div className="flex items-center gap-2">
-              <FaEnvelope className="text-yellow-300" size={14} />
-              <span>{SCHOOL_INFO.email}</span>
+              <button onClick={() => { try { console.log('[PublicHeader] Hamburger clicked (fastbar)'); } catch (e) {} ; toggleMobileMenu(); }} className="p-3 rounded-md bg-blue-800/60 hover:bg-blue-800/80 relative focus:outline-none focus:ring-2 focus:ring-white" aria-label="Toggle menu" aria-expanded={isOpen} style={{ zIndex: 2147483648 }}>
+                {isOpen ? <FaTimes className="w-5 h-5 text-white" /> : <FaBars className="w-5 h-5 text-white" />}
+              </button>
+              <button
+                onClick={() => changeLanguage('ne')}
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all duration-300 ${
+                  language === 'ne'
+                    ? 'bg-white text-blue-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                ने
+              </button>
             </div>
-          </div>
-          <div className="relative flex items-center gap-3">
-            <NotificationBell />
-            <Link
-              to="/login"
-              className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-white/20 transition-all"
-            >
-              LOGIN
-            </Link>
           </div>
         </div>
-      </div>
 
-      {/* Main Header */}
-      <motion.header
-        className={`sticky top-0 z-30 transition-all duration-300 ${
-          isScrolled
-            ? 'bg-white shadow-xl'
-            : 'bg-white shadow-lg'
-        }`}
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            {/* Logo & School Name */}
-            <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <img
-                src="/logo.png"
-                alt="Bal Bodh Secondary School Logo"
-                className="h-14 w-14 object-contain rounded-lg shadow-md"
-              />
-              <div className="hidden md:flex flex-col">
-                <h1 className="font-bold text-blue-900 text-xl leading-none">
-                  Bal Bodh
-                </h1>
-                <h1 className="font-bold text-blue-900 text-xl leading-none">
-                  Secondary School
-                </h1>
+        {/* Desktop-only top contact strip: blue background, phone/email left, bell + Sign In right */}
+        <div className="hidden md:flex items-center justify-between px-6 py-1 text-sm" style={{ backgroundColor: COLORS.primary, color: '#fff' }}>
+          <div className="flex items-center gap-4">
+            <FaPhone className="w-4 h-4 text-white" />
+            <a href={`tel:${SCHOOL_INFO.phone}`} className="text-white hover:underline">{SCHOOL_INFO.phone}</a>
+            <span className="opacity-40 text-white">|</span>
+            <FaEnvelope className="w-4 h-4 text-white" />
+            <a href={`mailto:${SCHOOL_INFO.email}`} className="text-white hover:underline">{SCHOOL_INFO.email}</a>
+          </div>
+          <div className="flex items-center gap-3">
+            <div>
+              <NotificationBell />
+            </div>
+            {!user ? (
+              <Link to="/login" className="px-3 py-1.5 rounded-md font-semibold bg-white" style={{ color: COLORS.primary }}>
+                Sign In
+              </Link>
+            ) : (
+              (() => {
+                const role = (user.role || '').toLowerCase();
+                let dashboardPath = '/';
+                if (['superadmin','admin','principal'].includes(role)) dashboardPath = '/admin';
+                else if (role === 'student') dashboardPath = '/student';
+                else if (role === 'teacher') dashboardPath = '/teacher';
+                else if (role === 'parent') dashboardPath = '/parent';
+                else if (role === 'accountant') dashboardPath = '/account';
+                else if (role === 'examcontroller') dashboardPath = '/exam';
+                return (
+                  <Link to={dashboardPath} className="px-3 py-1.5 rounded-md font-semibold bg-white" style={{ color: COLORS.primary }}>
+                    Dashboard
+                  </Link>
+                );
+              })()
+            )}
+          </div>
+        </div>
+
+        {/* Desktop / wider-screen header row: full navbar with links, logo and CTA */}
+        <div className="hidden md:flex items-center justify-between px-6 py-3 bg-transparent">
+          <div className="flex items-center gap-4">
+            <Link to="/" className="flex items-center gap-3">
+              <img src="/logo.png" alt="logo" className="w-12 h-12 object-cover rounded-lg" />
+              <div className="hidden lg:block">
+                <div className="font-bold text-lg text-slate-900">{SCHOOL_INFO.name}</div>
+                <div className="text-xs text-slate-500">ESTD. {SCHOOL_INFO.established}</div>
               </div>
             </Link>
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-1">
-              {navItems.map((item, index) => (
-                <div key={index} className="relative group">
-                  <Link
-                    to={item.path}
-                    className={`px-3 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-1 ${
-                      isActive(item.path)
-                        ? 'text-white'
-                        : 'text-gray-700 hover:text-white'
-                    }`}
-                    style={{
-                      backgroundColor: isActive(item.path)
-                        ? COLORS.secondary
-                        : 'transparent',
-                    }}
-                  >
-                    {item.label}
-                    {item.submenu && (
-                      <FaChevronDown size={12} className="mt-0.5" />
-                    )}
-                  </Link>
-
-                  {/* Dropdown Menu */}
-                  {item.submenu && (
-                    <div className="absolute left-0 mt-0 w-48 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 py-2">
-                      {item.submenu.map((subitem, subindex) => (
-                        <Link
-                          key={subindex}
-                          to={subitem.path}
-                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm"
-                        >
-                          {subitem.label}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </nav>
-
-            {/* CTA Button + Language Toggle */}
-            <div className="hidden lg:flex items-center gap-4">
-              {/* LANGUAGE TOGGLE */}
-              <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg">
-                <button
-                  onClick={() => changeLanguage('en')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all duration-300 ${
-                    language === 'en'
-                      ? 'bg-white text-blue-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  EN
-                </button>
-                <button
-                  onClick={() => changeLanguage('ne')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all duration-300 ${
-                    language === 'ne'
-                      ? 'bg-white text-blue-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  ने
-                </button>
-              </div>
-
-              <Link
-                to="/admissions"
-                className="px-6 py-2 rounded-lg font-semibold text-white transition-all duration-300 hover:scale-105"
-                style={{
-                  backgroundColor: COLORS.accent,
-                  color: '#000',
-                }}
-              >
-                {t('applyNow')}
-              </Link>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={toggleMobileMenu}
-              className="lg:hidden text-2xl"
-              style={{ color: COLORS.primary }}
-            >
-              {isOpen ? <FaTimes /> : <FaBars />}
-            </button>
           </div>
 
-          {/* Mobile Navigation */}
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{
-              height: isOpen ? 'auto' : 0,
-              opacity: isOpen ? 1 : 0,
-            }}
-            transition={{ duration: 0.3 }}
-            className="lg:hidden overflow-hidden"
-          >
-            <nav className="flex flex-col gap-2 py-4 border-t mt-4">
-              {navItems.map((item, index) => (
-                <div key={index}>
-                  <Link
-                    to={item.path}
-                    onClick={() => setIsOpen(false)}
-                    className={`block px-4 py-2 rounded-lg font-medium transition-all ${
-                      isActive(item.path)
-                        ? 'text-white'
-                        : 'text-gray-700'
-                    }`}
-                    style={{
-                      backgroundColor: isActive(item.path)
-                        ? COLORS.secondary
-                        : 'transparent',
-                    }}
-                  >
-                    {item.label}
-                  </Link>
-                  {item.submenu && (
-                    <div className="pl-4 flex flex-col gap-1 mt-1">
-                      {item.submenu.map((subitem, subindex) => (
-                        <Link
-                          key={subindex}
-                          to={subitem.path}
-                          onClick={() => setIsOpen(false)}
-                          className="text-sm text-gray-600 hover:text-blue-600 py-1"
-                        >
-                          {subitem.label}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-
-              {/* LANGUAGE TOGGLE - Mobile */}
-              <div className="px-4 py-3 border-t mt-3">
-                <Link
-                  to="/login"
-                  onClick={() => setIsOpen(false)}
-                  className="block px-4 py-2 rounded-lg bg-slate-100 text-gray-700 text-sm font-medium hover:bg-slate-200 transition"
-                >
-                  {t('login') || 'Login'}
-                </Link>
-              </div>
-              <div className="px-4 py-3 border-t mt-3">
-                <p className="text-xs font-semibold text-gray-600 mb-2">{t('language')}</p>
-                <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
-                  <button
-                    onClick={() => {
-                      changeLanguage('en');
-                      setIsOpen(false);
-                    }}
-                    className={`flex-1 px-3 py-1.5 rounded-md text-sm font-bold transition-all duration-300 ${
-                      language === 'en'
-                        ? 'bg-white text-blue-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    EN
-                  </button>
-                  <button
-                    onClick={() => {
-                      changeLanguage('ne');
-                      setIsOpen(false);
-                    }}
-                    className={`flex-1 px-3 py-1.5 rounded-md text-sm font-bold transition-all duration-300 ${
-                      language === 'ne'
-                        ? 'bg-white text-blue-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    ने
-                  </button>
-                </div>
-              </div>
-
-              <Link
-                to="/admissions"
-                onClick={() => setIsOpen(false)}
-                className="px-4 py-2 rounded-lg font-semibold text-center text-white"
-                style={{ backgroundColor: COLORS.accent, color: '#000' }}
-              >
-                {t('applyNow')}
+          <nav className="hidden lg:flex items-center gap-1">
+            {navItems.map((item, idx) => (
+              <Link key={idx} to={item.path} className={`px-4 py-2 text-sm font-medium ${isActive(item.path) ? 'text-blue-700' : 'text-slate-700'} hover:text-blue-600 transition`}>
+                {item.label}
               </Link>
-            </nav>
-          </motion.div>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <div className="hidden lg:flex items-center gap-2">
+              <button onClick={() => changeLanguage('en')} className={`px-3 py-1 rounded-md text-sm font-semibold ${language === 'en' ? 'bg-white text-blue-900' : 'text-slate-700'}`}>EN</button>
+              <button onClick={() => changeLanguage('ne')} className={`px-3 py-1 rounded-md text-sm font-semibold ${language === 'ne' ? 'bg-white text-blue-900' : 'text-slate-700'}`}>ने</button>
+            </div>
+
+            {/* Notification bell shown in the top strip; removed from main navbar to avoid duplication */}
+
+            <Link to="/admissions" className="ml-2 px-4 py-2 rounded-lg font-semibold text-white" style={{ backgroundColor: COLORS.accent, color: '#000' }}>{t('applyNow')}</Link>
+            <button className="lg:hidden text-2xl ml-3 p-2 rounded-md focus:outline-none focus:ring-2" onClick={() => toggleMobileMenu()} aria-label="Toggle menu" aria-expanded={isOpen} style={{ color: COLORS.primary }}>{isOpen ? <FaTimes /> : <FaBars />}</button>
+          </div>
         </div>
       </motion.header>
+      {/* Mobile full-screen menu to ensure it appears above all content (rendered outside header so it's present on small screens) */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div
+              key="backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.28 }}
+              className="lg:hidden fixed inset-0 bg-black/30"
+              style={{ zIndex: 2147483649, pointerEvents: 'auto' }}
+              onClick={() => setIsOpen(false)}
+            />
+
+            <motion.nav
+              key="mobile-menu"
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              transition={{ duration: 0.32, ease: 'easeOut' }}
+              className="lg:hidden fixed inset-0"
+                style={{ zIndex: 2147483650 }}
+              aria-label="Mobile menu"
+            >
+              <div className="h-full bg-white shadow-xl overflow-auto">
+                {/* Mobile header inside menu: logo + school info */}
+                <div className="flex items-center gap-3 px-5 py-5 border-b">
+                  <Link to="/" onClick={(e) => handleMobileNavClick(e, '/')} className="flex items-center gap-3">
+                    <img src="/logo.png" alt="logo" loading="eager" decoding="sync" fetchPriority="high" className="w-12 h-12 object-cover rounded-lg" width="48" height="48" />
+                    <div className="flex flex-col leading-tight">
+                      <span className="text-sm font-semibold text-[#0F172A]">{SCHOOL_INFO.name}</span>
+                      <span className="text-xs text-gray-500">{SCHOOL_INFO.address}</span>
+                      <span className="text-xs text-gray-400">ESTD. {SCHOOL_INFO.established}</span>
+                    </div>
+                  </Link>
+                  <Link
+                    to="/login?force=true"
+                    onClick={(e) => { setIsOpen(false); }}
+                    className="ml-auto px-4 py-2 rounded-md text-sm font-semibold text-[#0F172A] bg-gray-50 hover:bg-gray-100"
+                  >
+                    LOGIN
+                  </Link>
+                </div>
+
+                {/* Menu items */}
+                <div className="px-1 py-4">
+                  <div className="flex flex-col divide-y divide-gray-100">
+                    {navItems.map((item, idx) => (
+                      <div key={idx} className="px-0">
+                        <Link to={item.path} onClick={() => setIsOpen(false)} className="block px-5 py-4 text-[#0F172A] text-lg font-medium hover:text-blue-600 transition-colors">
+                          {item.label}
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* CTA */}
+                <div className="px-5 pb-8 pt-4">
+                  <a
+                    href="/admissions"
+                    onClick={(e) => handleMobileNavClick(e, '/admissions')}
+                    className="w-full inline-flex items-center justify-center py-4 rounded-lg text-white font-semibold bg-gradient-to-r from-[#2563EB] to-[#1E40AF] shadow-lg"
+                  >
+                    {t('applyNow')}
+                  </a>
+                </div>
+              </div>
+            </motion.nav>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 };

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { FaCheckCircle, FaLightbulb, FaHandshake, FaUsers } from 'react-icons/fa';
 import { SectionTitle, FeatureCard } from '../../components/public/SectionComponents';
+import AcademicExcellence from '../../components/public/AcademicExcellence';
 import TranslateText from '../../components/public/TranslateText';
 import { SCHOOL_INFO, COLORS } from '../../constants/schoolData';
 
@@ -29,14 +30,6 @@ const About = () => {
     },
   ];
 
-  const timeline = [
-    { year: SCHOOL_INFO.established, event: 'School Founded' },
-    { year: SCHOOL_INFO.established + 5, event: 'First Batch Graduation' },
-    { year: SCHOOL_INFO.established + 10, event: 'Science Lab Established' },
-    { year: SCHOOL_INFO.established + 15, event: 'Digital Learning Initiated' },
-    { year: SCHOOL_INFO.established + 20, event: 'Modern Sports Complex Built' },
-    { year: new Date().getFullYear(), event: 'Excellence Continues' },
-  ];
 
   return (
     <TranslateText>
@@ -84,13 +77,16 @@ const About = () => {
                 Our Story
               </h2>
               <p className="text-gray-600 leading-relaxed mb-4">
-                Bal Bodh Secondary School was established in {SCHOOL_INFO.established} with a vision to provide world-class education. Over the years, we have grown into one of the most respected educational institutions in the region.
+                <strong>Bal Bodh Secondary School (बाल बोध माध्यमिक विद्यालय) was established in 1998 AD (2055 BS) as a community-based educational institution located in Kanchanpur, Saptari, Nepal. The school was founded with a strong vision to provide quality, accessible, and holistic education to students in the region.</strong>
               </p>
               <p className="text-gray-600 leading-relaxed mb-4">
-                Our journey has been marked by continuous innovation, dedicated faculty, and the unwavering support of parents and the community. We have always believed in combining traditional values with modern educational practices.
+                Since its establishment, the school has steadily grown into a respected academic institution committed to excellence in teaching and learning. With the dedication of experienced teachers, continuous support from parents, and active involvement of the community, the school has built a strong foundation for academic and personal development.
+              </p>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                We believe in blending traditional educational values with modern teaching methodologies to ensure that students are well-prepared for both academic success and real-world challenges.
               </p>
               <p className="text-gray-600 leading-relaxed">
-                Today, we are proud to have shaped thousands of successful individuals who are making meaningful contributions to society.
+                Over the years, Bal Bodh Secondary School has guided and shaped thousands of students who are now contributing positively to society in various fields such as education, business, technology, and public service.
               </p>
             </motion.div>
           </div>
@@ -145,16 +141,16 @@ const About = () => {
               <h3 className="text-2xl font-bold text-gray-900 mb-4">Core Values</h3>
               <ul className="space-y-2 text-gray-600">
                 <li className="flex items-center gap-2">
-                  <FaCheckCircle style={{ color: COLORS.secondary }} /> Excellence
+                  <FaCheckCircle style={{ color: COLORS.secondary }} /> Excellence in Education
                 </li>
                 <li className="flex items-center gap-2">
-                  <FaCheckCircle style={{ color: COLORS.secondary }} /> Integrity
+                  <FaCheckCircle style={{ color: COLORS.secondary }} /> Integrity in Actions
                 </li>
                 <li className="flex items-center gap-2">
-                  <FaCheckCircle style={{ color: COLORS.secondary }} /> Innovation
+                  <FaCheckCircle style={{ color: COLORS.secondary }} /> Innovation in Learning
                 </li>
                 <li className="flex items-center gap-2">
-                  <FaCheckCircle style={{ color: COLORS.secondary }} /> Community
+                  <FaCheckCircle style={{ color: COLORS.secondary }} /> Community Engagement
                 </li>
               </ul>
             </motion.div>
@@ -182,6 +178,9 @@ const About = () => {
           </div>
         </div>
       </section>
+
+      {/* Academic Excellence Section */}
+      <AcademicExcellence />
 
       {/* School Objectives */}
       <section className="py-16 md:py-24 bg-gray-50">
@@ -220,56 +219,7 @@ const About = () => {
         </div>
       </section>
 
-      {/* School Journey Timeline */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <SectionTitle
-            title="Our Journey"
-            subtitle="Milestones in Bal Bodh School's history"
-          />
-          <div className="relative">
-            {/* Timeline Line */}
-            <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-600 to-blue-400 transform -translate-x-1/2"></div>
-
-            {/* Timeline Items */}
-            <div className="space-y-12 md:space-y-16">
-              {timeline.map((item, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className={`md:flex ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}
-                >
-                  {/* Timeline Content */}
-                  <div className={`md:w-1/2 ${index % 2 === 0 ? 'md:pr-12 md:text-right' : 'md:pl-12'}`}>
-                    <div className="bg-white rounded-lg p-6 shadow-lg border-l-4" style={{ borderLeftColor: COLORS.secondary }}>
-                      <h3 className="text-2xl font-bold text-gray-900 mb-2">{item.year}</h3>
-                      <p className="text-gray-600">{item.event}</p>
-                    </div>
-                  </div>
-
-                  {/* Timeline Dot */}
-                  <div className="hidden md:flex md:w-0 justify-center">
-                    <div className="absolute w-4 h-4 bg-blue-600 rounded-full mt-6 transform -translate-x-1.5 border-4 border-white"></div>
-                  </div>
-
-                  {/* Mobile Timeline Content */}
-                  <div className="md:hidden mb-6">
-                    <div className="flex gap-4">
-                      <div className="flex flex-col items-center">
-                        <div className="w-4 h-4 bg-blue-600 rounded-full mt-2 border-2 border-white"></div>
-                        {index < timeline.length - 1 && <div className="w-1 h-12 bg-blue-200 mt-2"></div>}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Achievements & Recognition */}
       <section className="py-16 md:py-24 bg-gradient-to-r from-blue-50 to-gray-50">
@@ -280,8 +230,8 @@ const About = () => {
           />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {[
-              'Best Educational Institution Award 2024',
-              'Excellence in Academic Programs 2024',
+              'Best Educational Institution Award ',
+              'Excellence in Academic Programs ',
               'Top Performing School in Regional Exams',
               'Best Sports Program Award',
               'Innovation in Education Recognition',

@@ -4,9 +4,11 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xssClean = require('xss-clean');
 const hpp = require('hpp');
 
+// In development allow much higher limits to avoid blocking during local testing.
+const isDev = process.env.NODE_ENV === 'development';
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 120, // auth endpoints can drive extra calls during login / token checks
+  max: isDev ? 1000 : 120, // auth endpoints can drive extra calls during login / token checks
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: 'Too many authentication requests from this IP, please try again later.' }
@@ -14,7 +16,7 @@ const authLimiter = rateLimit({
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 250, // general API traffic gets a wider allowance
+  max: isDev ? 5000 : 250, // general API traffic gets a wider allowance
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: 'Too many requests from this IP, please try again later.' }

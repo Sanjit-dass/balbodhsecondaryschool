@@ -6,7 +6,7 @@ export default function Marksheet({ result, exam, school = {} }) {
   const marksheetRef = useRef();
 
   const schoolName = school.name || 'BAL BODH SECONDARY SCHOOL';
-  const schoolLocation = school.location || 'Kanchanpur-08, saptari Nepal';
+  const schoolLocation = school.location || 'Kanchanrup Municipality-08, Kanchanpur';
   const schoolLogo = school.logo || '/logo.png';
 
   const handleDownloadPDF = async () => {
@@ -54,7 +54,7 @@ export default function Marksheet({ result, exam, school = {} }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end mb-4 print:hidden">
+      <div className="flex justify-end mb-4 no-print print:hidden">
         <button 
           onClick={handleDownloadPDF} 
           className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2 font-medium"
@@ -70,7 +70,8 @@ export default function Marksheet({ result, exam, school = {} }) {
             <img src={schoolLogo} alt="School Logo" className="h-16 mx-auto mb-2" />
           )}
           <h1 className="text-2xl font-bold">{schoolName}</h1>
-          <p className="text-sm text-slate-600">{schoolLocation}</p>
+          <p className="mt-1 text-sm font-semibold text-[#2563EB]">{school.address || 'Kanchanrup Municipality-08, Kanchanpur'}</p>
+          <p className="text-sm font-semibold text-[#64748B]">ESTD. {school.established || 2055}</p>
         </div>
 
         {/* Exam Title */}
@@ -124,8 +125,8 @@ export default function Marksheet({ result, exam, school = {} }) {
                   <tr key={idx} className="border border-slate-300">
                     <td className="border border-slate-300 px-2 py-2 text-center">{idx + 1}</td>
                     <td className="border border-slate-300 px-2 py-2">{sm.subject?.name || 'N/A'}</td>
-                    <td className="border border-slate-300 px-2 py-2 text-center">{sm.maxMarks || 100}</td>
-                    <td className="border border-slate-300 px-2 py-2 text-center">{exam?.passMarks || 40}</td>
+                    <td className="border border-slate-300 px-2 py-2 text-center">{sm.maxMarks != null ? sm.maxMarks : (exam?.maxMarks != null ? exam.maxMarks : 100)}</td>
+                      <td className="border border-slate-300 px-2 py-2 text-center">{sm.passMarks != null ? sm.passMarks : (exam?.passMarks != null ? exam.passMarks : 40)}</td>
                     <td className="border border-slate-300 px-2 py-2 text-center font-semibold">{sm.marksObtained}</td>
                     <td className="border border-slate-300 px-2 py-2 text-center">{subjectPercentage.toFixed(1)}%</td>
                     <td className={`border border-slate-300 px-2 py-2 text-center font-semibold ${getGradeColor(subjectGradeInfo.grade)}`}>{subjectGradeInfo.grade}</td>
@@ -171,7 +172,7 @@ export default function Marksheet({ result, exam, school = {} }) {
           </div>
         </div>
 
-        <div className="flex justify-center mt-4 print:hidden">
+        <div className="flex justify-center mt-4 no-print print:hidden">
           <button
             onClick={handleDownloadPDF}
             className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2 font-medium"

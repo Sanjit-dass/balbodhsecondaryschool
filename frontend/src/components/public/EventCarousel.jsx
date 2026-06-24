@@ -2,32 +2,34 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
-import { EVENTS, COLORS } from '../../constants/schoolData';
+import { COLORS } from '../../constants/schoolData';
 import { EventCard } from './SectionComponents';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 const EventCarousel = () => {
-  const [events, setEvents] = useState(EVENTS);
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let isMounted = true;
 
     const fetchEvents = async () => {
       try {
-        const response = await api.get('/events/public');
-        const backendEvents = (response.data.notices || []).map((item, index) => ({
+        const response = await api.get('/events-v2/public');
+        const backendEvents = (response.data.events || []).map((item) => ({
+          id: item._id,
           title: item.title,
-          date: item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : item.date || 'TBA',
-          description: item.body || item.content || 'Upcoming school event',
-          image: EVENTS[index % EVENTS.length]?.image || 'chrismass1.png'
+          date: item.eventDate ? new Date(item.eventDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'TBA',
+          description: item.shortDescription || item.fullDescription || 'Upcoming school event',
+          image: (item.coverPhoto && (item.coverPhoto.url || item.coverPhoto.fileUrl)) ? (item.coverPhoto.url || item.coverPhoto.fileUrl) : null,
+          raw: item
         }));
-        if (isMounted && backendEvents.length > 0) {
-          setEvents(backendEvents);
-        }
+        if (isMounted) setEvents(backendEvents);
       } catch (err) {
         console.error('Unable to load live events:', err);
       } finally {
@@ -76,6 +78,7 @@ const EventCarousel = () => {
               description={event.description}
               image={event.image}
               delay={0}
+              onLearnMore={() => navigate(`/events?event=${event.raw._id}`)}
             />
           </SwiperSlide>
         ))}

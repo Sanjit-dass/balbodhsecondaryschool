@@ -1,5 +1,10 @@
 const feeService = require('../services/feeService');
 const FeeStructureV2 = require('../models/FeeStructureV2');
+const Student = require('../models/Student');
+
+function escapeRegex(text) {
+  return String(text || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 /**
  * FEE CONTROLLER
@@ -205,15 +210,9 @@ class FeeController {
   async getStudentFeeSummary(req, res) {
     try {
       const { studentId } = req.params;
-      const { academicYear } = req.query;
+      const { academicYear } = req.query || {};
 
-      if (!academicYear) {
-        return res.status(400).json({
-          success: false,
-          message: 'Academic year is required',
-        });
-      }
-
+      // academicYear is optional; feeService will handle absent value
       const summary = await feeService.getStudentFeeSummary(studentId, academicYear);
 
       res.status(200).json({
@@ -226,6 +225,119 @@ class FeeController {
         success: false,
         message: error.message,
       });
+    }
+  }
+
+  /**
+   * POST /fees/lookup
+   * Body: { name?, className, rollNumber }
+   * Match students by class + roll/admission number and optional name.
+   */
+  async lookupStudent(req, res) {
+    try {
+      const { name, className, rollNumber } = req.body || {};
+      if (!className || !rollNumber) {
+        return res.status(400).json({ success: false, message: 'Please provide class and roll/admission number' });
+      }
+
+      const normalizedRoll = String(rollNumber || '').trim();
+      const classRegex = new RegExp(escapeRegex(String(className || '').trim()), 'i');
+
+      const rollQuery = {
+        $or: [
+          { rollNumber: normalizedRoll },
+          { admissionNumber: normalizedRoll },
+          { rollNumber: new RegExp(`^${escapeRegex(normalizedRoll)}$`, 'i') },
+          { admissionNumber: new RegExp(`^${escapeRegex(normalizedRoll)}$`, 'i') }
+        ]
+      };
+
+      const classQuery = { $or: [ { className: classRegex }, { className: new RegExp(escapeRegex(String(className || '').trim()), 'i') } ] };
+
+      const andClauses = [ classQuery, rollQuery ];
+
+      if (name && String(name).trim()) {
+        const nameRegex = new RegExp(escapeRegex(String(name).trim()), 'i');
+        andClauses.push({ $or: [{ name: nameRegex }, { fullName: nameRegex }, { fullname: nameRegex }] });
+      }
+
+      const query = { $and: andClauses };
+
+      const matches = await Student.find(query).lean();
+      if (!matches || matches.length === 0) return res.status(404).json({ success: false, message: 'No matching student record found' });
+
+      if (matches.length === 1) {
+        const s = matches[0];
+        return res.json({ success: true, student: { id: s._id, name: s.name || s.fullName || s.fullname, className: s.className || '', rollNumber: s.rollNumber || s.admissionNumber || '' } });
+      }
+
+      const simplified = matches.map((m) => ({ id: m._id, name: m.name || m.fullName || m.fullname, className: m.className || '', rollNumber: m.rollNumber || m.admissionNumber || '' }));
+      return res.json({ success: true, message: 'Multiple matches found', matches: simplified });
+    } catch (err) {
+      console.error('lookupStudent failed:', err);
+      res.status(500).json({ success: false, message: 'Server error' });
+    }
+  }
+
+  /**
+   * POST /fees/public/fetch
+   * Body: { className, rollNumber }
+   * Returns payments, receipts and computed summary without needing a linked Student record
+   */
+  async publicFetchFees(req, res) {
+    try {
+      const { className, rollNumber } = req.body || {};
+      if (!className || !rollNumber) return res.status(400).json({ success: false, message: 'Please provide className and rollNumber' });
+
+      const normalizedRoll = String(rollNumber || '').trim();
+      const classRegex = new RegExp(escapeRegex(String(className || '').trim()), 'i');
+
+      // Find payments/receipts by className + rollNumber/admissionNumber or by stored rollNumber fields
+      const payments = await require('../models/FeePayment').find({
+        $and: [
+          { $or: [ { className: classRegex }, { className: new RegExp(escapeRegex(String(className || '')), 'i') } ] },
+          { $or: [ { rollNumber: normalizedRoll }, { admissionNumber: normalizedRoll }, { rollNumber: new RegExp(`^${escapeRegex(normalizedRoll)}$`, 'i') }, { admissionNumber: new RegExp(`^${escapeRegex(normalizedRoll)}$`, 'i') } ] }
+        ]
+      }).sort({ createdAt: -1 }).lean();
+
+      const receipts = await require('../models/FeeReceipt').find({
+        $and: [
+          { $or: [ { className: classRegex }, { className: new RegExp(escapeRegex(String(className || '')), 'i') } ] },
+          { $or: [ { rollNumber: normalizedRoll }, { admissionNumber: normalizedRoll }, { rollNumber: new RegExp(`^${escapeRegex(normalizedRoll)}$`, 'i') }, { admissionNumber: new RegExp(`^${escapeRegex(normalizedRoll)}$`, 'i') } ] }
+        ]
+      }).sort({ createdAt: -1 }).lean();
+
+      // Try to locate a Student record for this class+roll to include canonical studentId
+      const student = await Student.findOne({
+        $and: [
+          { $or: [ { className: classRegex }, { className: new RegExp(escapeRegex(String(className || '')), 'i') } ] },
+          { $or: [ { rollNumber: normalizedRoll }, { admissionNumber: normalizedRoll }, { rollNumber: new RegExp(`^${escapeRegex(normalizedRoll)}$`, 'i') }, { admissionNumber: new RegExp(`^${escapeRegex(normalizedRoll)}$`, 'i') } ] }
+        ]
+      }).lean();
+
+      // Build simple summary
+      const totalPaid = payments.reduce((s, p) => s + Number(p.amountPaid || p.paidToday || 0), 0);
+      const totalDue = payments.reduce((s, p) => s + Number(p.dueAmount || 0), 0);
+      const totalFee = payments.reduce((s, p) => s + Number(p.totalFee || 0), 0) || (totalPaid + totalDue);
+
+      const response = {
+        success: true,
+        payments,
+        receipts,
+        summary: { totalPaid, totalDue, totalFee }
+      };
+
+      if (student) {
+        response.studentId = student._id;
+        response.studentName = student.name || student.fullName || student.fullname || '';
+        response.className = student.className || '';
+        response.rollNumber = student.rollNumber || student.admissionNumber || '';
+      }
+
+      return res.json(response);
+    } catch (err) {
+      console.error('publicFetchFees error:', err);
+      res.status(500).json({ success: false, message: 'Server error' });
     }
   }
 

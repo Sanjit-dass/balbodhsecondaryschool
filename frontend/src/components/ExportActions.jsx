@@ -41,7 +41,7 @@ export default function ExportActions({ resource, filenamePrefix, resourceId }){
       <button 
         onClick={handleExport} 
         disabled={loading}
-        className="px-3 sm:px-5 py-2 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-xs sm:text-sm font-medium rounded-lg sm:rounded-xl shadow-sm transition-colors"
+        className="no-print px-3 sm:px-5 py-2 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-xs sm:text-sm font-medium rounded-lg sm:rounded-xl shadow-sm transition-colors"
       >
         {loading ? 'Generating PDF...' : '📄 Download PDF Report'}
       </button>

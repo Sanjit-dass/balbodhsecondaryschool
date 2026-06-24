@@ -4,6 +4,7 @@ import { FaCheckCircle, FaFileAlt, FaQuestionCircle } from 'react-icons/fa';
 import { SectionTitle } from '../../components/public/SectionComponents';
 import TranslateText from '../../components/public/TranslateText';
 import { COLORS } from '../../constants/schoolData';
+import api from '../../services/api';
 
 const Admissions = () => {
   const [expandedFaq, setExpandedFaq] = useState(0);
@@ -15,14 +16,15 @@ const Admissions = () => {
     class: '',
     address: '',
   });
+  const [submissionSuccess, setSubmissionSuccess] = useState(false);
+  const [submittedApplicationId, setSubmittedApplicationId] = useState(null);
 
   const admissionProcess = [
     { step: 1, title: 'Application', description: 'Fill and submit the admission form' },
     { step: 2, title: 'Entrance Test', description: 'Appear for the entrance examination (if applicable)' },
-    { step: 3, title: 'Interview', description: 'Student and parent interaction with staff' },
-    { step: 4, title: 'Verification', description: 'Document verification and verification process' },
-    { step: 5, title: 'Confirmation', description: 'Payment of admission fees' },
-    { step: 6, title: 'Enrollment', description: 'Official enrollment and orientation' },
+    { step: 3, title: 'Verification', description: 'Document verification and verification process' },
+    { step: 4, title: 'Confirmation', description: 'Payment of admission fees' },
+    { step: 5, title: 'Enrollment', description: 'Official enrollment and orientation' },
   ];
 
   const eligibilityCriteria = [
@@ -93,8 +95,24 @@ const Admissions = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Handle form submission
+    (async () => {
+      try {
+        const res = await api.post('/admissions', formData);
+        if (res?.status === 201) {
+          const appId = res.data?.applicationId || null;
+          setSubmittedApplicationId(appId);
+          setSubmissionSuccess(true);
+          setFormData({ studentName: '', parentName: '', email: '', phone: '', class: '', address: '' });
+          // scroll to top so user sees confirmation
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          alert('Submission completed');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Submission failed. Please try again later.');
+      }
+    })();
   };
 
   const handleChange = (e) => {
@@ -125,7 +143,7 @@ const Admissions = () => {
         <div className="max-w-7xl mx-auto px-4">
           <SectionTitle
             title="Admission Process"
-            subtitle="Six easy steps to join our school"
+            subtitle="Five easy steps to join our school"
           />
 
           <div className="relative">
@@ -218,12 +236,12 @@ const Admissions = () => {
                   'Original Birth Certificate (certified copy)',
                   'Previous school report card/marks sheet',
                   'Transfer Certificate (for transfer students)',
-                  'Immunization/Health certificate',
+                  // 'Immunization/Health certificate' removed per request
                   'Parent/Guardian identification proof',
                   'Passport size photos (4 copies)',
                   'Proof of residential address',
                   'Character certificate (if applicable)',
-                  'Medical fitness certificate',
+                  // 'Medical fitness certificate' removed per request
                   'Entrance test admission letter (if applicable)',
                 ].map((doc, index) => (
                   <motion.div
@@ -268,6 +286,18 @@ const Admissions = () => {
           />
 
           <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8 md:p-12">
+            {submissionSuccess && (
+              <div className="mb-6 p-6 rounded-lg bg-green-50 border border-green-200">
+                <h3 className="text-xl font-bold text-green-800">Application Submitted Successfully!</h3>
+                <p className="mt-2 text-gray-700">Thank you for applying to Bal Bodh Secondary School.</p>
+                <p className="mt-2 text-gray-700">Your admission application has been received successfully and is currently under review. Our admissions team will contact you shortly using the phone number provided in the application for further admission procedures and guidance.</p>
+                <p className="mt-2 text-gray-700">Please keep your phone available and check your contact details for accuracy.</p>
+                {submittedApplicationId && (
+                  <p className="mt-3 font-semibold">Application ID: {submittedApplicationId}</p>
+                )}
+                <p className="mt-3 text-gray-700">We look forward to welcoming you to Bal Bodh Secondary School.</p>
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <motion.div

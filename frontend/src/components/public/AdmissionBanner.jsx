@@ -1,6 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useTranslate } from '../../hooks/useTranslate';
+import { Link } from 'react-router-dom';
+import { SCHOOL_INFO } from '../../constants/schoolData';
+import api from '../../services/api';
 import { FaGraduationCap, FaBook, FaUsers, FaArrowRight } from 'react-icons/fa';
 import { COLORS } from '../../constants/schoolData';
 
@@ -36,7 +39,11 @@ const AdmissionBanner = () => {
           className="inline-block mb-6"
         >
           <span className="px-6 py-2 bg-yellow-400 text-black rounded-full font-bold text-sm">
-            {t('Admission Open 2024-2025')}
+            {(() => {
+              const currentYear = new Date().getFullYear();
+              const nextYear = currentYear + 1;
+              return `${t('admissionOpen')} ${currentYear}-${nextYear}`;
+            })()}
           </span>
         </motion.div>
 
@@ -68,25 +75,56 @@ const AdmissionBanner = () => {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-10 py-4 rounded-full font-bold text-white transition-all text-lg shadow-xl"
-            style={{ backgroundColor: COLORS.accent, color: '#000' }}
-          >
-            {t('Apply Now')}
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-10 py-4 rounded-full font-bold border-2 border-white text-white hover:bg-white hover:text-blue-900 transition-all text-lg flex items-center justify-center gap-2"
-          >
-            {t('Download Brochure')} <FaArrowRight />
-          </motion.button>
+          <Link to="/admissions" className="no-underline">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-10 py-4 rounded-full font-bold text-white transition-all text-lg shadow-xl"
+              style={{ backgroundColor: COLORS.accent, color: '#000' }}
+            >
+              {t('applyNow')}
+            </motion.button>
+          </Link>
+
+          {/* Brochure CTA - fetch latest published brochure if available */}
+          <BrochureCTA />
         </div>
       </motion.div>
     </section>
   );
 };
+
+function BrochureCTA(){
+  const { t } = useTranslate();
+  const [url, setUrl] = React.useState(null);
+
+  React.useEffect(()=>{
+    let mounted = true;
+    api.get('/brochures/latest').then(res=>{
+      if (!mounted) return;
+      const item = res?.data?.data;
+      if (item && item.fileUrl) setUrl(item.fileUrl);
+    }).catch(()=>{});
+    return ()=>{ mounted = false; };
+  },[]);
+
+  if (url) return (
+    <a href={url} target="_blank" rel="noreferrer" className="no-underline">
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="px-10 py-4 rounded-full font-bold border-2 border-white text-white hover:bg-white hover:text-blue-900 transition-all text-lg flex items-center justify-center gap-2"
+      >
+        {t('downloadBrochure')} <FaArrowRight />
+      </motion.button>
+    </a>
+  );
+
+  return (
+    <div className="px-10 py-4 rounded-full font-bold border-2 border-white text-white bg-white/10 text-sm flex items-center justify-center gap-2">
+      {t('downloadBrochure')}: {t('comingSoon') || 'Brochure Coming Soon'}
+    </div>
+  );
+}
 
 export default AdmissionBanner;

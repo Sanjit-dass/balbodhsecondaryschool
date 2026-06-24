@@ -76,6 +76,7 @@ const Academics = () => {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
+             
               <p className="text-gray-600 leading-relaxed mb-4">
                 Our curriculum is carefully designed to balance academic excellence with practical skills development. We incorporate both traditional learning methods and modern educational approaches.
               </p>
@@ -280,55 +281,10 @@ const Academics = () => {
         </div>
       </section>
 
-      {/* Academic Calendar */}
-      <section className="py-16 md:py-24 bg-gradient-to-r from-blue-50 to-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <SectionTitle
-            title="Academic Calendar"
-            subtitle="Important dates and schedule for the academic year"
-          />
-
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gradient-to-r from-blue-900 to-blue-700 text-white">
-                <tr>
-                  <th className="px-6 py-4 text-left font-bold">Event</th>
-                  <th className="px-6 py-4 text-left font-bold">Date</th>
-                  <th className="px-6 py-4 text-left font-bold">Remarks</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { event: 'Admission Registration', date: 'April - June', remarks: 'Rolling admissions' },
-                  { event: 'Academic Year Begins', date: 'July 15', remarks: 'Classes start' },
-                  { event: 'Unit Test 1', date: 'August', remarks: 'All classes' },
-                  { event: 'Mid-Term Exams', date: 'September - October', remarks: 'Classes 1-12' },
-                  { event: 'Annual Sports Day', date: 'November', remarks: 'School event' },
-                  { event: 'Pre-Board Exams', date: 'December', remarks: 'Classes 10 & 12' },
-                  { event: 'Final Exams', date: 'January - February', remarks: 'Board exams' },
-                  { event: 'Annual Function', date: 'December', remarks: 'School celebration' },
-                ].map((item, index) => (
-                  <motion.tr
-                    key={index}
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    viewport={{ once: true }}
-                    className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4 font-semibold text-gray-900">{item.event}</td>
-                    <td className="px-6 py-4 text-gray-600">{item.date}</td>
-                    <td className="px-6 py-4 text-gray-600">{item.remarks}</td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Co-Curricular Activities */}
-      <section className="py-16 md:py-24 bg-white">
+      <section className="py-12 md:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <SectionTitle
             title="Co-Curricular Activities"

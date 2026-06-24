@@ -100,7 +100,7 @@ export default function Uploads(){
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this document?')) {
+    if (window.confirm('Are you sure you want to permanently delete this record? This action cannot be undone.')) {
       try {
         await api.delete(`/uploads/${id}`);
         alert('Document deleted');

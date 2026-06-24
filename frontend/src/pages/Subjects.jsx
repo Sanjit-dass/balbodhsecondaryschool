@@ -24,7 +24,7 @@ export default function Subjects(){
   };
 
   const remove = async (id) => {
-    if (!window.confirm('Delete subject?')) return;
+    if (!window.confirm('Are you sure you want to permanently delete this record? This action cannot be undone.')) return;
     try {
       await api.delete(`/subjects/${id}`);
       fetch();

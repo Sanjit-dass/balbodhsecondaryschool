@@ -1,10 +1,10 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
-const connectDB = require('../src/config/db');
+const { connectDB } = require('../src/config/db');
 const User = require('../src/models/User');
 const bcrypt = require('bcryptjs');
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/balbodh';
+const MONGO_URI = process.env.MONGODB_URL || process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/balbodh';
 
 async function seed(){
   await connectDB(MONGO_URI);

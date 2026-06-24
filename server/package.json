@@ -4,7 +4,10 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "migrate:add-studentid-fee": "node scripts/migrate_add_studentid_fee_collections.js",
+    "restore:classes": "node scripts/restoreDefaultClasses.js",
+    "list:classes": "node scripts/listClasses.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -21,6 +24,7 @@
     "mongoose": "^8.5.0",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
+    "uuid": "^9.0.0",
     "cloudinary": "^1.30.0",
     "multer-storage-cloudinary": "^4.0.0",
     "streamifier": "^0.1.1",

@@ -8,7 +8,7 @@ export default function Vehicles(){
   const [editing, setEditing] = useState(null);
   useEffect(()=>{ fetch(); },[]);
   const fetch=async()=>{ try{ const res=await api.get('/vehicles'); setList(res.data.vehicles||[]); }catch(err){console.error(err);} };
-  const remove=async(id)=>{ if(!window.confirm('Delete vehicle?')) return; try{ await api.delete(`/vehicles/${id}`); fetch(); }catch(err){console.error(err);} };
+  const remove=async(id)=>{ if(!window.confirm('Are you sure you want to permanently delete this record? This action cannot be undone.')) return; try{ await api.delete(`/vehicles/${id}`); fetch(); }catch(err){console.error(err);} };
 
   return (
     <div>

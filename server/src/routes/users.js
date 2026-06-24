@@ -7,8 +7,9 @@ const validate = require('../middleware/validate');
 const audit = require('../middleware/audit');
 const userController = require('../controllers/userController');
 
-router.get('/', auth, roles(['superadmin','principal']), userController.listUsers);
-router.post('/', auth, roles(['superadmin','principal']), [
+// Allow 'admin' users to manage users in addition to superadmin and principal
+router.get('/', auth, roles(['superadmin','principal','admin']), userController.listUsers);
+router.post('/', auth, roles(['superadmin','principal','admin']), [
   body('name').notEmpty(),
   body('email').isEmail(),
   body('role').notEmpty()
@@ -18,8 +19,8 @@ router.get('/me', auth, async (req, res) => {
   const user = await User.findById(req.user.id).select('-password');
   res.json({ user });
 });
-router.get('/:id', auth, roles(['superadmin','principal']), param('id').isMongoId(), validate, userController.getUser);
-router.put('/:id', auth, roles(['superadmin','principal']), validate, audit('update_user'), userController.updateUser);
-router.delete('/:id', auth, roles(['superadmin','principal']), param('id').isMongoId(), validate, audit('delete_user'), userController.deleteUser);
+router.get('/:id', auth, roles(['superadmin','principal','admin']), param('id').isMongoId(), validate, userController.getUser);
+router.put('/:id', auth, roles(['superadmin','principal','admin']), validate, audit('update_user'), userController.updateUser);
+router.delete('/:id', auth, roles(['superadmin','principal','admin']), param('id').isMongoId(), validate, audit('delete_user'), userController.deleteUser);
 
 module.exports = router;

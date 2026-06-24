@@ -28,7 +28,7 @@ export default function Notifications() {
   }, []);
 
   const remove = async (id) => {
-    if (!window.confirm('Delete notification?')) return;
+    if (!window.confirm('Are you sure you want to permanently delete this record? This action cannot be undone.')) return;
     try {
       await api.delete(`/notifications/${id}`);
       window.dispatchEvent(new CustomEvent('notifications:update'));

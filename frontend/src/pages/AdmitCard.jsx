@@ -90,15 +90,139 @@ export default function AdmitCard() {
       const element = document.getElementById('admit-card-content');
       if (!element) return;
 
-      const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-      const imgData = canvas.toDataURL('image/jpeg', 0.98);
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pageWidth - 20;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      // Embed images as data URLs when possible and relax overflow styles to avoid clipping
+      const embedImages = async (root) => {
+        const imgs = Array.from(root.querySelectorAll('img'));
+        for (const img of imgs) {
+          const src = img.src;
+          if (!src || src.startsWith('data:')) continue;
+          try {
+            const resp = await fetch(src, { mode: 'cors' });
+            const blob = await resp.blob();
+            const dataUrl = await new Promise((resolve, reject) => {
+              const fr = new FileReader();
+              fr.onload = () => resolve(fr.result);
+              fr.onerror = reject;
+              fr.readAsDataURL(blob);
+            });
+            img.src = dataUrl;
+          } catch (e) {
+            try {
+              await new Promise((res, rej) => {
+                const I = new Image();
+                I.crossOrigin = 'Anonymous';
+                I.onload = () => {
+                  try {
+                    const c = document.createElement('canvas');
+                    c.width = I.naturalWidth || I.width;
+                    c.height = I.naturalHeight || I.height;
+                    const cx = c.getContext('2d');
+                    cx.drawImage(I, 0, 0);
+                    img.src = c.toDataURL('image/png');
+                    res(true);
+                  } catch (err) { rej(err); }
+                };
+                I.onerror = rej;
+                I.src = src;
+              });
+            } catch (_) {
+              // can't embed this image
+            }
+          }
+        }
+      };
 
-      pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, imgHeight);
+      const relaxOverflow = (root) => {
+        const elems = Array.from(root.querySelectorAll('*'));
+        elems.push(root);
+        elems.forEach((el) => {
+          if (el && el.style) {
+            el.style.overflow = 'visible';
+            el.style.maxHeight = 'none';
+            el.style.height = 'auto';
+          }
+        });
+      };
+
+      await embedImages(element);
+      relaxOverflow(element);
+
+      // Ensure there's extra bottom space so signatures aren't clipped
+      const originalPaddingBottom = element.style.paddingBottom;
+      element.style.paddingBottom = element.style.paddingBottom || '60mm';
+
+      // Render at higher scale for sharpness
+      const canvas = await html2canvas(element, { scale: 2.5, useCORS: true, allowTaint: true, logging: false });
+
+      // PDF export (A4) - try to fit to a single page when possible, otherwise slice into pages
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10; // mm
+      const imgWidthMm = pdfWidth - margin * 2;
+
+      const canvasWidthPx = canvas.width;
+      const canvasHeightPx = canvas.height;
+      const pxPerMm = canvasWidthPx / imgWidthMm;
+
+      // Height in mm when scaled to pdf width
+      const totalHeightMm = canvasHeightPx / pxPerMm;
+
+      // Try single-page export first using a reasonably large minimum scale.
+      const availableHeightMm = pdfHeight - margin * 2;
+      const availableWidthMm = imgWidthMm;
+      const minScale = 0.8; // prefer minimal shrink; fall back to multi-page if it can't fit
+      const naturalScale = Math.min(1, availableHeightMm / totalHeightMm);
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.98);
+
+      if (naturalScale >= minScale) {
+        // fits on a single page without excessive shrinking
+        const scaleDown = naturalScale;
+        const displayWidth = imgWidthMm * scaleDown;
+        const displayHeight = totalHeightMm * scaleDown;
+        const x = margin + (availableWidthMm - displayWidth) / 2;
+        const y = margin;
+        pdf.addImage(imgData, 'JPEG', x, y, displayWidth, displayHeight);
+        element.style.paddingBottom = originalPaddingBottom || '';
+        pdf.save(`admit-card-${getStudentRollNumber(studentData).replace(/\s+/g, '_') || 'student'}.pdf`);
+        return;
+      }
+
+      // Otherwise, fall back to multi-page slicing so nothing is ever clipped.
+      const overlapMm = 12; // overlap in mm to avoid clipping at page breaks
+      const overlapPx = Math.round(overlapMm * pxPerMm);
+      const pageHeightPx = Math.floor(pdfHeight * pxPerMm) - overlapPx;
+
+      let yOffsetPx = 0;
+      let pageIndex = 0;
+
+      while (yOffsetPx < canvasHeightPx) {
+        const srcY = pageIndex === 0 ? 0 : Math.max(0, yOffsetPx - overlapPx);
+        const remaining = canvasHeightPx - srcY;
+        const sliceHeight = remaining > pageHeightPx + overlapPx ? pageHeightPx + overlapPx : remaining;
+
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = canvasWidthPx;
+        pageCanvas.height = sliceHeight;
+        const ctx = pageCanvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+        ctx.drawImage(canvas, 0, srcY, canvasWidthPx, sliceHeight, 0, 0, canvasWidthPx, sliceHeight);
+
+        const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.98);
+        const imgHeightMm = pageCanvas.height / pxPerMm;
+
+        if (pageIndex > 0) pdf.addPage();
+        pdf.addImage(pageImgData, 'JPEG', margin, margin, imgWidthMm, imgHeightMm);
+
+        yOffsetPx += pageHeightPx;
+        pageIndex++;
+      }
+
+      // restore original padding
+      element.style.paddingBottom = originalPaddingBottom || '';
+
       pdf.save(`admit-card-${getStudentRollNumber(studentData).replace(/\s+/g, '_') || 'student'}.pdf`);
     } catch (err) {
       console.error('PDF download failed:', err);
@@ -107,26 +231,65 @@ export default function AdmitCard() {
   }
 
   const handlePrint = () => {
-    const printWindow = window.open('', '', 'height=650,width=900');
     const element = document.getElementById('admit-card-content');
-    if (!element || !printWindow) return;
+    if (!element) return;
+
+    // Clone the node and inline computed styles to preserve layout in the new window
+    const cloneWithInlineStyles = (node) => {
+      const clone = node.cloneNode(false);
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const cs = window.getComputedStyle(node);
+        try {
+          clone.style.cssText = cs.cssText;
+        } catch (e) {
+          // some browsers may not allow setting cssText from computed style; fallback below
+        }
+        // copy important attributes
+        if (node.tagName === 'IMG') {
+          clone.src = node.src;
+        }
+      }
+      for (let child = node.firstChild; child; child = child.nextSibling) {
+        clone.appendChild(cloneWithInlineStyles(child));
+      }
+      return clone;
+    };
+
+    const cloned = cloneWithInlineStyles(element);
+    const wrapper = document.createElement('div');
+    wrapper.className = 'admit-card';
+    wrapper.appendChild(cloned);
+
+    const printWindow = window.open('', '', 'height=1400,width=900');
+    if (!printWindow) return;
 
     printWindow.document.write('<html><head><title>Admit Card</title>');
     printWindow.document.write('<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap">');
     printWindow.document.write(`
       <style>
-        * { margin: 0; padding: 0; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; padding: 20px; background: white; }
-        .admit-card { max-width: 210mm; margin: 0 auto; background: white; }
-        @media print { body { padding: 0; } }
+        html, body { margin: 0; padding: 0; background: white; }
+        .admit-card { width: 210mm; max-width: 100%; margin: 0 auto; padding: 12mm; box-sizing: border-box; background: white; }
+        img { max-width: 100%; height: auto; display: block; }
+        table { border-collapse: collapse; }
+        @page { size: A4 portrait; margin: 8mm; }
+        @media print {
+          body { -webkit-print-color-adjust: exact; }
+          .admit-card { margin: 0; padding: 0; }
+          button, .no-print { display: none !important; }
+          img { -webkit-print-color-adjust: exact; }
+        }
       </style>
     `);
     printWindow.document.write('</head><body>');
-    printWindow.document.write(element.innerHTML);
-    printWindow.document.write('</body></html>');
+    printWindow.document.body.appendChild(wrapper);
+    // Because we appended DOM nodes, serialize the document properly
+    const serialized = printWindow.document.documentElement.outerHTML;
+    // rewrite document to ensure the serialized content is used
+    printWindow.document.open();
+    printWindow.document.write(serialized);
     printWindow.document.close();
     printWindow.focus();
-    setTimeout(() => printWindow.print(), 250);
+    setTimeout(() => { try { printWindow.print(); } catch (e) {} finally { printWindow.close(); } }, 1000);
   };
 
   if (isLoading) {
@@ -195,7 +358,7 @@ export default function AdmitCard() {
         <div className="mb-6 flex flex-wrap gap-3">
           <button
             onClick={downloadPDF}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-blue-700"
+            className="no-print inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-blue-700"
           >
             📥 Download PDF
           </button>
@@ -213,7 +376,8 @@ export default function AdmitCard() {
           <div className="border-b-4 border-[#DC2626] pb-4 text-center">
             {/* School Name */}
             <h1 className="text-3xl font-bold text-[#DC2626]">BAL BODH SECONDARY SCHOOL</h1>
-            <p className="mt-1 text-sm text-[#2563EB] font-semibold">Kanchanpur-08, Saptari</p>
+            <p className="mt-1 text-sm text-[#2563EB] font-semibold">Kanchanrup Municipality-8, Kanchanpur</p>
+            <p className="text-sm font-semibold text-[#64748B]">ESTD. 2055</p>
             
             {/* Divider */}
             <div className="my-2 border-t border-[#E2E8F0]" />
@@ -345,14 +509,14 @@ export default function AdmitCard() {
             <div className="grid grid-cols-2 gap-8">
               {/* Accountant Signature */}
               <div className="text-center">
-                <div className="mb-12 h-16 border-b-2 border-[#0F172A]" />
+                <div className="mb-12 h-16 border-b-2 border-[#0F172A] signature-line" />
                 <p className="text-xs font-semibold text-[#0F172A]">Accountant Signature</p>
               </div>
 
-              {/* Principal Signature */}
+              {/* Founder Signature */}
               <div className="text-center">
-                <div className="mb-12 h-16 border-b-2 border-[#0F172A]" />
-                <p className="text-xs font-semibold text-[#0F172A]">Principal Signature</p>
+                <div className="mb-12 h-16 border-b-2 border-[#0F172A] signature-line" />
+                <p className="text-xs font-semibold text-[#0F172A]">Founder Signature</p>
               </div>
             </div>
           </div>
@@ -368,19 +532,14 @@ export default function AdmitCard() {
         {/* Print Styles */}
         <style>{`
           @media print {
-            body {
-              background: white;
-              margin: 0;
-              padding: 0;
-            }
-            #admit-card-content {
-              box-shadow: none;
-              border-radius: 0;
-              max-width: 100%;
-            }
-            button {
-              display: none;
-            }
+            html, body { background: white; margin: 0; padding: 0; -webkit-print-color-adjust: exact; }
+            #admit-card-content, .admit-card { box-shadow: none !important; border-radius: 0 !important; max-width: 100% !important; overflow: visible !important; height: auto !important; max-height: none !important; }
+            * { overflow: visible !important; }
+            img { max-width: 100% !important; height: auto !important; display: block !important; }
+            .no-print, button { display: none !important; }
+            .signature-line { page-break-inside: avoid; }
+            table, thead, tbody, tr, td, th { page-break-inside: avoid; }
+            @page { size: A4 portrait; margin: 8mm; }
           }
         `}</style>
       </div>

@@ -1,79 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import TranslateText from '../../components/public/TranslateText';
-import { ACADEMIC_EXCELLENCE } from '../../constants/schoolData';
+import AcademicExcellence from '../../components/public/AcademicExcellence';
 
 const AcademicExcellencePage = () => {
   return (
     <TranslateText>
       <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white pt-24 pb-20">
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
-            Academic Excellence
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            At Bal Bodh Secondary School, we are committed to academic excellence across all disciplines. 
-            Our students consistently demonstrate outstanding performance in national and international exams.
-          </p>
-        </motion.div>
-
-        {/* Excellence Cards Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
-          {ACADEMIC_EXCELLENCE.map((section, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition"
-            >
-              {/* Image */}
-              <div className="h-64 overflow-hidden bg-gray-200 relative">
-                <img
-                  src={section.image}
-                  alt={section.title}
-                  className="w-full h-full object-cover hover:scale-110 transition duration-300"
-                />
-              </div>
-
-              {/* Content */}
-              <div className="p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                  {section.title}
-                </h2>
-                <p className="text-gray-600 mb-6">
-                  {section.description}
-                </p>
-
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  {Object.entries(section.stats).map(([key, value]) => (
-                    <div key={key} className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">
-                        {value}
-                      </div>
-                      <div className="text-sm text-gray-500 capitalize">
-                        {key.replace(/([A-Z])/g, ' $1')}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Button */}
-                <button className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold">
-                  Learn More
-                </button>
-              </div>
-            </motion.div>
-          ))}
+      <div className="max-w-[1600px] mx-auto px-4">
+        <div className="mb-12">
+          <AcademicExcellence />
         </div>
 
         {/* Detailed Sections */}

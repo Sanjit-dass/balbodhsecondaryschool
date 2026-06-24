@@ -307,7 +307,6 @@ export default function FeeCategories() {
               className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-100"
             >
               <option value="Mandatory Fee">Mandatory</option>
-              <option value="Optional Service">Optional</option>
             </select>
           </div>
           <button

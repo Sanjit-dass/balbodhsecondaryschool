@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import ResponsiveSelect from '../components/ResponsiveSelect';
 
 const EXAM_OPTIONS = [
   'First Terminal Exam',
@@ -30,6 +31,7 @@ const formatClassLabel = (cls) => {
 
 export default function AdminAdmitCardNew() {
   const [selectedExam, setSelectedExam] = useState('');
+  const [showExamPicker, setShowExamPicker] = useState(false);
   const [selectedClass, setSelectedClass] = useState('');
   const [students, setStudents] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,12 +55,6 @@ export default function AdminAdmitCardNew() {
       return;
     }
 
-    if (!selectedExam) {
-      setStudents([]);
-      setIsLoading(false);
-      return;
-    }
-
     const loadStudents = async () => {
       setIsLoading(true);
       setErrorMessage('');
@@ -76,7 +72,7 @@ export default function AdminAdmitCardNew() {
     };
 
     loadStudents();
-  }, [selectedClass, selectedExam]);
+  }, [selectedClass]);
 
   const handleViewAdmitCard = (studentId) => {
     if (!selectedExam) {
@@ -108,20 +104,15 @@ export default function AdminAdmitCardNew() {
               <h2 className="text-lg font-semibold text-slate-900">Select Exam</h2>
               <p className="mt-1 text-sm text-slate-600">Choose the exam before generating admit cards.</p>
             </div>
-            <div className="min-w-[250px]">
-              <select
-                value={selectedExam}
-                onChange={(e) => {
-                  setSelectedExam(e.target.value);
-                  setErrorMessage('');
-                }}
-                className="w-full rounded-3xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
-              >
-                <option value="">Select Exam</option>
-                {EXAM_OPTIONS.map((option) => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
+            <div className="w-full sm:min-w-[250px]">
+                <ResponsiveSelect
+                  value={selectedExam}
+                  onChange={(v) => { setSelectedExam(v); setErrorMessage(''); }}
+                  options={EXAM_OPTIONS.map(o => ({ value: o, label: o }))}
+                  placeholder="Select Exam"
+                  className="w-full"
+                  maxHeight={500}
+                />
             </div>
           </div>
 
@@ -130,17 +121,15 @@ export default function AdminAdmitCardNew() {
               <h2 className="text-lg font-semibold text-slate-900">Select Class</h2>
               <p className="mt-1 text-sm text-slate-600">Choose a class to load students for the selected exam.</p>
             </div>
-            <div className="min-w-[250px]">
-              <select
+            <div className="w-full sm:min-w-[250px]">
+              <ResponsiveSelect
                 value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
-                className="w-full rounded-3xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
-              >
-                <option value="">Select Class</option>
-                {CLASS_OPTIONS.map((option) => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
+                onChange={(v) => setSelectedClass(v)}
+                options={[{ value: '', label: 'Select Class' }, ...CLASS_OPTIONS.map(c => ({ value: c, label: c }))]}
+                placeholder="Select Class"
+                maxHeight={600}
+                className="w-full"
+              />
             </div>
           </div>
         </div>

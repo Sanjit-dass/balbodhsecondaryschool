@@ -14,8 +14,8 @@ export default function MarksEntry({ examId, exam, initialSubject = '' }) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [fullMarks, setFullMarks] = useState(exam?.maxMarks || 100);
-  const [passMarks, setPassMarks] = useState(exam?.passMarks || 40);
+  const [fullMarks, setFullMarks] = useState(String(exam?.maxMarks ?? 100));
+  const [passMarks, setPassMarks] = useState(String(exam?.passMarks ?? 40));
   const [loadedClass, setLoadedClass] = useState(false);
 
   const examClassName = exam?.class?.name || (typeof exam?.class === 'string' ? exam.class : '');
@@ -133,7 +133,7 @@ export default function MarksEntry({ examId, exam, initialSubject = '' }) {
           studentName: s.user?.name || s.fullName || 'N/A',
           rollNumber: s.admissionNumber || s.rollNumber || '',
           marksObtained: existing?.marksObtained || '',
-          maxMarks: existing?.maxMarks || exam?.maxMarks || 100
+          maxMarks: existing?.maxMarks != null ? existing.maxMarks : (Number(exam?.maxMarks) || 100)
         };
       });
       setMarks(formattedMarks);
@@ -165,13 +165,13 @@ export default function MarksEntry({ examId, exam, initialSubject = '' }) {
       const matrix = students.map(s => {
         const studentMarks = subjects.map(sub => {
           const existing = (marksMap[s._id] || {})[sub._id];
-          return {
+            return {
             subjectId: sub._id,
             subjectName: sub.name,
             marksId: existing?._id || '',
             obtained: existing?.marksObtained || '',
-            maxMarks: existing?.maxMarks || sub.maxMarks || exam?.maxMarks || 100,
-            passMarks: existing?.passMarks || exam?.passMarks || sub.passMarks || 0
+              maxMarks: existing?.maxMarks != null ? existing.maxMarks : (sub.maxMarks != null ? Number(sub.maxMarks) : (Number(exam?.maxMarks) || 100)),
+              passMarks: existing?.passMarks != null ? existing.passMarks : (sub.passMarks != null ? Number(sub.passMarks) : (Number(exam?.passMarks) || 40))
           };
         });
         return {
@@ -205,17 +205,19 @@ export default function MarksEntry({ examId, exam, initialSubject = '' }) {
       alert('Marks cannot be negative');
       return;
     }
+    const maxForThisVal = mark.maxMarks != null ? Number(mark.maxMarks) : (Number(fullMarks) || Number(exam?.maxMarks) || 0);
     if (parsed > (mark.maxMarks || exam?.maxMarks || 100)) {
       alert('Marks cannot be greater than Max Marks');
       return;
     }
     try {
       setSaving(true);
+      const maxForThis = mark.maxMarks || Number(fullMarks) || Number(exam?.maxMarks) || 100;
       await api.post(`/exams/${examId}/marks`, {
         studentId: mark.studentId,
         subjectId: selectedSubject,
         marksObtained: parsed,
-        maxMarks: mark.maxMarks,
+        maxMarks: maxForThis,
         classId: selectedClass
       });
       setMessage('Marks saved successfully');
@@ -249,16 +251,18 @@ export default function MarksEntry({ examId, exam, initialSubject = '' }) {
             skippedCount++;
             continue;
           }
-          if (parsed < 0 || parsed > (mark.maxMarks || exam?.maxMarks || 100)) {
+          const maxForThis = mark.maxMarks || Number(fullMarks) || Number(exam?.maxMarks) || 100;
+          if (parsed < 0 || parsed > maxForThis) {
             skippedCount++;
             continue;
           }
           try {
+            const maxForThis = mark.maxMarks || Number(fullMarks) || Number(exam?.maxMarks) || 100;
             await api.post(`/exams/${examId}/marks`, {
               studentId: mark.studentId,
               subjectId: selectedSubject,
               marksObtained: parsed,
-              maxMarks: mark.maxMarks,
+              maxMarks: maxForThis,
               classId: selectedClass
             });
             successCount++;
@@ -279,7 +283,9 @@ export default function MarksEntry({ examId, exam, initialSubject = '' }) {
               skippedCount++;
               continue;
             }
-            if (isNaN(ob) || ob < 0 || ob > (subEntry.maxMarks || exam?.maxMarks || 100)) {
+            const maxForSub = subEntry.maxMarks || Number(fullMarks) || Number(exam?.maxMarks) || 100;
+            const passForSub = subEntry.passMarks || Number(passMarks) || Number(exam?.passMarks) || 40;
+            if (isNaN(ob) || ob < 0 || ob > maxForSub) {
               skippedCount++;
               continue;
             }
@@ -288,8 +294,8 @@ export default function MarksEntry({ examId, exam, initialSubject = '' }) {
                 studentId: row.studentId,
                 subjectId: subEntry.subjectId,
                 marksObtained: ob,
-                maxMarks: subEntry.maxMarks,
-                passMarks: subEntry.passMarks,
+                maxMarks: maxForSub,
+                passMarks: passForSub,
                 classId: selectedClass
               });
               successCount++;
@@ -371,20 +377,18 @@ export default function MarksEntry({ examId, exam, initialSubject = '' }) {
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Full Marks</label>
             <input
-              type="number"
+              type="text"
               value={fullMarks}
-              onChange={(e) => setFullMarks(Number(e.target.value) || 100)}
-              min="0"
+              onChange={(e) => setFullMarks(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg"
             />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Pass Marks</label>
             <input
-              type="number"
+              type="text"
               value={passMarks}
-              onChange={(e) => setPassMarks(Number(e.target.value) || 40)}
-              min="0"
+              onChange={(e) => setPassMarks(e.target.value)}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg"
             />
           </div>
@@ -474,9 +478,10 @@ export default function MarksEntry({ examId, exam, initialSubject = '' }) {
                     <td className="px-4 py-2 text-center">
                       {(() => {
                         const val = Number(mark.marksObtained);
-                        const max = mark.maxMarks || exam?.maxMarks || 100;
+                        const max = mark.maxMarks || Number(fullMarks) || Number(exam?.maxMarks) || 100;
+                        const passThreshold = Number(passMarks) || Number(exam?.passMarks) || 40;
                         if (mark.marksObtained === '' || isNaN(val)) return 'N/A';
-                        return val >= (exam?.passMarks ?? 40) ? 'Pass' : 'Fail';
+                        return val >= passThreshold ? 'Pass' : 'Fail';
                       })()}
                     </td>
                     <td className="px-4 py-2 text-center">

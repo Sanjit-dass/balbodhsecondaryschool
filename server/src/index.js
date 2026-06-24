@@ -41,36 +41,43 @@ if (missingEnv.length > 0) {
 /* ========================
    CORS CONFIG
 ======================== */
-const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim())
-  : [
-      'http://localhost:5173',
-      'http://127.0.0.1:5173',
-      'http://localhost:5174',
-      'http://127.0.0.1:5174',
-      'http://localhost:5000',
-      'http://127.0.0.1:5000',
-      'http://localhost:3000',
-      'http://127.0.0.1:3000',
-    ];
+let allowedOrigins = [];
+if (process.env.CORS_ORIGIN && String(process.env.CORS_ORIGIN).trim()) {
+  allowedOrigins = process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim()).filter(Boolean);
+} else if ((process.env.NODE_ENV || 'development') === 'production') {
+  console.error('❌ CORS_ORIGIN is not set. In production you must set CORS_ORIGIN to the allowed origins.');
+  process.exit(1);
+} else {
+  // development defaults
+  allowedOrigins = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:5177',
+    'http://127.0.0.1:5177',
+    'http://localhost:5000',
+    'http://127.0.0.1:5000',
+  ];
+}
 
+// In development, use a permissive CORS policy for the known local frontends.
+// This ensures preflight responses include the correct Access-Control-Allow-* headers.
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
+    // Allow requests with no origin (like curl or native apps)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
     console.warn(`CORS blocked origin: ${origin}`);
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
   exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
-  maxAge: 86400, // 24 hours
+  maxAge: 86400,
 };
 
 app.use(cors(corsOptions));
+// Ensure preflight OPTIONS requests are handled for all routes
 app.options('*', cors(corsOptions));
 
 /* ========================
@@ -101,6 +108,10 @@ app.use('/api/attendance', require('./routes/attendance'));
 app.use('/api/exams', require('./routes/exams'));
 app.use('/api/fees', require('./routes/fees'));
 app.use('/api/notices', require('./routes/notices'));
+// Online admissions API (public submission + admin management)
+app.use('/api/admissions', require('./routes/admissions'));
+// Brochure management
+app.use('/api/brochures', require('./routes/brochures'));
 app.use('/api/assignments', require('./routes/assignments'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/timetable', require('./routes/timetable'));
@@ -117,6 +128,24 @@ app.use('/api/fileview', require('./routes/fileview'));
 app.use('/api/download', require('./routes/download'));
 app.use('/api/cloudinary', require('./routes/cloudinaryCheck'));
 app.use('/api/events', require('./routes/events'));
+// New dedicated events API (v2)
+app.use('/api/events-v2', require('./routes/events_api'));
+
+// School Leadership (public + admin)
+app.use('/api/staff-leadership', require('./routes/staffLeadership'));
+
+// Achievements (Academic Excellence)
+app.use('/api/achievements', require('./routes/achievements'));
+
+// New dedicated endpoints for separated modules
+app.use('/api/academic-excellence', require('./routes/academicExcellence'));
+app.use('/api/student-achievements', require('./routes/studentAchievements'));
+
+// Photo Gallery (public + admin)
+app.use('/api/photo-gallery', require('./routes/photoGallery'));
+
+// Facilities (World-Class Facilities)
+app.use('/api/facilities', require('./routes/facilities'));
 
 // Redesigned ERP Fee System Routes
 app.use('/api/admin', require('./routes/admin'));

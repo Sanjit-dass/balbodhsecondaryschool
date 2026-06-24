@@ -11,6 +11,7 @@ export default function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
   const [count, setCount] = useState(0);
   const wrapperRef = useRef();
+  const ignoreClickRef = useRef(false);
 
   const fetchNotifications = async () => {
     try {
@@ -39,8 +40,8 @@ export default function NotificationBell() {
         setOpen(false);
       }
     };
-    document.addEventListener('mousedown', pageClick);
-    return () => document.removeEventListener('mousedown', pageClick);
+    document.addEventListener('pointerdown', pageClick);
+    return () => document.removeEventListener('pointerdown', pageClick);
   }, []);
 
   const handleRead = async (id) => {
@@ -71,63 +72,71 @@ export default function NotificationBell() {
     <div ref={wrapperRef} className="relative">
       <button
         type="button"
-        onClick={() => setOpen(!open)}
-        className="relative inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-2 text-slate-700 shadow-sm hover:bg-slate-50 transition"
+        onPointerDown={(e) => { ignoreClickRef.current = true; setOpen(o => !o); }}
+        onClick={(e) => { if (ignoreClickRef.current) { ignoreClickRef.current = false; return; } setOpen(o => !o); }}
+        className="relative inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-3 md:py-2 md:px-3 text-slate-700 shadow-md hover:shadow-lg hover:bg-slate-50 transition transform active:scale-95 touch-manipulation min-w-[44px] min-h-[44px]"
         title="Notifications"
+        aria-label="Notifications"
       >
-        <span className="text-lg">🔔</span>
+        <span className="text-2xl leading-none">🔔</span>
         {count > 0 && (
-          <span className="absolute -top-1 -right-1 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-600 px-1.5 text-[11px] font-semibold text-white">
+          <span className="absolute -top-1 -right-1 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-600 px-1.5 text-[11px] font-semibold text-white shadow-sm">
             {count}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-[32rem] max-w-[calc(100vw-1rem)] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10">
-          <div className="px-4 py-4 border-b border-slate-200 bg-slate-50">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold text-slate-900">Latest Notifications</p>
-                <p className="text-xs text-slate-500">Recent alerts from the notification center</p>
+        <div
+          className="fixed left-3 right-3 sm:absolute sm:left-auto sm:right-6 z-50 mt-2 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10"
+          style={{ willChange: 'transform' }}
+        >
+          {/* Mobile: nearly full-width fixed panel with side margins; Desktop: anchored to the right with larger fixed widths */}
+          <div className="w-full sm:w-[24rem] md:w-[32rem] lg:w-[48rem] xl:w-[56rem] px-4 mx-auto">
+            <div className="px-4 py-4 border-b border-slate-200 bg-slate-50">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">Latest Notifications</p>
+                  <p className="text-xs text-slate-500">Recent alerts from the notification center</p>
+                </div>
+                <button onClick={handleMarkAll} className="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Mark All As Read</button>
               </div>
-              <button onClick={handleMarkAll} className="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Mark All As Read</button>
             </div>
-          </div>
 
-          <div className="max-h-96 overflow-y-auto">
-            {!notifications.length ? (
-              <div className="p-4 text-sm text-slate-500">No new notifications.</div>
-            ) : (
-              notifications.map((note) => (
-                <button
-                  key={note._id}
-                  type="button"
-                  onClick={() => handleRead(note._id)}
-                  className={`w-full text-left px-4 py-3 transition ${note.isRead ? 'bg-white hover:bg-slate-50' : 'bg-slate-100 hover:bg-slate-200'}`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-slate-900">{note.title}</p>
-                      <p className="mt-1 text-sm text-slate-600 line-clamp-2">{note.message || note.body}</p>
+            <div className="max-h-[60vh] overflow-y-auto">
+              {!notifications.length ? (
+                <div className="p-4 text-sm text-slate-500">No new notifications.</div>
+              ) : (
+                notifications.map((note) => (
+                  <button
+                    key={note._id}
+                    type="button"
+                    onClick={() => handleRead(note._id)}
+                    className={`w-full text-left px-4 py-3 transition ${note.isRead ? 'bg-white hover:bg-slate-50' : 'bg-slate-100 hover:bg-slate-200'}`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-slate-900">{note.title}</p>
+                        <p className="mt-1 text-sm text-slate-600 break-words whitespace-normal">{note.message || note.body}</p>
+                      </div>
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${note.isRead ? 'bg-slate-200 text-slate-700' : 'bg-indigo-600 text-white'}`}>
+                        {note.isRead ? 'Read' : 'Unread'}
+                      </span>
                     </div>
-                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${note.isRead ? 'bg-slate-200 text-slate-700' : 'bg-indigo-600 text-white'}`}>
-                      {note.isRead ? 'Read' : 'Unread'}
-                    </span>
-                  </div>
-                  <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
-                    <span>{new Date(note.createdAt).toLocaleDateString()}</span>
-                    {note.priority === 'Urgent' && <span className="rounded-full bg-rose-100 px-2 py-0.5 text-rose-700">Urgent</span>}
-                  </div>
-                </button>
-              ))
-            )}
-          </div>
+                    <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
+                      <span>{new Date(note.createdAt).toLocaleDateString()}</span>
+                      {note.priority === 'Urgent' && <span className="rounded-full bg-rose-100 px-2 py-0.5 text-rose-700">Urgent</span>}
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
 
-          <div className="grid gap-2 p-4 border-t border-slate-200 bg-slate-50">
-            <Link to={allLink} onClick={() => setOpen(false)} className="inline-flex justify-center rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
-              View All Notifications
-            </Link>
+            <div className="grid gap-2 p-4 border-t border-slate-200 bg-slate-50">
+              <Link to={allLink} onClick={() => setOpen(false)} className="inline-flex justify-center rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+                View All Notifications
+              </Link>
+            </div>
           </div>
         </div>
       )}

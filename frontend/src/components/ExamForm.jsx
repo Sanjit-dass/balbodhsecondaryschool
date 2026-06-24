@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
+import ResponsiveSelect from '../components/ResponsiveSelect';
 
 const EXAM_TYPES = [
   'First Terminal Exam',
@@ -20,14 +21,15 @@ export default function ExamForm({ existing, onSaved }){
     subjects: [],
     startDate: '',
     endDate: '',
-    maxMarks: 100,
-    passMarks: 40,
+    maxMarks: '100',
+    passMarks: '40',
     notes: ''
   });
   const [subjects, setSubjects] = useState([]);
   const [selectedSubjects, setSelectedSubjects] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [showTypePicker, setShowTypePicker] = useState(false);
 
   useEffect(() => {
     if (form.class) {
@@ -44,8 +46,8 @@ export default function ExamForm({ existing, onSaved }){
         subjects: existing.subjects?.map(s => s._id || s) || [],
         startDate: existing.startDate ? new Date(existing.startDate).toISOString().slice(0,10) : '',
         endDate: existing.endDate ? new Date(existing.endDate).toISOString().slice(0,10) : '',
-        maxMarks: existing.maxMarks || 100,
-        passMarks: existing.passMarks || 40,
+        maxMarks: existing.maxMarks != null ? String(existing.maxMarks) : '100',
+        passMarks: existing.passMarks != null ? String(existing.passMarks) : '40',
         notes: existing.notes || ''
       });
       setSelectedSubjects(existing.subjects?.map(s => s._id || s) || []);
@@ -76,7 +78,10 @@ export default function ExamForm({ existing, onSaved }){
     try{
       const payload = {
         ...form,
-        subjects: selectedSubjects
+        subjects: selectedSubjects,
+        // convert free-text marks to numbers where possible
+        maxMarks: form.maxMarks !== '' ? (Number(form.maxMarks) || 0) : undefined,
+        passMarks: form.passMarks !== '' ? (Number(form.passMarks) || 0) : undefined
       };
       if(existing && existing._id) await api.put(`/exams/${existing._id}`, payload);
       else await api.post('/exams', payload);
@@ -100,32 +105,24 @@ export default function ExamForm({ existing, onSaved }){
       <div className="grid gap-4 sm:grid-cols-2 mb-4">
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Exam Type *</label>
-          <select
+          <ResponsiveSelect
             value={form.type}
-            onChange={e => setForm({ ...form, type: e.target.value })}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg"
-            required
-          >
-            {EXAM_TYPES.map(type => (
-              <option key={type} value={type}>{type}</option>
-            ))}
-          </select>
+            onChange={(v) => setForm(prev => ({ ...prev, type: v }))}
+            options={EXAM_TYPES.map(t => ({ value: t, label: t }))}
+            placeholder="Select Exam Type"
+            maxHeight={300}
+          />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Class *</label>
-          <select
+          <ResponsiveSelect
             value={form.class}
-            onChange={e => setForm({ ...form, class: e.target.value })}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg"
-            required
-          >
-            <option value="">Select Class</option>
-            <option value={ALL_CLASS_VALUE}>All</option>
-            {CLASS_OPTIONS.map(className => (
-              <option key={className} value={className}>{className}</option>
-            ))}
-          </select>
+            onChange={(v) => setForm(prev => ({ ...prev, class: v }))}
+            options={[{ value: '', label: 'Select Class' }, { value: ALL_CLASS_VALUE, label: 'All' }, ...CLASS_OPTIONS.map(c => ({ value: c, label: c }))]}
+            placeholder="Select Class"
+            maxHeight={300}
+          />
         </div>
 
         <div>
@@ -143,22 +140,20 @@ export default function ExamForm({ existing, onSaved }){
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Max Marks</label>
           <input
-            type="number"
+            type="text"
             value={form.maxMarks}
-            onChange={e => setForm({ ...form, maxMarks: Number(e.target.value) })}
+            onChange={e => setForm({ ...form, maxMarks: e.target.value })}
             className="w-full px-3 py-2 border border-slate-300 rounded-lg"
-            min="0"
           />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Pass Marks</label>
           <input
-            type="number"
+            type="text"
             value={form.passMarks}
-            onChange={e => setForm({ ...form, passMarks: Number(e.target.value) })}
+            onChange={e => setForm({ ...form, passMarks: e.target.value })}
             className="w-full px-3 py-2 border border-slate-300 rounded-lg"
-            min="0"
           />
         </div>
 

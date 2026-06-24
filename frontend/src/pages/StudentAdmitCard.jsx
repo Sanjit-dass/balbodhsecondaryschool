@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
+import ResponsiveSelect from '../components/ResponsiveSelect';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -135,47 +136,41 @@ export default function StudentAdmitCard() {
       if (!student) return;
       const element = document.getElementById('admit-card-display');
       if (!element) return;
-
-      const rect = element.getBoundingClientRect();
       const origPaddingBottom = element.style.paddingBottom;
       const origOverflow = element.style.overflow;
+      const origWidth = element.style.width;
+      const origHeight = element.style.height;
 
       try {
-        element.style.paddingBottom = '64px';
+        // Add modest extra bottom padding so signatures/footer aren't clipped in the PDF
+        element.style.paddingBottom = '60px';
         element.style.overflow = 'visible';
-        element.scrollIntoView({ behavior: 'auto', block: 'end' });
+        element.scrollIntoView({ behavior: 'auto', block: 'center' });
 
-        const canvas = await html2canvas(element, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: '#ffffff',
-          width: Math.ceil(rect.width),
-          height: Math.ceil(rect.height) + 64,
-          scrollY: -window.scrollY
-        });
-        const imgData = canvas.toDataURL('image/png', 1.0);
+        const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
 
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
         const margin = 10;
-        const usableWidth = pageWidth - margin * 2;
 
-        let imgWidth = usableWidth;
+        const imgWidth = pageWidth - margin * 2;
         let imgHeight = (canvas.height * imgWidth) / canvas.width;
 
         const usableHeight = pageHeight - margin * 2;
         if (imgHeight > usableHeight) {
           const scale = usableHeight / imgHeight;
           imgHeight = imgHeight * scale;
-          imgWidth = imgWidth * scale;
         }
 
-        pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+        pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
         pdf.save(`admit-card-${student.rollNumber || student.admissionNumber || 'student'}.pdf`);
       } finally {
         element.style.paddingBottom = origPaddingBottom;
         element.style.overflow = origOverflow;
+        element.style.width = origWidth;
+        element.style.height = origHeight;
       }
     } catch (err) {
       console.error('PDF generation failed:', err);
@@ -229,18 +224,14 @@ export default function StudentAdmitCard() {
 
               <div>
                 <label className="block text-sm font-semibold text-slate-900 mb-2">Class</label>
-                <select
-                  name="class"
+                <ResponsiveSelect
                   value={formData.class}
-                  onChange={handleInputChange}
-                  className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
-                  required
-                >
-                  <option value="">Select Class</option>
-                  {CLASS_OPTIONS.map((cls) => (
-                    <option key={cls} value={cls}>{cls}</option>
-                  ))}
-                </select>
+                  onChange={(v) => setFormData(prev => ({ ...prev, class: v }))}
+                  options={CLASS_OPTIONS.map(c => ({ value: c, label: c }))}
+                  placeholder="Select Class"
+                  className="w-full"
+                  maxHeight={500}
+                />
               </div>
 
               <div>
@@ -283,7 +274,7 @@ export default function StudentAdmitCard() {
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={downloadPDF}
-                className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
+                className="no-print rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700"
               >
                 Download PDF
               </button>
@@ -300,12 +291,13 @@ export default function StudentAdmitCard() {
 
             <div
               id="admit-card-display"
-              className="admit-card mx-auto w-full max-w-[420px] rounded-[8px] border-2 border-[#B91C1C] bg-white p-[16px] pb-[32px] shadow-[0_6px_12px_rgba(15,23,42,0.06)]"
+              className="admit-card mx-auto w-full max-w-[420px] -mt-4 rounded-[8px] border-2 border-[#B91C1C] bg-white p-[10px] pb-[28px] shadow-[0_6px_12px_rgba(15,23,42,0.06)]"
             >
               <div className="flex flex-col items-center text-center">
-                <img src="/logo.png" alt="School Logo" className="mx-auto h-[60px] w-[60px] object-contain" />
+                <img src="/logo.png" alt="School Logo" className="mx-auto h-[80px] w-[80px] object-contain" />
                 <h2 className="mt-3 text-[18px] font-bold uppercase tracking-[0.06em] text-[#B91C1C]">BAL BODH SECONDARY SCHOOL</h2>
-                <p className="mt-1 text-[12px] font-normal text-[#2563EB]">Kanchanpur-08, Saptari</p>
+                <p className="mt-1 text-[12px] font-normal text-[#2563EB]">Kanchanrup Municipality-8, Kanchanpur</p>
+                <p className="text-[12px] font-semibold text-[#64748B]">ESTD. 2055</p>
                 <p className="mt-3 text-[14px] font-semibold text-[#15803D]">Academic Year: {academicYear}</p>
                 <p className="mt-2 text-[14px] font-bold uppercase tracking-[0.06em] text-[#EA580C]">{examTitle}</p>
                 <p className="mt-1 text-[14px] font-bold uppercase tracking-[0.08em] text-[#7C3AED]">EXAMINATION ADMIT CARD</p>
@@ -331,25 +323,26 @@ export default function StudentAdmitCard() {
 
                 {hasPhoto && (
                   <div className="flex justify-end">
-                    <div className="h-[120px] w-[100px] overflow-hidden rounded-xl border border-slate-300 shadow-sm bg-slate-100">
-                      <img
-                        src={studentPhoto}
-                        alt="Student Photo"
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
+                    <div className="h-[110px] w-[110px] overflow-hidden rounded-md border border-slate-300 shadow-sm bg-slate-100 mx-auto">
+                        <img
+                          src={studentPhoto}
+                          alt="Student Photo"
+                          className="h-full w-full object-cover object-center"
+                          style={{ display: 'block' }}
+                        />
+                      </div>
                   </div>
                 )}
               </div>
 
-              <div className="mt-10 flex flex-row gap-6 text-sm text-slate-900 items-end justify-between">
+              <div className="mt-6 flex flex-row gap-6 text-sm text-slate-900 items-end justify-between">
                 <div className="flex flex-col items-start">
                   <div className="h-[1px] w-[120px] bg-black" />
                   <div className="mt-2 font-semibold">Accountant Signature</div>
                 </div>
                 <div className="flex flex-col items-end">
                   <div className="h-[1px] w-[120px] bg-black" />
-                  <div className="mt-2 font-semibold">Principal Signature</div>
+                  <div className="mt-2 font-semibold">Founder Signature</div>
                 </div>
               </div>
             </div>

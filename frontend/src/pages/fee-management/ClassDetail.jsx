@@ -105,6 +105,61 @@ export default function ClassDetail() {
 
       setStudents(rows);
 
+      // Enrich student rows with authoritative fee summary per student
+      try {
+        const enriched = await Promise.all(rows.map(async (s) => {
+          const sid = s.studentId || s._id || s.id || s.student || s.studentId;
+          if (!sid) return s;
+          try {
+            const res = await api.get(`/fees/student/${encodeURIComponent(sid)}`);
+            const data = res.data || res;
+            const summary = data.summary || {};
+            let totalFee = Number(summary.totalFee || 0);
+            let totalPaid = Number(summary.totalPaid || 0);
+
+            if (!totalFee && Array.isArray(summary.feeBreakdown) && summary.feeBreakdown.length > 0) {
+              totalFee = summary.feeBreakdown.reduce((sum, it) => sum + Number(it?.actualFee ?? it?.amount ?? 0), 0);
+            }
+
+            try {
+              const hist = await api.get(`/fees/student/${encodeURIComponent(sid)}/history`);
+              const histData = Array.isArray(hist.data) ? hist.data : (hist.data && Array.isArray(hist.data.data) ? hist.data.data : []);
+              const paidSum = histData.reduce((sum, rec) => {
+                try {
+                  const breakdown = rec.breakdown || rec.data?.breakdown || rec.data || {};
+                  if (Array.isArray(breakdown)) return sum + breakdown.reduce((ss, it) => ss + Number(it?.amount ?? it?.paid ?? 0), 0);
+                  if (breakdown && typeof breakdown === 'object') return sum + Object.values(breakdown).reduce((ss, v) => ss + Number(v || 0), 0);
+                } catch (e) {}
+                return sum;
+              }, 0);
+              if (paidSum > 0) totalPaid = paidSum;
+            } catch (e) {}
+
+            if (!totalFee) {
+              try {
+                const classIdVal = data.student?.classId || data.student?.class || s.classId || null;
+                if (classIdVal) {
+                  const cats = await api.get('/fees/categories', { params: { classId: classIdVal } });
+                  const catsData = Array.isArray(cats.data) ? cats.data : (cats.data && Array.isArray(cats.data.data) ? cats.data.data : []);
+                  totalFee = catsData.reduce((su, it) => su + Number(it?.amount ?? it?.defaultAmount ?? 0), 0);
+                }
+              } catch (e) {}
+            }
+
+            const totalDue = Math.max(0, Number(totalFee || 0) - Number(totalPaid || 0));
+            let status = '';
+            if (Number(totalDue) === 0 && Number(totalFee) > 0) status = Number(totalPaid) > 0 ? 'Paid' : 'Unpaid';
+            else if (Number(totalPaid) === 0) status = 'Unpaid';
+            else status = 'Partial';
+
+            return { ...s, totalFee, paidAmount: totalPaid, dueAmount: totalDue, feeStatus: status };
+          } catch (e) { return s; }
+        }));
+        setStudents(enriched);
+      } catch (e) {
+        setStudents(rows);
+      }
+
       let categories = [];
       try {
         const catRes = await api.get('/fees/categories', { params: { classId: classKey } });

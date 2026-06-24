@@ -9,7 +9,7 @@ export default function Classes(){
   useEffect(()=>{ fetch(); },[]);
   const fetch=async()=>{ try{ const res=await api.get('/classes'); setList(res.data.classes||[]); }catch(err){console.error(err);} };
 
-  const remove = async (id)=>{ if(!window.confirm('Delete class?')) return; try{ await api.delete(`/classes/${id}`); fetch(); }catch(err){console.error(err);} };
+  const remove = async (id)=>{ if(!window.confirm('Are you sure you want to permanently delete this record? This action cannot be undone.')) return; try{ await api.delete(`/classes/${id}`); fetch(); }catch(err){console.error(err);} };
 
   return (
     <div>

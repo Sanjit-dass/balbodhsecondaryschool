@@ -9,6 +9,7 @@ export default function Results() {
   const { user } = useContext(AuthContext);
   const [exams, setExams] = useState([]);
   const [selectedExam, setSelectedExam] = useState('');
+  const [showExamPicker, setShowExamPicker] = useState(false);
   const [results, setResults] = useState([]);
   const [selectedResult, setSelectedResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -39,7 +40,6 @@ export default function Results() {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', filename);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -73,7 +73,6 @@ export default function Results() {
             <td style="border: 1px solid #d1d5db; padding: 10px; white-space: normal; word-break: break-word;">${result.student?.user?.name || result.student?.fullName || 'N/A'}</td>
             <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${obtained}/${totalMax}</td>
             <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${percentage.toFixed(2)}%</td>
-            <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${gradeInfo.grade}</td>
             <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${gradeInfo.gpa.toFixed(1)}</td>
             <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${status}</td>
           </tr>
@@ -86,7 +85,8 @@ export default function Results() {
         <div style="text-align: center; margin-bottom: 20px;">
           <img src="${logoSrc}" alt="School Logo" style="display: inline-block; height: 72px; margin-bottom: 10px;" />
           <h1 style="margin: 0; font-size: 28px; letter-spacing: 1px; color: red;">BAL BODH SECONDARY SCHOOL</h1>
-          <p style="margin: 6px 0 0; font-size: 14px; color: blue;">Kanchanpur-08, Saptari, Nepal</p>
+            <p style="margin:6px 0 0; font-size:14px; color:#2563EB; font-weight:600;">Kanchanrup Municipality-08, Kanchanpur</p>
+            <p style="margin:0; font-size:13px; color:#64748B; font-weight:600;">ESTD. 2055</p>
         </div>
         <div style="margin-bottom: 16px; width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; font-size: 14px;">
           <div style="min-width: 180px; max-width: 280px; text-align: center; line-height: 1.6;">
@@ -248,18 +248,71 @@ export default function Results() {
         <>
           <div className="bg-white p-6 shadow rounded-lg">
             <label className="block text-sm font-medium text-slate-700 mb-2">Select Exam</label>
+            {/* Desktop/tablet: native select. Mobile: use a fixed, narrow picker panel for better responsiveness */}
             <select
               value={selectedExam}
               onChange={e => setSelectedExam(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg mb-4"
+              className="hidden sm:block w-full px-3 py-2 border border-slate-300 rounded-lg mb-4"
             >
               <option value="">Select an Exam</option>
-              {exams.map(e => (
-                <option key={e._id} value={e._id}>
-                  {e.type} - {e.class?.name || 'N/A'} ({e.academicYear})
-                </option>
-              ))}
+              {exams.map(e => {
+                const fullLabel = `${e.type} - ${e.class?.name || 'N/A'} (${e.academicYear})`;
+                const truncated = fullLabel.length > 50 ? fullLabel.slice(0, 47) + '…' : fullLabel;
+                return <option key={e._id} value={e._id} title={fullLabel}>{truncated}</option>;
+              })}
             </select>
+
+            {/* Mobile picker button */}
+              <div className="sm:hidden">
+              <button
+                type="button"
+                onClick={() => setShowExamPicker(true)}
+                className="w-full text-left px-3 py-2 border border-slate-300 rounded-lg mb-4 bg-white text-slate-900 picker-trigger"
+              >
+                {selectedExam ? (
+                  (() => {
+                    const e = exams.find(x => x._id === selectedExam);
+                    const fullLabel = e ? `${e.type} - ${e.class?.name || 'N/A'} (${e.academicYear})` : 'Select an Exam';
+                    const truncated = fullLabel.length > 40 ? fullLabel.slice(0, 37) + '…' : fullLabel;
+                    return truncated;
+                  })()
+                ) : 'Select an Exam'}
+              </button>
+
+              {showExamPicker && (
+                <div className="fixed left-3 right-3 z-50 mt-2 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10">
+                  <div className="w-full px-4 mx-auto">
+                    <div className="px-4 py-4 border-b border-slate-200 bg-blue-600 flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-white">Select Exam</p>
+                        <p className="text-xs text-blue-100">Tap an exam to choose</p>
+                      </div>
+                      <button onClick={() => setShowExamPicker(false)} className="text-sm text-white">Close</button>
+                    </div>
+
+                    <div className="max-h-[60vh] overflow-y-auto">
+                      {exams.length === 0 ? (
+                        <div className="p-4 text-sm text-slate-500">No exams available.</div>
+                      ) : (
+                        exams.map(e => {
+                          const fullLabel = `${e.type} - ${e.class?.name || 'N/A'} (${e.academicYear})`;
+                          return (
+                            <button
+                              key={e._id}
+                              type="button"
+                              onClick={() => { setSelectedExam(e._id); setShowExamPicker(false); }}
+                              className="w-full text-left px-4 py-3 border-b border-slate-100 bg-white hover:bg-slate-50"
+                            >
+                              <div className="text-sm font-medium text-slate-900">{fullLabel}</div>
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {selectedExam && (
               <>
@@ -328,7 +381,7 @@ export default function Results() {
                               <td className="px-4 py-2 text-center text-sm">{result.totalMarksObtained || 0}</td>
                               <td className="px-4 py-2 text-center text-sm">{percentage.toFixed(2)}%</td>
                               <td className={`px-4 py-2 text-center text-sm font-semibold ${getGradeColor(gradeInfo.grade)}`}>{gradeInfo.grade}</td>
-                              <td className="px-4 py-2 text-center text-sm">{result.classPosition || 'N/A'}</td>
+                              <td className="px-4 py-2 text-center text-sm">{Number.isFinite(result.classPosition) ? result.classPosition : 'N/A'}</td>
                               <td className="px-4 py-2 text-center">
                                 <button
                                   onClick={() => setSelectedResult(result)}

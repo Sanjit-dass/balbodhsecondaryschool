@@ -124,12 +124,16 @@ class PaymentService {
         `receipt_${receiptNumber}`
       );
 
-      // Save Receipt document
+      // Save Receipt document (include denormalized student info)
       receipt = new Receipt({
         paymentId: payment._id,
         invoiceId: invoice._id,
         receiptNumber,
         pdfUrl,
+        studentId: student?._id,
+        studentName: student?.name || student?.fullName || student?.fullname || '',
+        className: invoice?.className || student?.className || '',
+        rollNumber: invoice?.rollNumber || student?.rollNumber || student?.admissionNumber || ''
       });
       await receipt.save();
 
@@ -145,6 +149,10 @@ class PaymentService {
         invoiceId: invoice._id,
         receiptNumber,
         pdfUrl: '',
+        studentId: student?._id,
+        studentName: student?.name || student?.fullName || student?.fullname || '',
+        className: invoice?.className || student?.className || '',
+        rollNumber: invoice?.rollNumber || student?.rollNumber || student?.admissionNumber || ''
       });
       await receipt.save();
     }

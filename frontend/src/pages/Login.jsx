@@ -42,11 +42,16 @@ export default function Login() {
   const roleTitle = validRole ? ROLE_NAMES[validRole] : null;
   const roleWarning = selectedRole && !validRole ? 'This login shortcut is not recognized. Use a valid portal shortcut or the generic login page.' : null;
 
+  const forceShow = searchParams.get('force') === 'true';
+
   useEffect(() => {
-    if (isAuthenticated && user?.role) {
+    // When `force=true` is present in the query we should show the login form
+    // even when the user already has an authenticated session (useful for
+    // mobile sidebar 'Login' action which should bring up the portal).
+    if (!forceShow && isAuthenticated && user?.role) {
       navigate(LOGIN_REDIRECT[user.role] || '/admin/dashboard', { replace: true });
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, user, navigate, forceShow]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();

@@ -34,6 +34,20 @@ const Contact = () => {
     // Handle form submission
   };
 
+  const scrollToForm = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const el = document.getElementById('contact-form');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    else window.location.hash = '#contact-form';
+  };
+
+  // Map coordinates and URLs (used by map embed and CTA buttons)
+  const MAP_LAT = 26.6351401;
+  const MAP_LNG = 86.9133698;
+  const MAP_QUERY = `${MAP_LAT},${MAP_LNG}`;
+  const DIRECTIONS_URL = `https://www.google.com/maps/dir/?api=1&destination=${MAP_QUERY}`;
+  const OPEN_MAP_URL = SCHOOL_INFO && SCHOOL_INFO.mapsLink ? SCHOOL_INFO.mapsLink : `https://www.google.com/maps/search/?api=1&query=${MAP_QUERY}`;
+
   const contactMethods = [
     {
       icon: FaPhone,
@@ -56,7 +70,7 @@ const Contact = () => {
     {
       icon: FaClock,
       title: 'Office Hours',
-      value: '9:00 AM - 4:00 PM',
+      value: '7:00 AM - 4:00 PM',
       subtext: 'Monday to Friday',
     },
   ];
@@ -131,7 +145,7 @@ const Contact = () => {
             >
               <h2 className="text-3xl font-bold text-gray-900 mb-8">Send us a Message</h2>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form id="contact-form" onSubmit={handleSubmit} className="space-y-6">
                 {/* Name */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -264,12 +278,51 @@ const Contact = () => {
               viewport={{ once: true }}
               className="space-y-8"
             >
-              {/* Map Placeholder */}
-              <div className="rounded-lg overflow-hidden shadow-lg h-96 bg-gray-200 flex items-center justify-center">
-                <div className="text-center text-gray-600">
-                  <FaMapMarkerAlt className="text-4xl mb-4 mx-auto" />
-                  <p>Google Maps Integration</p>
-                  <p className="text-sm">Location map will be displayed here</p>
+              {/* Map Embed */}
+              <div className="rounded-lg overflow-hidden shadow-lg bg-white w-full">
+                {/* Map header */}
+                <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-white">
+                  <h3 className="text-2xl font-bold text-gray-900">Our Location</h3>
+                  <p className="text-sm text-gray-600">Bal Bodh Secondary School<br/>Kanchanpur, Saptari, Nepal</p>
+                </div>
+
+                {/* Map iframe and actions */}
+                <div className="w-full h-72 md:h-96">
+                  {/* Using specific coordinates for Bal Bodh location */}
+                  {(() => {
+                    const lat = 26.6351401;
+                    const lng = 86.9133698;
+                    const mapsQuery = `${lat},${lng}`;
+                    const embedSrc = `https://www.google.com/maps?q=${mapsQuery}&z=17&output=embed`;
+                    const mapsPlaceUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+                    const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${mapsQuery}`;
+                    const openUrl = SCHOOL_INFO && SCHOOL_INFO.mapsLink ? SCHOOL_INFO.mapsLink : mapsPlaceUrl;
+
+                    return (
+                      <div className="w-full h-full flex flex-col">
+                        <iframe
+                          src={embedSrc}
+                          width="100%"
+                          height="100%"
+                          className="border-0 w-full h-full"
+                          loading="lazy"
+                          title="Bal Bodh Secondary School Location"
+                        />
+
+                          <div className="p-4 bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                          <div>
+                            <p className="font-semibold text-gray-900">Bal Bodh Secondary School</p>
+                            <p className="text-sm text-gray-600">Kanchanpur, Saptari, Nepal</p>
+                          </div>
+
+                          <div className="flex gap-3">
+                            <button onClick={scrollToForm} className="px-4 py-2 bg-green-600 text-white rounded-lg shadow">Schedule a School Visit</button>
+                            <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="px-4 py-2 border border-gray-200 rounded-lg">Get Directions</a>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 
@@ -278,16 +331,18 @@ const Contact = () => {
                 <h3 className="text-2xl font-bold text-gray-900 mb-6">Connect With Us</h3>
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { icon: FaFacebook, name: 'Facebook', color: '#1877F2' },
-                    { icon: FaTwitter, name: 'Twitter', color: '#1DA1F2' },
-                    { icon: FaYoutube, name: 'YouTube', color: '#FF0000' },
-                    { icon: FaInstagram, name: 'Instagram', color: '#E4405F' },
-                  ].map((social, index) => {
+                    SCHOOL_INFO.facebook ? { icon: FaFacebook, name: 'Facebook', url: SCHOOL_INFO.facebook, color: '#1877F2' } : null,
+                    SCHOOL_INFO.twitter ? { icon: FaTwitter, name: 'Twitter', url: SCHOOL_INFO.twitter, color: '#1DA1F2' } : null,
+                    SCHOOL_INFO.youtube ? { icon: FaYoutube, name: 'YouTube', url: SCHOOL_INFO.youtube, color: '#FF0000' } : null,
+                    SCHOOL_INFO.instagram ? { icon: FaInstagram, name: 'Instagram', url: SCHOOL_INFO.instagram, color: '#E4405F' } : null,
+                  ].filter(Boolean).map((social, index) => {
                     const Icon = social.icon;
                     return (
                       <motion.a
                         key={index}
-                        href="#"
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
                         className="flex items-center justify-center gap-3 p-4 rounded-lg bg-white shadow-lg hover:shadow-xl transition-all"
@@ -316,9 +371,9 @@ const Contact = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {[
-              {
+                {
                 q: 'What are the visiting hours?',
-                a: 'School is open for visitors from 9:00 AM to 4:00 PM on weekdays. Please call ahead to schedule a visit.',
+                a: 'School is open for visitors from 7:00 AM to 4:00 PM on weekdays. Please call ahead to schedule a visit.',
               },
               {
                 q: 'How can I enroll my child?',
@@ -359,11 +414,11 @@ const Contact = () => {
             viewport={{ once: true }}
             className="bg-white rounded-lg shadow-xl p-8 md:p-12 text-center"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              Visit Our Campus
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+              Visit Our School
             </h2>
             <p className="text-gray-600 text-lg mb-8 max-w-2xl mx-auto">
-              We invite you to visit our state-of-the-art campus and experience the Balbodh difference. Our team will be happy to show you around and answer any questions you may have.
+              We invite you to visit our state-of-the-art school and experience the Balbodh difference. Our team will be happy to show you around and answer any questions you may have.
             </p>
             <div className="flex flex-col md:flex-row gap-4 justify-center">
               <motion.button
@@ -371,14 +426,16 @@ const Contact = () => {
                 whileTap={{ scale: 0.95 }}
                 className="px-8 py-3 rounded-lg font-bold text-white transition-all"
                 style={{ backgroundColor: COLORS.secondary }}
+                onClick={scrollToForm}
               >
-                Schedule a Campus Tour
+                Schedule a School Visit
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="px-8 py-3 rounded-lg font-bold border-2 transition-all"
                 style={{ borderColor: COLORS.secondary, color: COLORS.secondary }}
+                onClick={() => window.open(DIRECTIONS_URL, '_blank', 'noopener')}
               >
                 Get Directions
               </motion.button>

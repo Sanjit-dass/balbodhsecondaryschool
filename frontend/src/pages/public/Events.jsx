@@ -1,23 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FaCalendarAlt, FaClock, FaMapMarkerAlt } from 'react-icons/fa';
 import { SectionTitle, EventCard } from '../../components/public/SectionComponents';
 import TranslateText from '../../components/public/TranslateText';
-import { EVENTS, COLORS } from '../../constants/schoolData';
+import { COLORS } from '../../constants/schoolData';
+import api from '../../services/api';
+import EventModal from '../../components/public/EventModal';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Events = () => {
-  const [eventFilter, setEventFilter] = useState('upcoming');
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const location = useLocation();
 
-  const allEvents = [
-    ...EVENTS,
-    { title: 'Orientation Program', date: 'August 2024', description: 'Introduction for new students', image: 'schoolphoto.png' },
-    { title: 'Parents Meet', date: 'September 2024', description: 'Interaction between parents and staff', image: 'schoolphoto2.png' },
-  ];
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const res = await api.get('/events-v2/public');
+        if (!mounted) return;
+        setEvents((res.data && res.data.events) || []);
+      } catch (err) {
+        console.error('Failed to load events', err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
 
-  const upcomingEvents = allEvents;
-  const pastEvents = allEvents.slice(0, 2);
+  const displayEvents = events;
 
-  const displayEvents = eventFilter === 'upcoming' ? upcomingEvents : pastEvents;
+  const navigate = useNavigate();
+
+  // Centralized open: navigate to events page with query so modal opens on main events page
+  function openEvent(ev){
+    if(!ev || !ev._id) return;
+    navigate(`/events?event=${ev._id}`);
+  }
+
+  // If URL contains ?event=ID open that event in modal on the main page
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const id = params.get('event');
+    let mounted = true;
+    if (!id) { setSelectedEvent(null); return; }
+    (async () => {
+      try {
+        const res = await api.get(`/events-v2/${id}`);
+        if(!mounted) return;
+        const e = res.data || {};
+        const photos = (e.photos || []).map(p => ({ url: p.url || p.fileUrl || p.path, publicId: p.publicId || p.public_id || null, caption: p.caption || '' })).filter(Boolean);
+        const coverPhoto = e.coverPhoto ? ({ url: e.coverPhoto.url || e.coverPhoto.fileUrl || e.coverPhoto.path, publicId: e.coverPhoto.publicId || e.coverPhoto.public_id || null, caption: e.coverPhoto.caption || '' }) : (photos[0] || null);
+        setSelectedEvent({ ...e, photos, coverPhoto });
+      } catch (err) {
+        console.error('Failed to load event via query param', err);
+        setSelectedEvent(null);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [location.search]);
 
   return (
     <TranslateText>
@@ -37,104 +81,37 @@ const Events = () => {
         </div>
       </motion.section>
 
-      {/* Event Filter */}
-      <section className="py-8 bg-gradient-to-r from-blue-50 to-gray-50 sticky top-32 md:top-40 z-40 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="flex justify-center gap-4">
-            {['upcoming', 'past'].map((filter, index) => (
-              <motion.button
-                key={filter}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                onClick={() => setEventFilter(filter)}
-                className={`px-8 py-2 rounded-full font-semibold transition-all ${
-                  eventFilter === filter
-                    ? 'text-white shadow-lg scale-105'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:shadow-md'
-                }`}
-                style={{
-                  backgroundColor: eventFilter === filter ? COLORS.secondary : '',
-                }}
-              >
-                {filter === 'upcoming' ? 'Upcoming Events' : 'Past Events'}
-              </motion.button>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Event Filter removed for simpler UI */}
 
       {/* Events List */}
       <section className="py-16 md:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <SectionTitle
-            title={eventFilter === 'upcoming' ? 'Upcoming Events' : 'Past Events'}
+            title="Upcoming Events"
             subtitle="Mark your calendars and don't miss these exciting moments"
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {displayEvents.map((event, index) => (
-              <EventCard
-                key={index}
-                title={event.title}
-                date={event.date}
-                description={event.description}
-                image={event.image}
-                delay={index * 0.1}
-              />
+              <div key={event._id || index} className="h-full">
+                <EventCard
+                  title={event.title}
+                  date={event.eventDate ? new Date(event.eventDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}
+                  description={event.shortDescription}
+                  image={(event.coverPhoto && (event.coverPhoto.url || event.coverPhoto.fileUrl)) || null}
+                  delay={index * 0.1}
+                  onLearnMore={() => openEvent(event)}
+                />
+              </div>
             ))}
           </div>
         </div>
       </section>
+      {selectedEvent && (
+        <EventModal event={selectedEvent} onClose={() => { setSelectedEvent(null); navigate('/events'); }} />
+      )}
 
-      {/* Event Calendar */}
-      <section className="py-16 md:py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <SectionTitle
-            title="Annual Calendar"
-            subtitle="Important dates and events for the academic year"
-          />
-
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gradient-to-r from-blue-900 to-blue-700 text-white">
-                <tr>
-                  <th className="px-6 py-4 text-left font-bold">Month</th>
-                  <th className="px-6 py-4 text-left font-bold">Event</th>
-                  <th className="px-6 py-4 text-left font-bold">Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { month: 'April - June', event: 'Admissions', description: 'Rolling admissions for new students' },
-                  { month: 'July', event: 'Academic Year Begins', description: 'Classes commence' },
-                  { month: 'August', event: 'Orientation', description: 'New student orientation program' },
-                  { month: 'September', event: 'Sports Day', description: 'Inter-house sports competitions' },
-                  { month: 'October', event: 'Science Fair', description: 'Student science projects exhibition' },
-                  { month: 'November', event: 'Annual Function', description: 'Grand celebration of talent' },
-                  { month: 'December', event: 'Holidays', description: 'Winter vacation begins' },
-                  { month: 'January', event: 'Republic Day', description: 'National celebration' },
-                  { month: 'February', event: 'Mid-Term', description: 'Examination period' },
-                  { month: 'March', event: 'Final Exams', description: 'Annual examinations' },
-                ].map((item, index) => (
-                  <motion.tr
-                    key={index}
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    viewport={{ once: true }}
-                    className="border-b border-gray-200 hover:bg-blue-50 transition-colors"
-                  >
-                    <td className="px-6 py-4 font-semibold text-gray-900">{item.month}</td>
-                    <td className="px-6 py-4 font-semibold text-blue-600">{item.event}</td>
-                    <td className="px-6 py-4 text-gray-600">{item.description}</td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+      {/* Event Calendar removed per request */}
 
       {/* Event Features */}
       <section className="py-16 md:py-24 bg-white">

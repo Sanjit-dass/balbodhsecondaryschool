@@ -54,14 +54,15 @@ export default function FeeHistory() {
   const monthOptions = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const years = useMemo(() => [], []);
 
-  const handleDelete = async (paymentId) => {
-    if (!window.confirm('Are you sure you want to delete this receipt?')) return;
+  const handleDelete = async (paymentId, student) => {
+    if (!window.confirm('Are you sure you want to delete this receipt? This action cannot be undone for locked/paid records.')) return;
     try {
       await api.delete(`/fees/payments/${paymentId}`);
-      fetchPayments();
+      fetchClassStudents(selectedClass);
     } catch (err) {
       console.error(err);
-      alert('Unable to delete receipt.');
+      const msg = err?.response?.data?.message || 'Unable to delete receipt.';
+      alert(msg);
     }
   };
 
@@ -99,37 +100,39 @@ export default function FeeHistory() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-3xl font-semibold text-slate-900">Payment History</h1>
-        <p className="mt-2 text-sm text-slate-500">Track every fee payment with due status and export actions.</p>
+    <div className="space-y-8">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">History</p>
+        <h1 className="mt-2 text-3xl font-bold text-slate-900">Payment History</h1>
+        <p className="mt-2 text-sm text-slate-500">Track every fee payment with lock status, due tracking, and export actions.</p>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-4 mb-6">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
-          <div className="text-sm uppercase tracking-[0.22em] text-slate-500">Students</div>
-          <div className="mt-3 text-2xl font-semibold text-slate-900">{filteredStudents.length}</div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="text-[0.6rem] uppercase tracking-[0.22em] text-slate-500">Students</div>
+          <div className="mt-2 text-2xl font-bold text-slate-900">{filteredStudents.length}</div>
         </div>
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
-          <div className="text-sm uppercase tracking-[0.22em] text-slate-500">Search</div>
-          <div className="mt-3 text-lg font-semibold text-slate-900">{search ? `Matching “${search}”` : 'Search students'}</div>
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+          <div className="text-[0.6rem] uppercase tracking-[0.22em] text-emerald-600">Paid</div>
+          <div className="mt-2 text-2xl font-bold text-emerald-700">{filteredStudents.filter(s => s.feeStatus === 'Paid').length}</div>
         </div>
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
-          <div className="text-sm uppercase tracking-[0.22em] text-slate-500">Class</div>
-          <div className="mt-3 text-lg font-semibold text-slate-900">{selectedClass || 'No class selected'}</div>
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+          <div className="text-[0.6rem] uppercase tracking-[0.22em] text-amber-600">Partial</div>
+          <div className="mt-2 text-2xl font-bold text-amber-700">{filteredStudents.filter(s => s.feeStatus === 'Partial').length}</div>
         </div>
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-soft">
-          <button onClick={() => navigate('/fee-management/collect')} className="rounded-3xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-700 transition">Collect Fee</button>
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5">
+          <div className="text-[0.6rem] uppercase tracking-[0.22em] text-rose-600">Unpaid</div>
+          <div className="mt-2 text-2xl font-bold text-rose-700">{filteredStudents.filter(s => !s.feeStatus || s.feeStatus === 'Unpaid').length}</div>
         </div>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-4 mb-6">
+      <div className="grid gap-4 xl:grid-cols-[1fr_1fr_auto] mb-6">
         <div>
           <label className="block text-sm font-medium text-slate-700">Class</label>
           <select
             value={selectedClass}
             onChange={e => { setSelectedClass(e.target.value); fetchClassStudents(e.target.value); }}
-            className="mt-2 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
           >
             <option value="">Select a class</option>
             {classes.map((cl) => (
@@ -143,53 +146,78 @@ export default function FeeHistory() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Name or roll number"
-            className="mt-2 w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
           />
         </div>
-        <div />
-        <div />
+        <div className="flex items-end">
+          <button onClick={() => navigate('/fee-management/collect')} className="rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-700 transition shadow-sm">
+            Collect Fee
+          </button>
+        </div>
       </div>
 
-      <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-soft">
-        <div className="grid grid-cols-8 gap-4 bg-slate-100 px-5 py-4 text-sm font-semibold text-slate-600">
-          <div>Roll No</div>
-          <div>Student Name</div>
-          <div>Class</div>
-          <div>Total Fee</div>
-          <div>Paid</div>
-          <div>Due</div>
-          <div>Status</div>
-          <div className="text-right">Action</div>
-        </div>
-        <div className="divide-y divide-slate-200">
-          {(!selectedClass || filteredStudents.length === 0) ? (
-            <div className="p-6 text-center text-slate-500">
-              {!selectedClass ? 'Select a class to view students.' : studentsLoading ? 'Loading students...' : 'No students found for this class.'}
-            </div>
-          ) : filteredStudents.map((s) => (
-            <div key={s.studentId || s._id} className="grid grid-cols-8 gap-4 px-5 py-4 items-center text-sm text-slate-700 hover:bg-slate-50">
-              <div>{s.rollNumber || s.admissionNumber || '—'}</div>
-              <div>
-                <button onClick={() => viewStudentReceipts(s)} className="text-indigo-600 hover:text-indigo-800 font-medium underline">
-                  {s.name || '-'}
-                </button>
-              </div>
-              <div>{s.className || s.class || '—'}</div>
-              <div>RS{Number(s.totalFee || 0).toLocaleString()}</div>
-              <div>RS{Number(s.paidAmount || 0).toLocaleString()}</div>
-              <div>RS{Number(s.dueAmount || 0).toLocaleString()}</div>
-              <div>{s.feeStatus || s.status || '-'}</div>
-              <div className="flex justify-end">
-                <button onClick={() => viewStudentReceipts(s)} className="rounded-2xl bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700 transition">View Receipts</button>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
+        <table className="min-w-full divide-y divide-slate-200 text-sm">
+          <thead className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white">
+            <tr>
+              <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em]">Roll No</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em]">Student Name</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em]">Class</th>
+              <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-[0.18em]">Total Fee</th>
+              <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-[0.18em]">Paid</th>
+              <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-[0.18em]">Due</th>
+              <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.18em]">Status</th>
+              <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-[0.18em]">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-200 bg-white">
+            {(!selectedClass || filteredStudents.length === 0) ? (
+              <tr>
+                <td colSpan={8} className="px-5 py-10 text-center text-slate-500">
+                  {!selectedClass ? 'Select a class to view students.' : studentsLoading ? 'Loading students...' : 'No students found for this class.'}
+                </td>
+              </tr>
+            ) : filteredStudents.map((s) => (
+              <tr key={s.studentId || s._id} className={`hover:bg-slate-50 transition ${s.feeStatus === 'Paid' ? 'bg-emerald-50/30' : ''}`}>
+                <td className="px-5 py-4 text-slate-700">{s.rollNumber || s.admissionNumber || '—'}</td>
+                <td className="px-5 py-4">
+                  <button onClick={() => viewStudentReceipts(s)} className="font-semibold text-indigo-600 hover:text-indigo-800 hover:underline">
+                    {s.name || '-'}
+                  </button>
+                </td>
+                <td className="px-5 py-4 text-slate-700">{s.className || s.class || '—'}</td>
+                <td className="px-5 py-4 text-right font-semibold text-slate-900">RS{Number(s.totalFee || 0).toLocaleString()}</td>
+                <td className="px-5 py-4 text-right text-emerald-600 font-semibold">RS{Number(s.paidAmount || 0).toLocaleString()}</td>
+                <td className="px-5 py-4 text-right text-amber-600 font-semibold">RS{Number(s.dueAmount || 0).toLocaleString()}</td>
+                <td className="px-5 py-4">
+                  {s.feeStatus === 'Paid' ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                      <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
+                      Locked
+                    </span>
+                  ) : s.feeStatus === 'Partial' ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
+                      <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" /></svg>
+                      Partial
+                    </span>
+                  ) : (
+                    <span className="inline-flex rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">Unpaid</span>
+                  )}
+                </td>
+                <td className="px-5 py-4 text-right">
+                  <button onClick={() => viewStudentReceipts(s)} className="rounded-2xl bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700 transition shadow-sm">
+                    View Receipts
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
         <button onClick={() => navigate('/fee-management/collect')} className="rounded-2xl border border-slate-200 bg-white px-6 py-3 text-slate-700 hover:bg-slate-50 transition">Back to Collection</button>
-        <button onClick={() => navigate('/fee-management/reports')} className="rounded-2xl bg-indigo-600 px-6 py-3 text-white font-semibold hover:bg-indigo-700 transition">View Reports</button>
+        <button onClick={() => navigate('/fee-management/reports')} className="rounded-2xl bg-indigo-600 px-6 py-3 text-white font-semibold hover:bg-indigo-700 transition shadow-sm">View Reports</button>
       </div>
     </div>
   );

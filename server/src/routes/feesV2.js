@@ -8,6 +8,13 @@ const invoiceController = require('../controllers/invoiceController');
 const paymentController = require('../controllers/paymentController');
 const feeController = require('../controllers/feeNewController');
 
+// Student lookup by name/class/roll for portal verification
+router.post(
+  '/lookup',
+  auth,
+  roles(['superadmin', 'admin', 'principal', 'accountant', 'parent', 'student']),
+  feeController.lookupStudent
+);
 /**
  * ============================================
  * INVOICE ROUTES

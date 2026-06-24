@@ -3,6 +3,7 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const roles = require('../middleware/roles');
 const feeController = require('../controllers/feeController');
+const feeNewController = require('../controllers/feeNewController');
 
 // Debug endpoint
 router.get('/debug/payments/:studentId', auth, roles(['superadmin','admin','principal','accountant']), feeController.debugPayments);
@@ -14,6 +15,10 @@ router.get('/student/:studentId', auth, roles(['superadmin','admin','principal',
 router.get('/student/:studentId/locks', auth, roles(['superadmin','admin','principal','accountant','parent','student']), feeController.getStudentFeeLocks);
 // Allow students to claim their student record by matching class + roll/admission number
 router.post('/student/claim', auth, roles(['student','parent','superadmin','admin']), feeController.claimStudent);
+// Public lookup endpoint used by student portal to verify name/class/roll
+router.post('/lookup', feeNewController.lookupStudent);
+// Public fetch endpoint to return payments/receipts and summary by class+roll (no student link required)
+router.post('/public/fetch', feeNewController.publicFetchFees);
 router.post('/collect', auth, roles(['superadmin','admin','principal','accountant']), feeController.collectFee);
 router.post('/initialize', auth, roles(['superadmin','admin','principal','accountant']), feeController.initializeFees);
 router.get('/student/:studentId/history', auth, roles(['superadmin','admin','principal','accountant','parent','student']), feeController.feeHistory);
@@ -37,7 +42,9 @@ router.delete('/categories/:id', auth, roles(['superadmin','admin','principal','
 router.get('/classes-dropdown', auth, roles(['superadmin','admin','principal','accountant']), feeController.getClassesForDropdown);
 
 // Assign fee categories to a class (both mandatory and optional)
-router.post('/class/:classId/assign-categories', auth, roles(['superadmin','admin','principal','accountant']), feeController.assignFeeCategoryToClass);
+router.post('/class/:classId/assign-categories', auth, roles(['superadmin','admin','principal','accountant']), (req, res) => {
+	res.status(501).json({ success: false, message: 'assignFeeCategoryToClass temporarily unavailable' });
+});
 
 // Get fee structure for a class with separated mandatory and optional items
 router.get('/class/:classId/fee-structure', auth, roles(['superadmin','admin','principal','accountant']), feeController.getClassFeeStructureWithSeparation);

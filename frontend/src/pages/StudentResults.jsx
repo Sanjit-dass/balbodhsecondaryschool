@@ -2,12 +2,14 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import api from '../services/api';
 import Marksheet from '../components/Marksheet';
+import ResponsiveSelect from '../components/ResponsiveSelect';
 
 export default function StudentResults() {
   const { user } = useContext(AuthContext);
 
   const [exams, setExams] = useState([]);
   const [selectedExam, setSelectedExam] = useState(null);
+  const [showExamPicker, setShowExamPicker] = useState(false);
   const [result, setResult] = useState(null);
 
   const [loading, setLoading] = useState(false);
@@ -100,80 +102,50 @@ export default function StudentResults() {
 
     return x === y || x.includes(y) || y.includes(x);
   };
-
-  // ---------------- LOAD RESULT ----------------
+  
   const loadResult = async () => {
+    setSearchError('');
+    setHasSearched(true);
+
     if (!selectedExam) {
-      setSearchError('Please select an exam.');
+      setSearchError('Please select an exam');
       return;
     }
 
     if (!studentName.trim()) {
-      setSearchError('Please enter student name.');
+      setSearchError('Please enter student name');
       return;
     }
 
     if (!rollNumber.trim()) {
-      setSearchError('Please enter roll number.');
+      setSearchError('Please enter roll number');
       return;
     }
 
-    setSearchError('');
-    setResult(null);
     setSearchLoading(true);
-    setHasSearched(true);
+    setResult(null);
 
     try {
+      const res = await api.get(`/exams/${selectedExam?._id || selectedExam}/results`);
+      const allResults = res.data.results || [];
+
       const searchName = studentName.toLowerCase().trim();
       const searchRoll = rollNumber.toLowerCase().trim();
 
-      // Fetch all results for the selected exam
-      const resultsRes = await api.get(`/exams/${selectedExam._id}/results`);
-      const allResults = resultsRes.data.results || [];
-
-      // Find result by matching name and roll number from the results directly
       const studentResult = allResults.find(r => {
         const resultName = (r.student?.user?.name || r.student?.fullName || '').toLowerCase().trim();
         const resultRoll = (r.student?.rollNumber || r.student?.admissionNumber || '').toLowerCase().trim();
-        
         return resultName.includes(searchName) && resultRoll.includes(searchRoll);
       });
 
       if (!studentResult) {
-        // If direct match fails, try to find student in database first
-        try {
-          const studentsRes = await api.get('/students', {
-            params: { q: studentName, limit: 500 }
-          });
-          const allStudents = studentsRes.data.students || [];
-          
-          const matchedStudent = allStudents.find(s => {
-            const sName = (s.fullName || s.name || '').toLowerCase().trim();
-            const sRoll = (s.rollNumber || s.admissionNumber || '').toLowerCase().trim();
-            
-            return sName.includes(searchName) && sRoll.includes(searchRoll);
-          });
-
-          if (!matchedStudent) {
-            setSearchError('Student not found in the system. Please verify the name and roll number.');
-            setSearchLoading(false);
-            return;
-          }
-
-          setSearchError(`Student "${matchedStudent.fullName || matchedStudent.name}" found but has no result in this exam.`);
-          setSearchLoading(false);
-          return;
-        } catch (err) {
-          setSearchError('Student not found. Please check the name and roll number and try again.');
-          setSearchLoading(false);
-          return;
-        }
+        setSearchError('No result found for the provided details in this exam.');
+        setSearchLoading(false);
+        return;
       }
 
-      // Display found result
       setResult(studentResult);
       setClassName(studentResult.student?.class?.name || studentResult.student?.className || studentResult.class?.name || '');
-
     } catch (err) {
       console.error('Error fetching result:', err);
       setSearchError('Error fetching result. Please try again.');
@@ -204,6 +176,7 @@ export default function StudentResults() {
   }
 
   // ---------------- UI ----------------
+  const truncate = (s, n = 50) => (s && s.length > n ? s.slice(0, n - 1) + '…' : s);
   return (
     <div className="space-y-6">
 
@@ -229,20 +202,69 @@ export default function StudentResults() {
             <form onSubmit={handleSearchSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Select Exam *</label>
+                {/* Desktop select */}
                 <select
                   value={selectedExam?._id || ''}
                   onChange={(e) =>
                     setSelectedExam(exams.find(x => x._id === e.target.value))
                   }
-                  className="w-full border border-slate-300 p-2 rounded focus:ring-2 focus:ring-blue-500"
+                  className="hidden sm:block w-full max-w-full truncate whitespace-nowrap border border-slate-300 p-2 rounded focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">-- Select an Exam --</option>
-                  {exams.map(e => (
-                    <option key={e._id} value={e._id}>
-                      {e.title}
-                    </option>
-                  ))}
+                  {exams.map(e => {
+                    const label = e.title || e.type || '';
+                    return (
+                      <option key={e._id} value={e._id} title={label}>
+                        {truncate(label, 50)}
+                      </option>
+                    );
+                  })}
                 </select>
+
+                {/* Mobile picker */}
+                <div className="sm:hidden">
+                  <button
+                    type="button"
+                    onClick={() => setShowExamPicker(true)}
+                    className="w-full text-left p-2 border border-slate-300 rounded bg-white text-slate-900 picker-trigger"
+                  >
+                    {selectedExam ? (selectedExam.title || selectedExam.type) : '-- Select an Exam --'}
+                  </button>
+
+                    {showExamPicker && (
+                      <div className="fixed left-3 right-3 z-50 mt-2 overflow-hidden rounded-3xl border border-transparent bg-blue-600 text-white shadow-2xl">
+                        <div className="w-full px-4 mx-auto">
+                          <div className="px-4 py-4 border-b border-blue-700 bg-blue-600 flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-semibold text-white">Select Exam</p>
+                              <p className="text-xs text-blue-100">Tap an exam to choose</p>
+                            </div>
+                            <button onClick={() => setShowExamPicker(false)} className="text-sm text-white">Close</button>
+                          </div>
+
+                          <div className="max-h-[60vh] overflow-y-auto">
+                            {exams.length === 0 ? (
+                              <div className="p-4 text-sm text-blue-100">No exams available.</div>
+                            ) : (
+                              exams.map(e => {
+                                const fullLabel = `${e.type} - ${e.class?.name || 'N/A'} (${e.academicYear})`;
+                                return (
+                                  <button
+                                    key={e._id}
+                                    type="button"
+                                    onClick={() => { setSelectedExam(e); setShowExamPicker(false); }}
+                                    className="w-full text-left px-4 py-3 border-b border-blue-700 bg-blue-600 hover:bg-blue-700 text-white"
+                                  >
+                                    <div className="text-sm font-medium truncate">{fullLabel}</div>
+                                  </button>
+                                );
+                              })
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
@@ -303,7 +325,7 @@ export default function StudentResults() {
 
       {result && (
         <div className="space-y-4">
-          <div className="flex gap-2 print:hidden">
+          <div className="flex gap-2 no-print print:hidden">
             <button
               onClick={handleDownloadPDF}
               className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-semibold"

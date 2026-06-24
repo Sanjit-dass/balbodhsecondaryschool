@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import MarksEntry from '../components/MarksEntry';
+import ResponsiveSelect from '../components/ResponsiveSelect';
 
 const EXAM_TYPES = [
   'First Terminal Exam',
@@ -13,6 +14,7 @@ const CLASS_OPTIONS = ['Nursery','LKG','UKG','1','2','3','4','5','6','7','8','9'
 
 export default function StudentMarksEntry() {
   const [examType, setExamType] = useState(EXAM_TYPES[0]);
+  const [showExamTypePicker, setShowExamTypePicker] = useState(false);
   const [selectedClass, setSelectedClass] = useState('');
   const [subject, setSubject] = useState('');
   const [subjects, setSubjects] = useState([]);
@@ -85,14 +87,22 @@ export default function StudentMarksEntry() {
       <div className="grid gap-4 sm:grid-cols-4 mb-6">
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Select Exam Type</label>
-          <select value={examType} onChange={e => setExamType(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg">
+          {/* Desktop select */}
+          <select value={examType} onChange={e => setExamType(e.target.value)} className="hidden sm:block w-full max-w-full truncate whitespace-nowrap px-3 py-2 border border-slate-300 rounded-lg">
             {EXAM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
+          <ResponsiveSelect
+            value={examType}
+            onChange={(v) => setExamType(v)}
+            options={EXAM_TYPES.map(t => ({ value: t, label: t }))}
+            placeholder="Select Exam Type"
+            maxHeight={300}
+          />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Select Class</label>
-          <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg">
+          <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} className="w-full max-w-full truncate whitespace-nowrap px-3 py-2 border border-slate-300 rounded-lg">
             <option value="">Select Class</option>
             {CLASS_OPTIONS.map(className => <option key={className} value={className}>{className}</option>)}
           </select>

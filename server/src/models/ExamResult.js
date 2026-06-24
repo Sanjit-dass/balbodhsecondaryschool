@@ -9,6 +9,7 @@ const ExamResultSchema = new mongoose.Schema({
       subject: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject' },
       marksObtained: Number,
       maxMarks: Number,
+      passMarks: Number,
       percentage: Number,
       grade: String
     }

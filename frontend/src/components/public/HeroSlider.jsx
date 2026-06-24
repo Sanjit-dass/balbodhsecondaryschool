@@ -44,6 +44,7 @@ const HeroSlider = () => {
         muted={!soundOn}
         loop
         playsInline
+        preload="auto"
       >
         <source src="/videos/Balbodh.mp4" type="video/mp4" />
       </video>
@@ -81,7 +82,7 @@ const HeroSlider = () => {
           </p>
 
           {/* TITLE */}
-          <h1 className="text-4xl md:text-7xl font-extrabold mb-6 leading-tight text-slate-800">
+          <h1 className="text-4xl md:text-7xl font-extrabold mb-6 leading-tight text-white">
             {t('Welcome to')} <br />
             <span className="text-yellow-300 drop-shadow-xl">
               {t('Bal Bodh Secondary School')}

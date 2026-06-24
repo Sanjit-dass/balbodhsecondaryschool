@@ -2,27 +2,110 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { SectionTitle, GalleryImage } from '../../components/public/SectionComponents';
+import { getImageUrl } from '../../services/api';
 import TranslateText from '../../components/public/TranslateText';
-import { GALLERY_IMAGES, GALLERY_CATEGORIES, COLORS } from '../../constants/schoolData';
+import { GALLERY_CATEGORIES, COLORS } from '../../constants/schoolData';
+import { useEffect } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/free-mode';
+import { Autoplay, Pagination, FreeMode } from 'swiper/modules';
+
+// Note: GALLERY_IMAGES removed — fetch from API
 
 const Gallery = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedImage, setSelectedImage] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const swiperRef = React.useRef(null);
 
-  const filteredImages = selectedCategory === 'all'
-    ? GALLERY_IMAGES
-    : GALLERY_IMAGES.filter(img => img.category === selectedCategory);
+  const [images, setImages] = React.useState([]);
+  const [slidesPerViewState, setSlidesPerViewState] = React.useState(2);
+  useEffect(() => { (async ()=>{ try{ const r = await fetch('/api/photo-gallery/photos'); const j = await r.json(); if (j.success && Array.isArray(j.data)) {
+        const isFilename = s => !!(s && /\.(jpe?g|png|gif|webp|bmp|svg)$/i.test(String(s)));
+        const mapped = j.data.map(item => {
+          const url = item.url || item.image || item.file || (item.filename ? getImageUrl(item.filename) : (item.path ? getImageUrl(item.path) : ''));
+          let displayTitle = item.title || item.caption || '';
+          if (!displayTitle || isFilename(displayTitle)) {
+            displayTitle = item.galleryTitle || item.albumTitle || item.albumName || (item.album && item.album.title) || item.title?.replace(/\.[^.]+$/, '') || 'Photo';
+          }
+          const displayCategory = item.category || item.galleryCategory || item.albumCategory || item.album?.category || '';
+          return { ...item, url, displayTitle, displayCategory, title: displayTitle, category: displayCategory };
+        });
+        setImages(mapped || []);
+      }
+    }catch(e){console.warn(e)} })(); }, []);
+
+  // compute slidesPerView responsively and update on resize (Desktop:4, Tablet:2, Mobile:1)
+  React.useEffect(() => {
+    function compute() {
+      const w = window.innerWidth;
+      if (w >= 1024) return 4; // Desktop
+      if (w >= 640) return 2;  // Tablet
+      return 1;                // Mobile
+    }
+    const update = () => setSlidesPerViewState(compute());
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
+  // Normalize and match category ids and names to avoid mismatch with backend values
+  const categoryMap = Object.fromEntries(GALLERY_CATEGORIES.map(c => [c.id, c.name.toLowerCase()]));
+
+  const filteredImages = selectedCategory === 'all' || !selectedCategory
+      ? images
+      : images.filter(img => {
+        const cat = (img.category || '').toLowerCase();
+        const targetName = categoryMap[selectedCategory] || '';
+        return cat === selectedCategory || cat === targetName || cat.includes(targetName) || targetName.includes(cat);
+      });
+
+  // Ensure autoplay starts when swiper instance is ready and there are enough slides
+  React.useEffect(() => {
+    const effective = Math.max(1, Math.min(slidesPerViewState, filteredImages.length));
+    const shouldAutoplay = filteredImages.length > effective;
+    if (shouldAutoplay && swiperRef.current && swiperRef.current.autoplay) {
+      try { swiperRef.current.autoplay.stop(); } catch(e) {}
+      try { setTimeout(() => { try { swiperRef.current.autoplay.start(); } catch(e){} }, 150); } catch(e) {}
+    }
+  }, [filteredImages.length, slidesPerViewState]);
 
   const openLightbox = (index) => {
     setCurrentImageIndex(index);
-    setSelectedImage(GALLERY_IMAGES.find(img => img.id === filteredImages[index].id));
+    setSelectedImage(filteredImages[index]);
+    setCurrentSlide(index);
+    // move swiper to the clicked slide (works with loop)
+    if (swiperRef.current && swiperRef.current.slideToLoop) {
+      swiperRef.current.slideToLoop(index, 300);
+    }
   };
+
+  // lock body scroll when lightbox is open
+  React.useEffect(() => {
+    if (selectedImage) {
+      const y = window.scrollY || window.pageYOffset;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${y}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        window.scrollTo(0, y || 0);
+      };
+    }
+    return undefined;
+  }, [selectedImage]);
 
   const nextImage = () => {
     const nextIndex = (currentImageIndex + 1) % filteredImages.length;
     setCurrentImageIndex(nextIndex);
-    setSelectedImage(filteredImages[nextIndex]);
+    setSelectedImage(filteredImages[nextIndex]); 
   };
 
   const prevImage = () => {
@@ -31,7 +114,7 @@ const Gallery = () => {
     setSelectedImage(filteredImages[prevIndex]);
   };
 
-  return (
+  return ( 
     <TranslateText>
       <div>
       {/* Page Header */}
@@ -39,9 +122,9 @@ const Gallery = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="bg-gradient-to-r from-blue-900 to-blue-700 text-white py-16 md:py-24"
+        className="bg-gradient-to-r from-blue-900 to-blue-700 text-white py-10 md:py-16"
       >
-        <div className="max-w-7xl mx-auto px-4 text-center">
+        <div className="max-w-[1600px] mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Photo Gallery</h1>
           <p className="text-lg text-blue-100">
             Explore the vibrant campus life and memorable moments
@@ -49,84 +132,77 @@ const Gallery = () => {
         </div>
       </motion.section>
 
-      {/* Gallery Info */}
-      <section className="py-8 md:py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-gray-600">
-            Click on any image to view in fullscreen. Use arrow keys to navigate.
-          </p>
-        </div>
-      </section>
+      {/* Gallery Info (intro) */}
+      <div className="max-w-[1600px] mx-auto px-4 text-center py-4">
+        <p className="text-gray-600">
+          Click on any image to view in fullscreen. Use arrow keys to navigate.
+        </p>
+      </div>
 
-     {/* ================= CATEGORY FILTER (STICKY NAVBAR) ================= */}
-<motion.section
-  initial={{ opacity: 0, y: -20 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.4 }}
-
-  className="sticky top-16 z-50 bg-white/70 backdrop-blur-xl border-b border-gray-200 shadow-sm py-6"
->
-  <div className="max-w-7xl mx-auto px-4">
-
-    {/* CATEGORY BUTTONS */}
-    <div className="flex flex-wrap justify-center gap-3">
-
-      {GALLERY_CATEGORIES.map((category, index) => (
-        <motion.button
-          key={category.id}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3, delay: index * 0.05 }}
-
-          onClick={() => {
-            setSelectedCategory(category.id);
-            setCurrentImageIndex(0);
-          }}
-
-          className={`px-5 py-2 rounded-full font-semibold transition-all duration-300 ${
-            selectedCategory === category.id
-              ? "text-white shadow-lg scale-105"
-              : "bg-white text-gray-700 border border-gray-200 hover:shadow-md"
-          }`}
-
-          style={{
-            backgroundColor:
-              selectedCategory === category.id ? COLORS.secondary : "",
-          }}
-        >
-          {category.name}
-        </motion.button>
-      ))}
-
-    </div>
-  </div>
-</motion.section>
+      {/* Category filters removed as requested */}
 
       {/* Gallery Grid - Masonry Layout */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="py-8 md:py-12 bg-white">
+        <div className="max-w-[1600px] mx-auto px-4">
           <SectionTitle
             title="Campus Moments"
             subtitle={`Showing ${filteredImages.length} images in ${selectedCategory === 'all' ? 'All Categories' : selectedCategory}`}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 auto-rows-max">
-            {filteredImages.map((image, index) => (
-              <motion.div
-                key={image.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                viewport={{ once: true }}
-                onClick={() => openLightbox(index)}
-              >
-                <GalleryImage
-                  image={image.image}
-                  title={image.title}
-                  delay={0}
-                />
-              </motion.div>
-            ))}
+          <div className="max-w-full">
+            {/** Ensure slidesPerView never exceeds available images to avoid static non-moving layouts */}
+            {(() => {
+              const effectiveSlides = Math.max(1, Math.min(slidesPerViewState, filteredImages.length));
+              const shouldLoop = filteredImages.length > effectiveSlides;
+              const shouldAutoplay = filteredImages.length > effectiveSlides;
+
+              return (
+                  <Swiper
+                    modules={[Autoplay, Pagination, FreeMode]}
+                    loop={shouldLoop}
+                    // Use discrete autoplay (~3s) for slower point-by-point advancing
+                    freeMode={false}
+                    autoplay={filteredImages.length > 1 ? { delay: 3000, disableOnInteraction: false, waitForTransition: false } : false}
+                    grabCursor={true}
+                    spaceBetween={16}
+                    slidesPerView={effectiveSlides}
+                    breakpoints={{
+                      640: { slidesPerView: Math.min(2, filteredImages.length) },
+                      1024: { slidesPerView: Math.min(4, filteredImages.length) }
+                    }}
+                    initialSlide={currentSlide}
+                    onSlideChange={(s) => setCurrentSlide(s.realIndex ?? s.activeIndex)}
+                    onSwiper={(s) => {
+                      swiperRef.current = s;
+                      if (shouldAutoplay && s && s.autoplay) {
+                        try { s.autoplay.stop(); } catch(e) { /* ignore */ }
+                        try { setTimeout(() => { try { s.autoplay.start(); } catch(e){} }, 120); } catch(e) { /* ignore */ }
+                      }
+                    }}
+                    speed={600}
+                    observer={true}
+                    observeParents={true}
+                    key={`${filteredImages.length}-${slidesPerViewState}`}
+                    className="py-6"
+                  >
+                  {filteredImages.map((image, index) => (
+                    <SwiperSlide key={image.id || image._id || index}>
+                      <div onClick={() => openLightbox(index)} className="px-2">
+                              <GalleryImage
+                                image={image.url}
+                                title={image.title}
+                                // category is shown inside the image overlay on hover — avoid duplicate caption below
+                                delay={0}
+                              />
+                              <div className="mt-3 text-center">
+                                <div className="text-sm font-semibold text-gray-900">{image.title}</div>
+                              </div>
+                      </div>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
+              );
+            })()}
           </div>
 
           {filteredImages.length === 0 && (
@@ -174,8 +250,9 @@ const Gallery = () => {
               {/* Main Image */}
               <div className="relative bg-black rounded-lg overflow-hidden">
                 <img
-                  src={`/src/images/${selectedImage.image}`}
+                  src={selectedImage.url}
                   alt={selectedImage.title}
+                  onError={(e)=>{ e.currentTarget.onerror = null; e.currentTarget.src = '/default-placeholder.png'; }}
                   className="w-full max-h-96 md:max-h-[600px] object-contain"
                 />
                 <p className="text-center text-white mt-4 font-semibold">
@@ -188,7 +265,7 @@ const Gallery = () => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => prevImage()}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full transition-all"
+                className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full transition-all"
               >
                 <FaChevronLeft size={24} />
               </motion.button>
@@ -197,7 +274,7 @@ const Gallery = () => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => nextImage()}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full transition-all"
+                className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full transition-all"
               >
                 <FaChevronRight size={24} />
               </motion.button>
@@ -211,40 +288,16 @@ const Gallery = () => {
         )}
       </AnimatePresence>
 
-      {/* Gallery Stats */}
-      <section className="py-16 md:py-24 bg-gradient-to-r from-blue-50 to-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-            {[
-              { label: 'Total Photos', value: GALLERY_IMAGES.length },
-              { label: 'Categories', value: GALLERY_CATEGORIES.length },
-              { label: 'Campus Events', value: '50+' },
-              { label: 'Memories Captured', value: '24 hrs' },
-            ].map((stat, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="text-center"
-              >
-                <p className="text-4xl font-bold text-gray-900 mb-2">{stat.value}</p>
-                <p className="text-gray-600 font-medium">{stat.label}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Gallery Stats removed — statistics now omitted per request */}
 
       {/* Share Gallery CTA */}
-      <section className="py-16 md:py-24 bg-white">
+      <section className="py-8 md:py-12 bg-white">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="max-w-7xl mx-auto px-4 text-center"
+          className="max-w-[1600px] mx-auto px-4 text-center"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Share Your School Memories

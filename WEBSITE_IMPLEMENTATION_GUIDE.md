@@ -14,7 +14,7 @@
 - Latest notices board
 - Upcoming events carousel
 - Student achievements gallery
-- Parent & student testimonials
+ - Student testimonials
 - Photo gallery preview with filtering
 - Admission CTA section
 

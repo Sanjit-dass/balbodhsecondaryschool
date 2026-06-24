@@ -245,7 +245,7 @@ export default function AdmitCardView() {
             <p className="mt-1 text-sm text-slate-500">Print the admit card only, without dashboard or controls.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button onClick={downloadPDF} className="rounded-3xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">Download PDF</button>
+            <button onClick={downloadPDF} className="no-print rounded-3xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">Download PDF</button>
             <button onClick={printCard} className="rounded-3xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Print</button>
             <button onClick={() => navigate(-1)} className="rounded-3xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Close</button>
           </div>
@@ -255,7 +255,8 @@ export default function AdmitCardView() {
           <div className="flex flex-col items-center text-center">
             <img src="/logo.png" alt="School Logo" className="mx-auto h-[60px] w-[60px] object-contain" />
             <h2 className="mt-3 text-[18px] font-bold uppercase tracking-[0.06em] text-[#B91C1C]">BAL BODH SECONDARY SCHOOL</h2>
-            <p className="mt-1 text-[12px] font-normal text-[#2563EB]">Kanchanpur-08, Saptari</p>
+            <p className="mt-1 text-[12px] font-normal text-[#2563EB]">Kanchanrup Municipality-8, Kanchanpur</p>
+            <p className="text-[12px] font-semibold text-[#64748B]">ESTD. 2055</p>
             <p className="mt-3 text-[14px] font-semibold text-[#15803D]">Academic Year: {academicYear}</p>
             <p className="mt-2 text-[14px] font-bold uppercase tracking-[0.06em] text-[#EA580C]">{examTitle}</p>
             <p className="mt-1 text-[14px] font-bold uppercase tracking-[0.08em] text-[#7C3AED]">EXAMINATION ADMIT CARD</p>
@@ -299,7 +300,7 @@ export default function AdmitCardView() {
             </div>
             <div className="flex flex-col items-end">
               <div className="h-[1px] w-[120px] bg-black" />
-              <div className="mt-2 font-semibold">Principal Signature</div>
+              <div className="mt-2 font-semibold">Founder Signature</div>
             </div>
           </div>
         </div>

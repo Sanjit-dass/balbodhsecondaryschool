@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import FileUploader from './FileUploader';
+import ResponsiveSelect from './ResponsiveSelect';
 
 const STATUS_OPTIONS = ['active', 'inactive', 'suspended'];
 const GENDER_OPTIONS = ['male', 'female', 'other'];
@@ -100,10 +101,13 @@ export default function TeacherForm({ existing, onSaved }){
         <div className="space-y-2 sm:space-y-3">
           <h2 className="text-base sm:text-lg font-semibold text-slate-900">Personal Info</h2>
           <input placeholder="Full Name *" value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} className="w-full p-2 sm:p-2.5 text-sm border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
-          <select value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })} className="w-full p-2 sm:p-2.5 text-sm border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none">
-            <option value="">Gender</option>
-            {GENDER_OPTIONS.map((option) => <option key={option} value={option}>{option.charAt(0).toUpperCase() + option.slice(1)}</option>)}
-          </select>
+          <ResponsiveSelect
+            value={form.gender}
+            onChange={(v) => setForm({ ...form, gender: v })}
+            options={[{ value: '', label: 'Gender' }, ...GENDER_OPTIONS.map(o => ({ value: o, label: o.charAt(0).toUpperCase() + o.slice(1) }))]}
+            placeholder="Gender"
+            className="w-full"
+          />
           <input type="date" placeholder="Date of Birth" value={form.dateOfBirth} onChange={e => setForm({ ...form, dateOfBirth: e.target.value })} className="w-full p-2 sm:p-2.5 text-sm border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
           <input placeholder="Phone Number" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="w-full p-2 sm:p-2.5 text-sm border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
           <input placeholder="Email" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="w-full p-2 sm:p-2.5 text-sm border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
@@ -118,9 +122,13 @@ export default function TeacherForm({ existing, onSaved }){
           <input type="date" placeholder="Joining Date" value={form.joiningDate} onChange={e => setForm({ ...form, joiningDate: e.target.value })} className="w-full p-2 sm:p-2.5 text-sm border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
           <input placeholder="Subject Specialization" value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} className="w-full p-2 sm:p-2.5 text-sm border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
           <input placeholder="Assigned Class" value={form.assignedClass} onChange={e => setForm({ ...form, assignedClass: e.target.value })} className="w-full p-2 sm:p-2.5 text-sm border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
-          <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className="w-full p-2 sm:p-2.5 text-sm border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none">
-            {STATUS_OPTIONS.map(option => <option key={option} value={option}>{option.charAt(0).toUpperCase() + option.slice(1)}</option>)}
-          </select>
+          <ResponsiveSelect
+            value={form.status}
+            onChange={(v) => setForm({ ...form, status: v })}
+            options={STATUS_OPTIONS.map(o => ({ value: o, label: o.charAt(0).toUpperCase() + o.slice(1) }))}
+            placeholder="Status"
+            className="w-full"
+          />
         </div>
 
         <div className="space-y-2 sm:space-y-3">

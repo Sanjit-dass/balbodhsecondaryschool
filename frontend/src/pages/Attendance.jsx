@@ -132,7 +132,7 @@ export default function Attendance(){
       .finally(() => setLoadingProfile(false));
   }, [isStudent, user]);
 
-  const remove = async (id)=>{ if(!window.confirm('Delete attendance record?')) return; try{ await api.delete(`/attendance/${id}`); fetch(); }catch(err){console.error(err);} };
+  const remove = async (id)=>{ if(!window.confirm('Are you sure you want to permanently delete this record? This action cannot be undone.')) return; try{ await api.delete(`/attendance/${id}`); fetch(); }catch(err){console.error(err);} };
 
   const renderAttendanceRows = () => {
     if (loading) {

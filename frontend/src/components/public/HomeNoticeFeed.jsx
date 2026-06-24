@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { SectionTitle, NoticeCard } from './SectionComponents';
-import api from '../../services/api';
+import api, { apiBaseURL } from '../../services/api';
 import { COLORS } from '../../constants/schoolData';
 
 const HomeNoticeFeed = () => {
@@ -29,7 +29,11 @@ const HomeNoticeFeed = () => {
     fetchNotices();
 
     if (window.EventSource) {
-      eventSource = new EventSource(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/notices/stream`);
+      try {
+        eventSource = new EventSource(`${apiBaseURL}/notices/stream`);
+      } catch (e) {
+        console.warn('Unable to initialize notices EventSource:', e);
+      }
       eventSource.onmessage = (event) => {
         try {
           const notice = JSON.parse(event.data);

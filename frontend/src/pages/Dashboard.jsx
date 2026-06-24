@@ -109,13 +109,13 @@ export default function Dashboard(){
           transform: translateY(-4px);
         }
       `}</style>
-      <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#2563EB] to-[#7C3AED] p-8 shadow-2xl shadow-indigo-500/20 text-white">
+      <div className="hidden md:block relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#2563EB] to-[#7C3AED] p-8 shadow-2xl shadow-indigo-500/20 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.18),_transparent_24%)]" />
         <div className="relative grid gap-6 lg:grid-cols-[1.35fr_0.75fr] lg:items-center">
           <div className="space-y-5">
             <p className="text-sm uppercase tracking-[0.32em] text-indigo-100/80">Admin Command Center</p>
             <div className="space-y-3">
-              <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight">Welcome back, {adminName}</h1>
+              <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-white" style={{ color: '#FFFFFF' }}>Welcome back, {adminName}</h1>
               <p className="max-w-2xl text-base text-white/90 sm:text-lg">
                 Manage school operations, student lifecycle, staff, finance, and communications from one premium dashboard.
               </p>

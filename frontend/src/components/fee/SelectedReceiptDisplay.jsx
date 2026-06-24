@@ -47,10 +47,10 @@ export default function SelectedReceiptDisplay({ receipt, fetchReceiptPdf }){
   if (pdf.url) {
     return (
       <div>
-        <div className="bg-white rounded-xl shadow-soft p-4">
+          <div className="bg-white rounded-xl shadow-soft p-4">
           <iframe title="receipt-url" src={pdf.url} className="w-full h-96" />
           <div className="mt-3 flex space-x-2">
-            <a href={pdf.url} download className="px-4 py-2 bg-green-600 text-white rounded">Download PDF</a>
+            <a href={pdf.url} download className="no-print px-4 py-2 bg-green-600 text-white rounded">Download PDF</a>
             <button onClick={() => window.open(pdf.url, '_blank')?.print?.()} className="px-4 py-2 bg-gray-200 rounded">Print</button>
           </div>
         </div>

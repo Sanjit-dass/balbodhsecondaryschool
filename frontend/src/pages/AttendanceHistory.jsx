@@ -114,7 +114,7 @@ export default function AttendanceHistory() {
                 {user && ['superadmin','principal'].includes(user.role) && (
                   <>
                     <button onClick={async () => { if (!window.confirm('Reopen this attendance for editing?')) return; try { await api.post(`/attendance/${viewRecord._id}/reopen`); alert('Attendance reopened'); fetchAttendance(); setViewRecord(null); } catch (err) { console.error(err); alert('Unable to reopen'); } }} className="px-3 py-1 bg-yellow-400 rounded">Reopen</button>
-                    <button onClick={async () => { if (!window.confirm('Delete this attendance record?')) return; try { await api.delete(`/attendance/${viewRecord._id}`); alert('Deleted'); fetchAttendance(); setViewRecord(null); } catch (err) { console.error(err); alert('Unable to delete'); } }} className="px-3 py-1 bg-rose-500 text-white rounded">Delete</button>
+                    <button onClick={async () => { if (!window.confirm('Are you sure you want to permanently delete this record? This action cannot be undone.')) return; try { await api.delete(`/attendance/${viewRecord._id}`); alert('Deleted'); fetchAttendance(); setViewRecord(null); } catch (err) { console.error(err); alert('Unable to delete'); } }} className="px-3 py-1 bg-rose-500 text-white rounded">Delete</button>
                   </>
                 )}
                 <button onClick={() => setViewRecord(null)} className="px-3 py-1 bg-rose-500 text-white rounded">Close</button>

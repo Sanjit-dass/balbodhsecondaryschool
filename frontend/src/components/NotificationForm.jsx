@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
+import ResponsiveSelect from './ResponsiveSelect';
 
 const DEFAULT_FORM = {
   title: '',
@@ -99,47 +100,45 @@ export default function NotificationForm({ existing, onSaved, onCancel }) {
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-700">Audience *</label>
-            <select
+            <ResponsiveSelect
               value={form.audience}
-              onChange={(e) => setForm({ ...form, audience: e.target.value, classId: '' })}
-              className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:bg-white"
-            >
-              <option value="all">All Users</option>
-              <option value="students">Students</option>
-              <option value="teachers">Teachers</option>
-              <option value="parents">Parents</option>
-              <option value="specificClass">Specific Class</option>
-            </select>
+              onChange={(v) => setForm({ ...form, audience: v, classId: '' })}
+              options={[
+                { value: 'all', label: 'All Users' },
+                { value: 'students', label: 'Students' },
+                { value: 'teachers', label: 'Teachers' },
+                { value: 'parents', label: 'Parents' },
+                { value: 'specificClass', label: 'Specific Class' }
+              ]}
+              placeholder="Audience"
+            />
           </div>
 
           {form.audience === 'specificClass' && (
             <div>
               <label className="mb-2 block text-sm font-semibold text-slate-700">Class *</label>
-              <select
+              <ResponsiveSelect
                 value={form.classId}
-                onChange={(e) => setForm({ ...form, classId: e.target.value })}
-                className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:bg-white"
-              >
-                <option value="">Select class</option>
-                {classes.map((cls) => (
-                  <option key={cls._id} value={cls._id}>{cls.name}</option>
-                ))}
-              </select>
+                onChange={(v) => setForm({ ...form, classId: v })}
+                options={[{ value: '', label: 'Select class' }, ...(classes||[]).map(c => ({ value: c._id, label: c.name }))]}
+                placeholder="Select class"
+              />
             </div>
           )}
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-700">Priority *</label>
-            <select
+            <ResponsiveSelect
               value={form.priority}
-              onChange={(e) => setForm({ ...form, priority: e.target.value })}
-              className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-indigo-500 focus:bg-white"
-            >
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
-              <option value="Urgent">Urgent</option>
-            </select>
+              onChange={(v) => setForm({ ...form, priority: v })}
+              options={[
+                { value: 'Low', label: 'Low' },
+                { value: 'Medium', label: 'Medium' },
+                { value: 'High', label: 'High' },
+                { value: 'Urgent', label: 'Urgent' }
+              ]}
+              placeholder="Priority"
+            />
           </div>
         </div>
 

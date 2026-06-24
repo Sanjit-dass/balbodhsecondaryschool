@@ -118,11 +118,11 @@ export default function StudentResultsPublic() {
                   className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">-- Choose an Exam --</option>
-                  {exams.map((exam) => (
-                    <option key={exam._id} value={exam._id}>
-                      {exam.type} - {exam.class?.name || 'N/A'} ({exam.academicYear})
-                    </option>
-                  ))}
+                  {exams.map((exam) => {
+                    const full = `${exam.type} - ${exam.class?.name || 'N/A'} (${exam.academicYear})`;
+                    const short = full.length > 50 ? full.slice(0, 47) + '…' : full;
+                    return <option key={exam._id} value={exam._id} title={full}>{short}</option>;
+                  })}
                 </select>
               </div>
 
@@ -171,7 +171,7 @@ export default function StudentResultsPublic() {
         {/* Result Display */}
         {result && (
           <div className="space-y-4">
-            <div className="flex gap-2 print:hidden">
+            <div className="flex gap-2 no-print print:hidden">
               <button
                 onClick={handleDownloadPDF}
                 className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-semibold"

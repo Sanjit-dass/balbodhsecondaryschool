@@ -68,9 +68,6 @@ export default function FeeReceipt() {
           <button onClick={() => window.print()} className="rounded-2xl bg-indigo-600 px-6 py-3 text-white font-semibold hover:bg-indigo-700 transition">
             Print Receipt
           </button>
-          <button onClick={downloadPdf} className="rounded-2xl border border-indigo-600 bg-white px-6 py-3 text-indigo-700 font-semibold hover:bg-indigo-50 transition">
-            Download PDF
-          </button>
         </div>
       </div>
     </div>

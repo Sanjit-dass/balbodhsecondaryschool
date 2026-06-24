@@ -20,9 +20,7 @@ const CreateFeeCategory = () => {
   const [mandatory, setMandatory] = useState([
     { name: '', amount: '', description: '' }
   ]);
-  const [optional, setOptional] = useState([
-    { name: '', amount: '', description: '' }
-  ]);
+  
   const [submitting, setSubmitting] = useState(false);
 
   // Fetch classes on mount
@@ -68,21 +66,12 @@ const CreateFeeCategory = () => {
           status: item.status || 'active'
         }));
         
-        const optionalItems = response.data.data.optional.items.map(item => ({
-          name: item.name,
-          amount: item.amount || '',
-          description: item.description || '',
-          status: item.status || 'active'
-        }));
-        
         setMandatory(mandatoryItems.length > 0 ? mandatoryItems : [{ name: '', amount: '', description: '' }]);
-        setOptional(optionalItems.length > 0 ? optionalItems : [{ name: '', amount: '', description: '' }]);
       }
     } catch (err) {
       console.error('Error fetching structure:', err);
       // Initialize with empty forms if no structure exists
       setMandatory([{ name: '', amount: '', description: '' }]);
-      setOptional([{ name: '', amount: '', description: '' }]);
     } finally {
       setLoading(false);
     }
@@ -101,10 +90,6 @@ const CreateFeeCategory = () => {
     setMandatory([...mandatory, { name: '', amount: '', description: '' }]);
   };
 
-  // Add new optional item row
-  const addOptionalItem = () => {
-    setOptional([...optional, { name: '', amount: '', description: '' }]);
-  };
 
   // Remove mandatory item
   const removeMandatoryItem = (index) => {
@@ -113,12 +98,6 @@ const CreateFeeCategory = () => {
     }
   };
 
-  // Remove optional item
-  const removeOptionalItem = (index) => {
-    if (optional.length > 1) {
-      setOptional(optional.filter((_, i) => i !== index));
-    }
-  };
 
   // Update mandatory item
   const updateMandatoryItem = (index, field, value) => {
@@ -127,12 +106,6 @@ const CreateFeeCategory = () => {
     setMandatory(updated);
   };
 
-  // Update optional item
-  const updateOptionalItem = (index, field, value) => {
-    const updated = [...optional];
-    updated[index][field] = value;
-    setOptional(updated);
-  };
 
   // Submit form
   const handleSubmit = async (e) => {
@@ -143,11 +116,9 @@ const CreateFeeCategory = () => {
       return;
     }
 
-    // Validate at least one item
+    // Validate at least one mandatory item
     const mandatoryValid = mandatory.some(item => item.name.trim() && item.amount);
-    const optionalValid = optional.some(item => item.name.trim() && item.amount);
-    
-    if (!mandatoryValid && !optionalValid) {
+    if (!mandatoryValid) {
       setError('Please add at least one fee category');
       return;
     }
@@ -163,17 +134,12 @@ const CreateFeeCategory = () => {
           name: item.name.trim(),
           amount: Number(item.amount),
           description: item.description.trim() || '',
-          status: item.status || 'active'
+          status: item.status || 'active',
+          type: 'Mandatory'
         }));
 
-      const optionalData = optional
-        .filter(item => item.name.trim() && item.amount)
-        .map(item => ({
-          name: item.name.trim(),
-          amount: Number(item.amount),
-          description: item.description.trim() || '',
-          status: item.status || 'active'
-        }));
+      // Optional items are intentionally omitted from the class assignment UI — send an empty array.
+      const optionalData = [];
 
       if (mandatoryData.length === 0 && optionalData.length === 0) {
         setError('Please fill in at least one complete fee item');
@@ -212,12 +178,9 @@ const CreateFeeCategory = () => {
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">📚 Fee Category Assignment</h1>
           <p className="text-gray-600 text-lg">
-            Assign mandatory and optional fee items to a class. 
+            Assign mandatory fee items to a class. 
             <span className="block mt-2">
               • <strong>Mandatory items</strong> are applied automatically to all students
-            </span>
-            <span className="block">
-              • <strong>Optional items</strong> can be selected per student
             </span>
           </p>
         </div>
@@ -310,33 +273,20 @@ const CreateFeeCategory = () => {
             )}
 
             <form onSubmit={handleSubmit}>
-              {/* Current Structure Summary */}
-              {classDetails && (classDetails.mandatory.count > 0 || classDetails.optional.count > 0) && (
+              {/* Current Structure Summary (optional items hidden) */}
+              {classDetails && classDetails.mandatory.count > 0 && (
                 <div className="mb-8 p-6 bg-indigo-50 rounded-lg border border-indigo-200">
                   <h3 className="font-bold text-indigo-900 mb-4">📊 Current Fee Structure</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <p className="text-sm text-indigo-700 font-semibold mb-2">MANDATORY ITEMS</p>
-                      {classDetails.mandatory.items.map((item, i) => (
-                        <p key={i} className="text-sm text-indigo-600">
-                          • {item.name}: ₹{item.amount}
-                        </p>
-                      ))}
-                      <p className="text-sm font-bold text-indigo-900 mt-2">
-                        Subtotal: ₹{classDetails.mandatory.total}
+                  <div>
+                    <p className="text-sm text-indigo-700 font-semibold mb-2">MANDATORY ITEMS</p>
+                    {classDetails.mandatory.items.map((item, i) => (
+                      <p key={i} className="text-sm text-indigo-600">
+                        • {item.name}: ₹{item.amount}
                       </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-indigo-700 font-semibold mb-2">OPTIONAL ITEMS</p>
-                      {classDetails.optional.items.map((item, i) => (
-                        <p key={i} className="text-sm text-indigo-600">
-                          • {item.name}: ₹{item.amount}
-                        </p>
-                      ))}
-                      <p className="text-sm font-bold text-indigo-900 mt-2">
-                        Subtotal: ₹{classDetails.optional.total}
-                      </p>
-                    </div>
+                    ))}
+                    <p className="text-sm font-bold text-indigo-900 mt-2">
+                      Subtotal: ₹{classDetails.mandatory.total}
+                    </p>
                   </div>
                   <div className="mt-4 pt-4 border-t border-indigo-200">
                     <p className="text-lg font-bold text-indigo-900">
@@ -359,7 +309,7 @@ const CreateFeeCategory = () => {
                   {mandatory.map((item, index) => (
                     <div
                       key={index}
-                      className="flex gap-3 items-end bg-gray-50 p-4 rounded-lg border border-gray-200"
+                      className="flex flex-col md:flex-row gap-3 bg-gray-50 p-4 rounded-lg border border-gray-200"
                     >
                       <div className="flex-1">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -374,7 +324,7 @@ const CreateFeeCategory = () => {
                         />
                       </div>
 
-                      <div className="w-32">
+                      <div className="md:w-32 w-full">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Amount (₹) *
                         </label>
@@ -400,14 +350,16 @@ const CreateFeeCategory = () => {
                         />
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => removeMandatoryItem(index)}
-                        disabled={mandatory.length === 1}
-                        className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition"
-                      >
-                        ✕
-                      </button>
+                      <div className="md:flex md:items-end md:justify-end w-full md:w-auto">
+                        <button
+                          type="button"
+                          onClick={() => removeMandatoryItem(index)}
+                          disabled={mandatory.length === 1}
+                          className="w-full md:w-auto px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition"
+                        >
+                          ✕
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -421,95 +373,16 @@ const CreateFeeCategory = () => {
                 </button>
               </div>
 
-              {/* Optional Fees Section */}
-              <div className="mb-8">
-                <div className="flex items-center mb-4">
-                  <h3 className="text-xl font-bold text-gray-800">⊘ Optional Fees</h3>
-                  <span className="ml-2 text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-semibold">
-                    Selected per student
-                  </span>
-                </div>
-
-                <div className="space-y-4 mb-4">
-                  {optional.map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex gap-3 items-end bg-gray-50 p-4 rounded-lg border border-gray-200"
-                    >
-                      <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Fee Name *
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g., Bus Service, Hostel, Sports, etc."
-                          value={item.name}
-                          onChange={(e) => updateOptionalItem(index, 'name', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      <div className="w-32">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Amount (₹) *
-                        </label>
-                        <input
-                          type="number"
-                          placeholder="0"
-                          value={item.amount}
-                          onChange={(e) => updateOptionalItem(index, 'amount', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Description
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Optional description"
-                          value={item.description}
-                          onChange={(e) => updateOptionalItem(index, 'description', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => removeOptionalItem(index)}
-                        disabled={optional.length === 1}
-                        className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={addOptionalItem}
-                  className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg font-medium transition"
-                >
-                  + Add Optional Item
-                </button>
-              </div>
+                      {/* Optional Fees UI removed — only Mandatory Fees are shown here per requirement. */}
 
               {/* Summary */}
               <div className="mb-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
                 <h4 className="font-bold text-blue-900 mb-3">💡 Summary</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-blue-600 font-semibold">Mandatory Items</p>
                     <p className="text-blue-900 font-bold text-lg">
                       {mandatory.filter(i => i.name && i.amount).length}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-blue-600 font-semibold">Optional Items</p>
-                    <p className="text-blue-900 font-bold text-lg">
-                      {optional.filter(i => i.name && i.amount).length}
                     </p>
                   </div>
                   <div>

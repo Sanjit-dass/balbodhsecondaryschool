@@ -51,7 +51,7 @@ const PublicFooter = () => {
   ];
 
   return (
-    <footer className="bg-gradient-to-b from-gray-900 to-black text-white pt-16 pb-8">
+    <footer id="contact" className="bg-gradient-to-b from-gray-900 to-black text-white pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
@@ -77,14 +77,16 @@ const PublicFooter = () => {
             </p>
             <div className="flex gap-3">
               {[
-                { icon: FaFacebook, url: '#' },
-                { icon: FaTwitter, url: '#' },
-                { icon: FaYoutube, url: '#' },
-                { icon: FaInstagram, url: '#' },
-              ].map((social, index) => (
+                SCHOOL_INFO.facebook ? { icon: FaFacebook, url: SCHOOL_INFO.facebook } : null,
+                SCHOOL_INFO.twitter ? { icon: FaTwitter, url: SCHOOL_INFO.twitter } : null,
+                SCHOOL_INFO.youtube ? { icon: FaYoutube, url: SCHOOL_INFO.youtube } : null,
+                SCHOOL_INFO.instagram ? { icon: FaInstagram, url: SCHOOL_INFO.instagram } : null,
+              ].filter(Boolean).map((social, index) => (
                 <motion.a
                   key={index}
                   href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   whileHover={{ scale: 1.2, rotate: 5 }}
                   className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
                   style={{ backgroundColor: COLORS.secondary }}
@@ -168,32 +170,60 @@ const PublicFooter = () => {
           </motion.div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+        
+
+        {/* Bottom Bar - Centered Professional Layout */}
+        <div className="border-t border-gray-800 pt-8">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-gray-400 text-sm text-center md:text-left mb-4 md:mb-0"
+            className="max-w-3xl mx-auto text-center space-y-3 px-4"
           >
-            <p>
-              © {new Date().getFullYear()} {SCHOOL_INFO.name}. {t('copyright')}.
-            </p>
-            <p className="mt-1">
-              {t('designedWithLove')}
-            </p>
-          </motion.div>
+            <p className="text-gray-300 text-sm">© 2026 Bal Bodh Secondary School. All Rights Reserved.</p>
+            <p className="text-gray-400 text-sm">School ERP • Educational Technology Solutions</p>
 
-          <motion.button
-            onClick={scrollToTop}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
-            style={{ backgroundColor: COLORS.secondary }}
-          >
-            <FaArrowUp size={18} />
-          </motion.button>
+            <div className="pt-2">
+              <p className="text-gray-400 text-sm">Designed &amp; Developed by</p>
+              <p className="mt-1 flex items-center justify-center gap-3 text-sm">
+                <a
+                  href="https://portfolio-sanjit.vercel.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Open Sanjit Das portfolio in new tab"
+                  className="font-semibold hover:underline transition-colors duration-200"
+                  style={{ color: COLORS.accent }}
+                >
+                  Sanjit Das
+                </a>
+                <span className="text-gray-500">&amp;</span>
+                <a
+                  href="http://localhost:5173/#"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Open Puspendra Birajee portfolio in new tab"
+                  className="font-semibold hover:underline transition-colors duration-200"
+                  style={{ color: COLORS.accent }}
+                >
+                  Puspendra Birajee
+                </a>
+              </p>
+            </div>
+
+            <div className="pt-3">
+              <motion.button
+                onClick={scrollToTop}
+                whileHover={{ scale: 1.06 }}
+                whileTap={{ scale: 0.96 }}
+                className="w-10 h-10 rounded-full flex items-center justify-center transition-all mx-auto"
+                style={{ backgroundColor: COLORS.secondary }}
+                aria-label="Scroll to top"
+              >
+                <FaArrowUp size={18} />
+              </motion.button>
+            </div>
+          </motion.div>
         </div>
       </div>
     </footer>

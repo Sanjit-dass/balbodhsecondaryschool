@@ -12,7 +12,7 @@ const allRoles = [
   { value: 'accountant', label: 'Accountant' },
   { value: 'examcontroller', label: 'Exam Controller' },
   { value: 'admin', label: 'Admin' },
-  { value: 'principal', label: 'Principal' },
+  { value: 'principal', label: 'Founder' },
   { value: 'superadmin', label: 'Super Admin' }
 ];
 
@@ -93,7 +93,7 @@ export default function Register() {
               <div className="space-y-4">
                 <div className="rounded-3xl border border-white/10 bg-slate-900/80 p-5">
                   <p className="text-sm font-semibold text-white">Quick tips</p>
-                  <p className="mt-2 text-sm text-slate-400">Use a valid school email and a strong password. Only admin, principal, or superadmin can access this page.</p>
+                  <p className="mt-2 text-sm text-slate-400">Use a valid school email and a strong password. Only admin, founder, or superadmin can access this page.</p>
                 </div>
               </div>
             </div>
@@ -121,7 +121,7 @@ export default function Register() {
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Sanjit Das"
+                      placeholder="Full name"
                       className="mt-0 w-full rounded-3xl border border-white/10 bg-slate-900/90 pl-12 pr-4 py-3 text-slate-100 outline-none transition focus:ring-2 focus:ring-indigo-400/30"
                       disabled={false}
                     />

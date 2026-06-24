@@ -4,7 +4,7 @@ import { FaDownload, FaCalendarAlt } from 'react-icons/fa';
 import { SectionTitle } from '../../components/public/SectionComponents';
 import TranslateText from '../../components/public/TranslateText';
 import { COLORS } from '../../constants/schoolData';
-import api from '../../services/api';
+import api, { apiBaseURL } from '../../services/api';
 import { useContext } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
 import { getInlineViewUrl } from '../../services/fileViewService';
@@ -51,7 +51,11 @@ const NoticeBoard = () => {
     fetchDocuments();
 
     if (window.EventSource) {
-      eventSource = new EventSource(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/notices/stream`);
+      try {
+        eventSource = new EventSource(`${apiBaseURL}/notices/stream`);
+      } catch (e) {
+        console.warn('Unable to initialize noticeboard EventSource:', e);
+      }
       eventSource.onmessage = (event) => {
         try {
           const notice = JSON.parse(event.data);

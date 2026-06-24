@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslate } from '../../hooks/useTranslate';
 import { motion } from 'framer-motion';
 import { FaArrowLeft } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +8,7 @@ import { PRINCIPAL_MESSAGE } from '../../constants/schoolData';
 
 const PrincipalMessagePage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslate();
 
   return (
     <TranslateText>
@@ -30,7 +32,7 @@ const PrincipalMessagePage = () => {
           className="text-center mb-16"
         >
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
-            Principal's Message
+            {t('principalMessage')}
           </h1>
           <p className="text-xl text-gray-600">
             A message from the leadership of Bal Bodh Secondary School

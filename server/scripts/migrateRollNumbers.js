@@ -13,8 +13,12 @@ const Student = require('../src/models/Student');
 
 async function migrateRollNumbers() {
   try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/balbodh';
-    
+    const mongoUri = process.env.MONGODB_URI || process.env.MONGODB_URL;
+    if (!mongoUri) {
+      console.error('MONGODB_URI (or MONGODB_URL) is required for migration scripts. Set it in .env or the environment.');
+      process.exit(1);
+    }
+
     console.log('Connecting to MongoDB...');
     await mongoose.connect(mongoUri);
     console.log('Connected successfully!');

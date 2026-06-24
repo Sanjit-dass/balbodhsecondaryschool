@@ -40,7 +40,7 @@ const formatClassLabel = (value) => {
 
 const defaultSettings = {
   schoolName: 'Bal Bodh Secondary School',
-  schoolAddress: 'Kanchanpur-08, Saptari, Nepal',
+  schoolAddress: 'Kanchanrup Municipality-8, Kanchanpur\nESTD. 2055',
   admitCardHeader: 'Student Admit Card',
   admitCardWatermark: 'Bal Bodh Secondary School',
   logoUrl: ''
@@ -88,7 +88,11 @@ function CardPreview({ student, exam, settings, index, total, className, selecte
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">{settings.admitCardHeader || defaultSettings.admitCardHeader}</p>
               <h1 className="text-2xl font-bold text-slate-900">{settings.schoolName || defaultSettings.schoolName}</h1>
-              <p className="text-sm text-slate-500">{settings.schoolAddress || defaultSettings.schoolAddress}</p>
+              {
+                (settings.schoolAddress || defaultSettings.schoolAddress).split('\n').map((line, i) => (
+                  <p key={i} className="text-sm text-slate-500">{line}</p>
+                ))
+              }
             </div>
           </div>
           <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 text-right text-sm text-slate-500">
@@ -598,9 +602,11 @@ export default function AdminAdmitCard() {
                   className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10"
                 >
                   <option value="">Choose an exam</option>
-                  {exams.map((exam) => (
-                    <option key={exam._id} value={exam._id}>{exam.title || exam.type}</option>
-                  ))}
+                  {exams.map((exam) => {
+                    const full = exam.title || exam.type || '';
+                    const short = full.length > 50 ? full.slice(0, 47) + '…' : full;
+                    return <option key={exam._id} value={exam._id} title={full}>{short}</option>;
+                  })}
                 </select>
               </label>
             </div>
