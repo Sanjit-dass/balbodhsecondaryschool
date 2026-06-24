@@ -5,7 +5,7 @@ A modern, responsive, and fully-featured website for Balbodh Secondary School bu
 ## 🌟 Features
 
 ### Pages Included
-- **Home Page** - Hero slider, statistics, facilities preview, testimonials, achievements, and admission CTA
+ - **Home Page** - Hero slider, statistics, facilities preview, student testimonials, achievements, and admission CTA
 - **About** - School history, vision, mission, values, timeline, and achievements
 - **Academics** - Curriculum, programs, teaching methodology, examination system, and co-curricular activities
 - **Admissions** - Admission process, eligibility criteria, required documents, and online form
@@ -220,8 +220,8 @@ Access at: `/admin/login`
 ## 📞 Support
 
 For issues or questions about the website:
-- Email: info@balbodh.edu.np
-- Phone: +977-XX-XXXXXX
+- Email: balbodhschool9@gmail.com
+- Phone: +977-985-2860773
 
 ## 📄 License
 

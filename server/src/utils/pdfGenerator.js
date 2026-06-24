@@ -64,10 +64,10 @@ const generateReceiptPdfBuffer = (data) => {
          .text('BAL BODH SECONDARY SCHOOL', { align: 'center' });
       
       doc.fontSize(10)
-         .font('Helvetica')
-         .fillColor(textColor)
-         .text('Kathmandu, Nepal | Tel: +977-1-4XXXXXX | info@balbodh.edu.np', { align: 'center' })
-         .moveDown(1.5);
+        .font('Helvetica')
+        .fillColor(textColor)
+        .text('Kathmandu, Nepal | Tel: +977-985-2860773 | balbodhschool9@gmail.com', { align: 'center' })
+        .moveDown(1.5);
 
       // Receipt Title & Metadata Banner
       doc.rect(50, doc.y, 495, 40)
