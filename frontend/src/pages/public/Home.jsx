@@ -54,6 +54,7 @@ import {
   STATISTICS,
   WHY_CHOOSE,
   TESTIMONIALS,
+  PRINCIPAL_MESSAGE,
 } from '../../constants/schoolData';
 import axios from 'axios';
 
@@ -309,9 +310,8 @@ import axios from 'axios';
                   className="w-full h-[500px] object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <h3 className="text-2xl font-bold text-blue-200">Sanjay Khadga</h3>
-                  <p className="text-blue-200">Founder</p>
+                <div className="absolute bottom-6 left-6 text-white">
+                  <p className="text-xl font-semibold">Sanjay Khadga</p>
                 </div>
               </div>
             </motion.div>

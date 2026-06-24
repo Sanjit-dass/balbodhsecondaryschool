@@ -8,6 +8,7 @@ import {
   FaMoneyBillWave,
   FaImage,
   FaBell,
+  FaEnvelope,
   FaCogs,
   FaSignOutAlt,
   FaChartBar,
@@ -72,6 +73,7 @@ const ROLE_MENU = {
         { path: '/admin/notifications/create', label: 'Create Notification', icon: FaBell },
         { path: '/admin/notifications', label: 'All Notifications', icon: FaBell },
         { path: '/admin/notices', label: 'Notices', icon: FaBell },
+        { path: '/admin/contact-messages', label: 'Contact Messages', icon: FaEnvelope },
         { path: '/admin/uploads', label: 'Important Documents', icon: FaFileInvoiceDollar },
         // Notification center removed from admin communication menu
       ]
@@ -87,6 +89,7 @@ const ROLE_MENU = {
       title: 'System / Settings',
       items: [
         { path: '/admin/user-roles', label: 'User Roles', icon: FaUsers },
+        { path: '/admin/settings', label: 'Account Settings', icon: FaCogs },
         { path: '/logout', label: 'Logout', icon: FaSignOutAlt }
       ]
     }
@@ -245,7 +248,7 @@ export default function Sidebar({ isOpen, onClose, onLogoutRequest }){
       {/* Mobile full-screen menu (slide-down) - only for small screens */}
       {isOpen && (
         <div className="lg:hidden fixed inset-0 flex" style={{ zIndex: 2147483647, pointerEvents: 'auto' }}>
-          <div className="relative w-full bg-[#FAFAFB] text-slate-900 p-4 overflow-y-auto slide-down scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent" style={{ zIndex: 2147483647, boxShadow: '-8px 0 30px rgba(2,6,23,0.06)' }}>
+          <div className="relative flex min-h-full w-full flex-col bg-[#FAFAFB] text-slate-900 p-4 overflow-y-auto slide-down scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent" style={{ zIndex: 2147483647, boxShadow: '-8px 0 30px rgba(2,6,23,0.06)' }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <img src="/logo.png" alt="logo" className="h-10 w-10 rounded-md object-contain bg-white p-1 shadow-sm" />
@@ -259,7 +262,7 @@ export default function Sidebar({ isOpen, onClose, onLogoutRequest }){
                 </button>
               </div>
 
-            <nav className="space-y-3 text-base">
+            <nav className="flex-1 space-y-3 text-base">
               { !user ? (
                 // Guest (public website) mobile nav
                 <>
@@ -299,6 +302,18 @@ export default function Sidebar({ isOpen, onClose, onLogoutRequest }){
                 ))
               )}
             </nav>
+
+            {user && (
+              <div className="mt-4 pt-4 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => { onClose(); if (onLogoutRequest) onLogoutRequest(); }}
+                  className="w-full rounded-lg bg-rose-600 px-4 py-3 text-sm font-semibold text-white hover:bg-rose-700"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

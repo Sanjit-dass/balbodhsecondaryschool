@@ -7,7 +7,7 @@ import NotificationBell from './NotificationBell';
 import { useLocation } from 'react-router-dom';
 
 export default function Navbar({ onMenuClick }) {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logoutAndRedirect } = useContext(AuthContext);
   const { language, changeLanguage } = useLanguage();
   const location = useLocation();
 
@@ -186,7 +186,7 @@ export default function Navbar({ onMenuClick }) {
 
             {/* LOGOUT */}
             <button
-              onClick={logout}
+              onClick={logoutAndRedirect}
               className="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition-all duration-300"
               title="Logout"
             >

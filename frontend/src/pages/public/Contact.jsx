@@ -10,6 +10,7 @@ import {
   FaYoutube,
   FaInstagram,
 } from 'react-icons/fa';
+import api from '../../services/api';
 import { SectionTitle } from '../../components/public/SectionComponents';
 import TranslateText from '../../components/public/TranslateText';
 import { SCHOOL_INFO, COLORS } from '../../constants/schoolData';
@@ -28,10 +29,29 @@ const Contact = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const [submitting, setSubmitting] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState(null);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Handle form submission
+    setSubmitting(true);
+    setSubmissionStatus(null);
+
+    try {
+      const response = await api.post('/contact', formData);
+      if (response.status === 201) {
+        setSubmissionStatus({ type: 'success', message: response.data?.message || 'Your message has been sent.' });
+        setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+      } else {
+        setSubmissionStatus({ type: 'success', message: response.data?.message || 'Your message has been sent.' });
+      }
+    } catch (err) {
+      console.error('Contact submit failed', err);
+      const errorMessage = err?.response?.data?.message || 'Failed to send your message. Please try again later.';
+      setSubmissionStatus({ type: 'error', message: errorMessage });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const scrollToForm = (e) => {
@@ -258,14 +278,20 @@ const Contact = () => {
                 </motion.div>
 
                 {/* Submit Button */}
+                {submissionStatus ? (
+                  <div className={`rounded-lg p-4 text-sm font-semibold ${submissionStatus.type === 'success' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                    {submissionStatus.message}
+                  </div>
+                ) : null}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   type="submit"
-                  className="w-full py-3 rounded-lg font-bold text-white transition-all text-lg"
+                  disabled={submitting}
+                  className="w-full py-3 rounded-lg font-bold text-white transition-all text-lg disabled:opacity-60 disabled:cursor-not-allowed"
                   style={{ backgroundColor: COLORS.secondary }}
                 >
-                  Send Message
+                  {submitting ? 'Sending...' : 'Send Message'}
                 </motion.button>
               </form>
             </motion.div>

@@ -50,13 +50,20 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const skipAuthCheckAfterLogin = useRef(false);
 
-  const logout = useCallback(() => {
+  const logout = useCallback((redirect = false) => {
     setToken(null);
     setUser(null);
     setError(null);
     storage.clear();
     api.setAuthToken(null);
+    if (redirect && typeof window !== 'undefined') {
+      window.location.href = '/login?force=true';
+    }
   }, []);
+
+  const logoutAndRedirect = useCallback(() => {
+    logout(true);
+  }, [logout]);
 
   useEffect(() => {
     if (token) {
@@ -136,6 +143,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: Boolean(user && token),
         login,
         logout,
+        logoutAndRedirect,
         updateProfile
       }}
     >

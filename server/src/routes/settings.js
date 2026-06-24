@@ -15,6 +15,28 @@ router.get('/', auth, roles(['superadmin','admin','principal','accountant','exam
   }
 });
 
+// Public settings for frontend (safe to expose site-level content like principal message)
+router.get('/public', async (req, res) => {
+  try {
+    const setting = await Setting.findOne().lean();
+    // only expose public fields
+    const publicFields = {};
+    if (setting) {
+      publicFields.schoolName = setting.schoolName;
+      publicFields.logoUrl = setting.logoUrl;
+      publicFields.principalName = setting.principalName;
+      publicFields.principalDesignation = setting.principalDesignation;
+      publicFields.principalImage = setting.principalImage;
+      publicFields.principalMessageEnglish = setting.principalMessageEnglish;
+      publicFields.principalMessageNepali = setting.principalMessageNepali;
+    }
+    res.json({ setting: publicFields });
+  } catch (err) {
+    console.error('Failed to load public settings:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 router.put('/', auth, roles(['superadmin','admin','principal']), async (req, res) => {
   try {
     const payload = {

@@ -46,6 +46,7 @@ import AdminEvents from './pages/AdminEvents';
 import AdminSchoolLeadership from './pages/admin/SchoolLeadership';
 import AdminPhotoGallery from './pages/admin/AdminPhotoGallery';
 import AdminAdmissions from './pages/admin/Admissions';
+import ContactMessages from './pages/admin/ContactMessages';
 import UserRoles from './pages/admin/UserRoles';
 import StudentResults from './pages/StudentResults';
 import StudentAdmitCard from './pages/StudentAdmitCard';
@@ -83,6 +84,7 @@ import StudentAchievements from './pages/public/StudentAchievements';
 import AcademicExcellence from './pages/public/AcademicExcellence';
 import LanguageToggleTest from './pages/public/LanguageToggleTest';
 import PublicLayout from './components/public/PublicLayout';
+import ScrollToTop from './components/ScrollToTop';
 import Register from './pages/Register';
 import StudentResultsPublic from './pages/public/StudentResultsPublic';
 
@@ -90,6 +92,7 @@ export default function App(){
   return (
     <LanguageProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
         {/* Public Website Routes */}
         <Route path="/" element={<PublicLayout><PublicHome /></PublicLayout>} />
@@ -209,9 +212,11 @@ export default function App(){
           <Route path="photo-gallery" element={<AdminPhotoGallery />} />
           <Route path="admissions" element={<AdminAdmissions />} />
           <Route path="user-roles" element={<UserRoles />} />
+          <Route path="settings" element={<AccountSettings />} />
           <Route path="facilities" element={<AdminFacilities />} />
           <Route path="events" element={<AdminEvents />} />
           <Route path="school-leadership" element={<AdminSchoolLeadership />} />
+          <Route path="contact-messages" element={<ContactMessages />} />
           <Route path="collect-fee" element={<CollectFee />} />
           <Route path="fee-categories" element={<FeeCategories />} />
           <Route path="payment-history" element={<FeeHistory />} />

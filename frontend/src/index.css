@@ -304,6 +304,25 @@ select, input, textarea {
   box-sizing: border-box;
 }
 
+.admissions-form,
+.admissions-form * {
+  box-sizing: border-box;
+}
+
+.admissions-form .select-wrapper {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.admissions-form select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
 /* Help long option text wrap on some mobile browsers */
 select option {
   white-space: normal;

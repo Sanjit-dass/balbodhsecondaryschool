@@ -122,7 +122,7 @@ const Admissions = () => {
 
   return (
     <TranslateText>
-      <div>
+      <div className="overflow-x-hidden">
       {/* Page Header */}
       <motion.section
         initial={{ opacity: 0 }}
@@ -278,14 +278,14 @@ const Admissions = () => {
       </section>
 
       {/* Online Admission Form */}
-      <section className="py-16 md:py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="py-16 md:py-24 bg-gray-50 overflow-x-hidden">
+        <div className="max-w-7xl mx-auto px-4 overflow-x-hidden">
           <SectionTitle
             title="Online Admission Form"
             subtitle="Fill the form below to start your application"
           />
 
-          <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8 md:p-12">
+          <div className="max-w-2xl w-full mx-auto bg-white rounded-lg shadow-lg p-8 md:p-12 overflow-x-hidden">
             {submissionSuccess && (
               <div className="mb-6 p-6 rounded-lg bg-green-50 border border-green-200">
                 <h3 className="text-xl font-bold text-green-800">Application Submitted Successfully!</h3>
@@ -298,8 +298,8 @@ const Admissions = () => {
                 <p className="mt-3 text-gray-700">We look forward to welcoming you to Bal Bodh Secondary School.</p>
               </div>
             )}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit} className="space-y-6 overflow-hidden min-w-0 admissions-form">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden min-w-0">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -341,12 +341,13 @@ const Admissions = () => {
                 </motion.div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-w-0">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.2 }}
                   viewport={{ once: true }}
+                  className="min-w-0"
                 >
                   <label className="block text-gray-700 font-semibold mb-2">
                     Email *
@@ -367,6 +368,7 @@ const Admissions = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.3 }}
                   viewport={{ once: true }}
+                  className="min-w-0"
                 >
                   <label className="block text-gray-700 font-semibold mb-2">
                     Phone *
@@ -388,27 +390,30 @@ const Admissions = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.4 }}
                 viewport={{ once: true }}
+                className="min-w-0 w-full overflow-hidden"
               >
                 <label className="block text-gray-700 font-semibold mb-2">
                   Applying for Class *
                 </label>
-                <select
-                  name="class"
-                  value={formData.class}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
-                  style={{ '--tw-ring-color': COLORS.secondary }}
-                >
-                  <option value="">Select Class</option>
-                  {['Nursery', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'].map(
-                    (grade) => (
-                      <option key={grade} value={grade}>
-                        {grade}
-                      </option>
-                    )
-                  )}
-                </select>
+                <div className="w-full max-w-full min-w-0 overflow-hidden select-wrapper">
+                  <select
+                    name="class"
+                    value={formData.class}
+                    onChange={handleChange}
+                    required
+                    className="block w-full max-w-full min-w-0 appearance-none px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
+                    style={{ '--tw-ring-color': COLORS.secondary, boxSizing: 'border-box' }}
+                  >
+                    <option value="">Select Class</option>
+                    {['Nursery', 'LKG', 'UKG', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'].map(
+                      (grade) => (
+                        <option key={grade} value={grade}>
+                          {grade}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
               </motion.div>
 
               <motion.div

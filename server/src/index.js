@@ -108,6 +108,7 @@ app.use('/api/attendance', require('./routes/attendance'));
 app.use('/api/exams', require('./routes/exams'));
 app.use('/api/fees', require('./routes/fees'));
 app.use('/api/notices', require('./routes/notices'));
+app.use('/api/contact', require('./routes/contact'));
 // Online admissions API (public submission + admin management)
 app.use('/api/admissions', require('./routes/admissions'));
 // Brochure management
