@@ -82,7 +82,7 @@ export const ACADEMIC_PROGRAMS = [
 export const TESTIMONIALS = [
   {
     name: 'Er. Sanjit Das',
-    role: 'Senior Faculty',
+    role: 'Software Developer',
     text: 'Bal Bodh has consistently demonstrated a commitment to quality education and student success. Its collaborative environment and skilled staff make a real difference.',
     image: 'sanjitPhoto.jpeg',
   },
