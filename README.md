@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Balbodh Secondary School Management System
 
 This workspace contains a production-ready scaffold for Balbodh Secondary School Management System: a React + Vite frontend and an Express + MongoDB backend with Firebase file storage support.
@@ -29,3 +30,7 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+=======
+# Bal-Bodh-School-
+Complete School ERP Management System for Bal Bodh Secondary School with Admin, Teacher, Student, Accountant, Exam, Fee, Attendance, Result, Admission and Notification Modules.
+>>>>>>> 8e0dd8363bed91d9356c5d200a6106fe5175e4b2
