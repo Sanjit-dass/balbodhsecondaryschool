@@ -32,7 +32,7 @@ export const STATISTICS = [
   { label: 'Teachers', value: 20, suffix: '+', icon: 'FaChalkboardTeacher' },
   { label: 'Classrooms', value: 20, suffix: '+', icon: 'FaSchool' },
   { label: 'Awards', value: 100, suffix: '+', icon: 'FaTrophy' },
-  { label: 'Recognitions', value: 35, suffix: '+', icon: 'FaAward' },
+  { label: 'Pass Rate', value: 98, suffix: '%', icon: 'FaAward' },
   { label: 'Years', value: 21, suffix: '+', icon: 'FaCalendar' },
 ];
 
