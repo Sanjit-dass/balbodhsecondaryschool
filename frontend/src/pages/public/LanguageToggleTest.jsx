@@ -5,7 +5,7 @@ import TranslateText from '../../components/public/TranslateText';
 /**
  * ✅ DEMO - Language Toggle Testing
  * 
- * Navigate to: http://localhost:5173/staff
+ * Navigate to: /staff
  * Click ने button in navbar - the page will now update to Nepali!
  * 
  * This shows:

@@ -4,7 +4,7 @@ import { FaSearch } from 'react-icons/fa';
 import { SectionTitle, FacilityCard } from '../../components/public/SectionComponents';
 import FacilityModal from '../../components/public/FacilityModal';
 import TranslateText from '../../components/public/TranslateText';
-import { apiBaseURL } from '../../services/api';
+import { apiBaseURL, API_BASE } from '../../services/api';
 import { COLORS } from '../../constants/schoolData';
 
 const Facilities = () => {
@@ -22,7 +22,7 @@ const Facilities = () => {
     { id: 'recreation', name: 'Recreation' },
   ];
 
-  const API = apiBaseURL.replace(/\/api$/, '');
+  const API = API_BASE;
 
   useEffect(() => {
     let mounted = true;

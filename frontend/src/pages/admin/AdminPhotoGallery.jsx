@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { SectionTitle } from '../../components/public/SectionComponents';
 import { GALLERY_CATEGORIES } from '../../constants/schoolData';
-import { apiBaseURL, getImageUrl } from '../../services/api';
+import { apiBaseURL, getImageUrl, API_BASE } from '../../services/api';
 import ResponsiveSelect from '../../components/ResponsiveSelect';
 
 const AdminPhotoGallery = () => {
@@ -18,7 +18,7 @@ const AdminPhotoGallery = () => {
   const [previewAlbum, setPreviewAlbum] = useState(null);
   const fileInputRef = useRef();
 
-  const API = apiBaseURL.replace(/\/api$/, '');
+  const API = API_BASE;
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
   const normalizeGallery = (g) => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import ResponsiveSelect from '../components/ResponsiveSelect';
-import { apiBaseURL } from '../services/api';
+import { apiBaseURL, API_BASE } from '../services/api';
 
 function formatDate(d) {
   if (!d) return '';
@@ -11,7 +11,7 @@ function formatDate(d) {
 export default function AdminFacilities(){
   const { user, token } = useContext(AuthContext);
   const modalScrollY = useRef(0);
-  const API = apiBaseURL.replace(/\/api$/, '');
+  const API = API_BASE;
   const [loading, setLoading] = useState(true);
   const [facilities, setFacilities] = useState([]);
   const [editing, setEditing] = useState(null);

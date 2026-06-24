@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { FaSearch, FaFilter, FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import ResponsiveSelect from '../../components/ResponsiveSelect';
-import { apiBaseURL } from '../../services/api';
+import { apiBaseURL, API_BASE } from '../../services/api';
 
 export default function FacilitiesPage() {
   const [facilities, setFacilities] = useState([]);
@@ -12,7 +12,7 @@ export default function FacilitiesPage() {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'gallery'
   const [selectedFacility, setSelectedFacility] = useState(null);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
-  const API = apiBaseURL.replace(/\/api$/, '');
+  const API = API_BASE;
 
   const categories = ['All', 'Academic', 'Technology', 'Science', 'Sports', 'Hostel', 'Library', 'Transportation', 'Medical', 'Infrastructure', 'Other'];
 

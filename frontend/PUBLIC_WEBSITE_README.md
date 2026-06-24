@@ -193,7 +193,7 @@ The `render.yaml` and `vercel.json` files are already configured for deployment.
 
 Create a `.env` file:
 ```env
-VITE_API_URL=http://localhost:3000
+VITE_API_URL=https://api.example.com
 ```
 
 ## 📱 Browser Support

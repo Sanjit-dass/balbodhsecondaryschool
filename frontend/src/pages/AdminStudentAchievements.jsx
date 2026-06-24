@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
-import { apiBaseURL } from '../services/api';
+import { apiBaseURL, API_BASE } from '../services/api';
 import ResponsiveSelect from '../components/ResponsiveSelect';
 
 function formatDate(d){ if(!d) return ''; try{ const dt = new Date(d); return isNaN(dt.getTime())? '': dt.toISOString().slice(0,10); }catch(e){ return ''; } }
 
 export default function AdminStudentAchievements(){
   const { token } = useContext(AuthContext);
-  const API = apiBaseURL.replace(/\/api$/, '');
+  const API = API_BASE;
 
   const [loading,setLoading] = useState(true);
   const [achievements,setAchievements] = useState([]);

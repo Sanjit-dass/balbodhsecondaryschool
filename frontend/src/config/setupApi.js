@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { apiBaseURL } from '../services/api';
+import { apiBaseURL, API_BASE } from '../services/api';
 
 // Ensure axios (when imported directly) uses the same baseURL
 try {
@@ -14,11 +14,9 @@ if (typeof window !== 'undefined' && !window.__apiFetchPatched) {
   window.fetch = (input, init) => {
     try {
       if (typeof input === 'string' && input.startsWith('/api')) {
-        const root = apiBaseURL.replace(/\/api$/,'');
-        input = `${root}${input}`;
+        input = `${API_BASE}${input}`;
       } else if (input instanceof Request && input.url && input.url.startsWith('/api')) {
-        const root = apiBaseURL.replace(/\/api$/,'');
-        input = new Request(`${root}${input.url}`, input);
+        input = new Request(`${API_BASE}${input.url}`, input);
       }
     } catch (e) {
       // fallthrough to original fetch

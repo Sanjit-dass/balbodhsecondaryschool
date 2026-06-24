@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { AuthContext } from '../../contexts/AuthContext';
-import { apiBaseURL } from '../../services/api';
+import { apiBaseURL, API_BASE } from '../../services/api';
 
 export default function AcademicExcellence() {
   const [selected, setSelected] = useState(null);
   const [achievements, setAchievements] = useState([]);
   const [loading, setLoading] = useState(true);
-  const API = apiBaseURL.replace(/\/api$/, '');
+  const API = API_BASE;
 
   const fetchAchievements = async () => {
     setLoading(true);

@@ -2,26 +2,26 @@ import axios from "axios";
 
 const normalizeApiUrl = (value) => {
   const raw = String(value || '').trim();
-  // In production require an explicit API URL to avoid accidental localhost usage
+  // In production require an explicit API URL to avoid accidental local dev host usage
   if (!raw) {
     if (import.meta.env && import.meta.env.MODE === 'production') {
       throw new Error('VITE_API_URL must be set in production builds');
     }
-    // In dev: derive host from current location so the bundle doesn't embed a literal localhost string
+    // In dev: derive host from current location so the bundle doesn't embed a literal local dev host string
     if (typeof window !== 'undefined' && window.location) {
       const proto = window.location.protocol || 'http:';
-      const host = window.location.hostname || 'localhost';
-      return `${proto}//${host}:5003`;
+      const host = window.location.hostname || '';
+      return host ? `${proto}//${host}:5003` : '';
     }
     return '';
   }
   if (/^:\d+$/.test(raw)) {
     if (typeof window !== 'undefined' && window.location) {
       const proto = window.location.protocol || 'http:';
-      const host = window.location.hostname || 'localhost';
-      return `${proto}//${host}${raw}`;
+      const host = window.location.hostname || '';
+      return host ? `${proto}//${host}${raw}` : '';
     }
-    return `http://${raw.replace(/^:/, '')}`;
+    return '';
   }
   if (/^\/\//.test(raw)) return `http:${raw}`;
   const normalized = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(raw) ? raw : `http://${raw}`;
@@ -30,19 +30,20 @@ const normalizeApiUrl = (value) => {
 
 export const apiRoot = normalizeApiUrl(import.meta.env.VITE_API_URL);
 export const apiBaseURL = apiRoot.endsWith("/api") ? apiRoot : `${apiRoot}/api`;
+export const API_BASE = apiRoot.replace(/\/api$/, '');
 
 export function getImageUrl(p) {
   if (!p) return '/default-placeholder.png';
   try {
-    if (typeof p === 'object') {
+      if (typeof p === 'object') {
       if (p.url) return p.url;
-      if (p.path) return `${apiRoot.replace(/\/api$/, '')}/${p.path}`;
-      if (p.filename) return `${apiRoot.replace(/\/api$/, '')}/uploads/gallery/${p.filename}`;
+      if (p.path) return `${API_BASE}/${p.path}`;
+      if (p.filename) return `${API_BASE}/uploads/gallery/${p.filename}`;
     }
     const s = String(p || '').trim();
     if (!s) return '/default-placeholder.png';
     if (/^https?:\/\//i.test(s) || s.startsWith('/')) return s;
-    return `${apiRoot.replace(/\/api$/, '')}/uploads/gallery/${s}`;
+    return `${API_BASE}/uploads/gallery/${s}`;
   } catch (e) {
     return '/default-placeholder.png';
   }

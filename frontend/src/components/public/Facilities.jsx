@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import { apiBaseURL } from '../../services/api';
+import { apiBaseURL, API_BASE } from '../../services/api';
 
 export default function Facilities() {
   const [selected, setSelected] = useState(null);
   const [facilities, setFacilities] = useState([]);
   const [loading, setLoading] = useState(true);
-  const API = apiBaseURL.replace(/\/api$/, '');
+  const API = API_BASE;
 
   const fetchFacilities = async () => {
     setLoading(true);

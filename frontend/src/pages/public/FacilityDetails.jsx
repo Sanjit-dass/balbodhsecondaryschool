@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { FaArrowLeft, FaArrowRight, FaTimes } from 'react-icons/fa';
 import TranslateText from '../../components/public/TranslateText';
 import { SCHOOL_INFO } from '../../constants/schoolData';
-import { apiBaseURL } from '../../services/api';
+import { apiBaseURL, API_BASE } from '../../services/api';
 
 const FacilityDetails = () => {
   const { id } = useParams();
@@ -14,7 +14,7 @@ const FacilityDetails = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const API = apiBaseURL.replace(/\/api$/, '');
+  const API = API_BASE;
 
   const sanitizeText = (text) => {
     if (!text) return '';

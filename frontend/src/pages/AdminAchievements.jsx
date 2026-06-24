@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
-import { apiBaseURL } from '../services/api';
+import { apiBaseURL, API_BASE } from '../services/api';
 import ResponsiveSelect from '../components/ResponsiveSelect';
 
 function formatDate(d) {
@@ -10,7 +10,7 @@ function formatDate(d) {
 
 export default function AdminAchievements(){
   const { user, token } = useContext(AuthContext);
-  const API = apiBaseURL.replace(/\/api$/, '');
+  const API = API_BASE;
   const [loading, setLoading] = useState(true);
   const [achievements, setAchievements] = useState([]);
   const [editing, setEditing] = useState(null);
