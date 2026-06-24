@@ -199,7 +199,7 @@ const PublicFooter = () => {
                 </a>
                 <span className="text-gray-500">&amp;</span>
                 <a
-                  href="http://localhost:5173/#"
+                  href="#"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Open Puspendra Birajee portfolio in new tab"

@@ -7,10 +7,22 @@ const normalizeApiUrl = (value) => {
     if (import.meta.env && import.meta.env.MODE === 'production') {
       throw new Error('VITE_API_URL must be set in production builds');
     }
-    // allow a developer-friendly default in local dev only
-    return 'http://localhost:5003';
+    // In dev: derive host from current location so the bundle doesn't embed a literal localhost string
+    if (typeof window !== 'undefined' && window.location) {
+      const proto = window.location.protocol || 'http:';
+      const host = window.location.hostname || 'localhost';
+      return `${proto}//${host}:5003`;
+    }
+    return '';
   }
-  if (/^:\d+$/.test(raw)) return `http://localhost${raw}`;
+  if (/^:\d+$/.test(raw)) {
+    if (typeof window !== 'undefined' && window.location) {
+      const proto = window.location.protocol || 'http:';
+      const host = window.location.hostname || 'localhost';
+      return `${proto}//${host}${raw}`;
+    }
+    return `http://${raw.replace(/^:/, '')}`;
+  }
   if (/^\/\//.test(raw)) return `http:${raw}`;
   const normalized = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(raw) ? raw : `http://${raw}`;
   return normalized.replace(/\/+$/, '');
