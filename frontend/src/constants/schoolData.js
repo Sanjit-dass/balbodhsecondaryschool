@@ -5,8 +5,8 @@ export const SCHOOL_INFO = {
   about:
     'Bal Bodh Secondary School is a premier educational institution dedicated to nurturing young minds and fostering academic excellence, character development, and holistic growth.',
   address: 'Kanchanpur, Saptari, Nepal',
-  phone: '+977-9801234567',
-  email: 'info@balbodh.edu.np',
+  phone: '+977-985-2860773',
+  email: 'balbodhschool9@gmail.com',
   website: 'https://balbodh.edu.np',
   facebook: '',
   twitter: '',
