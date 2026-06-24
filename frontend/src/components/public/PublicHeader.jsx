@@ -79,18 +79,8 @@ const PublicHeader = () => {
               <div className="mt-1"><span className="inline-block text-xs text-white font-bold">ESTD. {SCHOOL_INFO.established}</span></div>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={() => { try { console.log('[PublicHeader] Hamburger clicked (fastbar)'); } catch (e) {} ; toggleMobileMenu(); }} className="p-3 rounded-md bg-blue-800/60 hover:bg-blue-800/80 relative focus:outline-none focus:ring-2 focus:ring-white" aria-label="Toggle menu" aria-expanded={isOpen} style={{ zIndex: 2147483648 }}>
+              <button onClick={() => { try { console.log('[PublicHeader] Hamburger clicked (fastbar)'); } catch (e) {} ; toggleMobileMenu(); }} className="p-3 rounded-md bg-blue-800/60 hover:bg-blue-800/80 relative focus:outline-none focus:ring-2 focus:ring-white" aria-label="Toggle menu" aria-expanded={isOpen} style={{ zIndex: 2147483648, marginRight: '8px' }}>
                 {isOpen ? <FaTimes className="w-5 h-5 text-white" /> : <FaBars className="w-5 h-5 text-white" />}
-              </button>
-              <button
-                onClick={() => changeLanguage('ne')}
-                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all duration-300 ${
-                  language === 'ne'
-                    ? 'bg-white text-blue-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                ने
               </button>
             </div>
           </div>
