@@ -82,20 +82,20 @@ export const ACADEMIC_PROGRAMS = [
 export const TESTIMONIALS = [
   {
     name: 'Er. Sanjit Das',
-    role: 'Software Developer',
-    text: 'Bal Bodh has consistently demonstrated a commitment to quality education and student success. Its collaborative environment and skilled staff make a real difference.',
+    role: 'Software Developer • Alumni Batch 2074',
+    text: 'Bal Bodh Secondary School provided me with a strong academic foundation and valuable life skills. The supportive teachers and learning environment played a significant role in my personal and professional growth.',
     image: 'sanjitPhoto.jpeg',
   },
   {
     name: 'Er. Puspendra Birajee',
-    role: 'Technical Mentor',
-    text: 'The school blends traditional values with modern teaching practices, preparing students well for higher education and careers.',
+    role: 'Computer Engineer • Alumni Batch 2074',
+    text: 'My journey at Bal Bodh Secondary School was filled with opportunities to learn, participate, and grow. The school helped me build confidence and prepare for future challenges.',
     image: 'puspendra.png',
   },
   {
-    name: 'Dhiraj Sah',
-    role: 'Alumni',
-    text: 'Joining Bal Bodh was a turning point for me. The guidance and exposure helped me achieve my academic goals.',
+    name: 'Mr. Dhiraj Sah',
+    role: 'Pharmacist • Alumni Batch 2074',
+    text: 'The discipline, quality education, and encouragement from teachers helped shape my future. I am proud to be a former student of Bal Bodh Secondary School.',
     image: 'Dhiraj.png',
   },
 ];
