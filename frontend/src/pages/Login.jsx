@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaUserGraduate, FaChalkboardTeacher, FaMoneyBillWave, FaClipboardList, FaShieldAlt, FaEnvelope, FaLock } from 'react-icons/fa';
-import bgImage from '../images/schoolphoto.png';
+const bgImage = '/images/schoolphoto.png';
 import { AuthContext } from '../contexts/AuthContext';
 
 const LOGIN_REDIRECT = {

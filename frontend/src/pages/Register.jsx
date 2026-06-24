@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 import { FaEnvelope, FaLock, FaUser } from 'react-icons/fa';
-import bgImage from '../images/schoolphoto.png';
+const bgImage = '/images/schoolphoto.png';
 
 const allRoles = [
   { value: 'student', label: 'Student' },

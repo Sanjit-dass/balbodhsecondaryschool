@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/copy-images.js",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint ."

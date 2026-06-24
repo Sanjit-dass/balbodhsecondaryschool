@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useTranslate } from '../../hooks/useTranslate';
-import defaultAvatar from '../../images/faculty1.png';
+const defaultAvatar = '/images/faculty1.png';
 import { getImageUrl } from '../../services/api';
 
 export const SectionTitle = ({ title, subtitle, align = 'center' }) => {
@@ -96,7 +96,7 @@ export const FacilityCard = ({ title, description, image, delay }) => {
       {/* Image Container */}
       <div className="relative h-64 md:h-72 overflow-hidden bg-gray-200">
         <img
-          src={typeof image === 'string' && (image.startsWith('http') || image.startsWith('/')) ? image : (image ? `/src/images/${image}` : '/src/images/schoolphoto.png')}
+          src={typeof image === 'string' && (image.startsWith('http') || image.startsWith('/')) ? image : (image ? `/images/${image}` : '/images/schoolphoto.png')}
           alt={title}
           loading="lazy"
           decoding="async"
@@ -130,7 +130,7 @@ export const TestimonialCard = ({ name, role, text, image, delay }) => {
     >
       <div className="flex-1 flex flex-col">
         <div className="flex justify-center -mt-12 mb-4">
-          <img src={`/src/images/${image}`} alt={name} className="w-28 h-28 md:w-32 md:h-32 rounded-full object-cover ring-4 ring-white shadow-md" />
+          <img src={`/images/${image}`} alt={name} className="w-28 h-28 md:w-32 md:h-32 rounded-full object-cover ring-4 ring-white shadow-md" />
         </div>
 
         <div className="flex justify-center mb-4">
@@ -169,8 +169,8 @@ export const EventCard = ({ title, date, description, image, delay, onLearnMore 
         <img
           src={
             typeof image === 'string'
-              ? (image.startsWith('http') || image.startsWith('/') ? image : `/src/images/${image}`)
-              : (image && image.url ? image.url : '/src/images/schoolphoto.png')
+              ? (image.startsWith('http') || image.startsWith('/') ? image : `/images/${image}`)
+              : (image && image.url ? image.url : '/images/schoolphoto.png')
           }
           alt={title}
           loading="lazy"
@@ -328,7 +328,7 @@ export const StaffCard = ({ name, role, image, department, delay, onClick }) => 
       <div onClick={onClick} className="cursor-pointer">
         <div className="overflow-hidden rounded-t-lg h-44 md:h-56 relative bg-gray-100 flex items-center justify-center">
           <img
-            src={ image ? (image.startsWith('http') || image.startsWith('/') ? image : `/src/images/${image}`) : defaultAvatar }
+            src={ image ? (image.startsWith('http') || image.startsWith('/') ? image : `/images/${image}`) : defaultAvatar }
             alt={name}
             loading="lazy"
             decoding="async"

@@ -61,7 +61,7 @@ const About = () => {
               className="rounded-xl overflow-hidden shadow-xl"
             >
               <img
-                src="/src/images/schoolphoto.png"
+                src="/images/schoolphoto.png"
                 alt="School Campus"
                 className="w-full h-96 object-cover"
               />

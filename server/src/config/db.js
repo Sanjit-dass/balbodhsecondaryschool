@@ -6,7 +6,11 @@ const isSrvUri = (uri) => typeof uri === 'string' && uri.startsWith('mongodb+srv
 
 const getSrvHostFromUri = (uri) => {
   const match = uri.match(/^mongodb\+srv:\/\/([^\/]+)/i);
-  return match ? match[1] : null;
+  if (!match) return null;
+  const authority = match[1];
+  // authority may include credentials like user:pass@host
+  const atIndex = authority.lastIndexOf('@');
+  return atIndex >= 0 ? authority.slice(atIndex + 1) : authority;
 };
 
 const resolveSrv = async (srvHost) => {
@@ -55,6 +59,7 @@ const connectWithMongoose = async (uri) => {
     connectTimeoutMS: 10000,
     socketTimeoutMS: 45000,
     family: 4,
+    // Mongoose v6+ and the Node driver handle URL parsing and topology by default.
   });
 };
 
@@ -74,8 +79,8 @@ const shouldTryFallback = (err) => {
 
 const connectDB = async (mongoUri, fallbackUri) => {
   if (!mongoUri) {
-    const error = new Error('MONGODB_URL is required but was not provided.');
-    error.code = 'MISSING_MONGODB_URL';
+    const error = new Error('MONGODB_URI (or MONGODB_URL) is required but was not provided.');
+    error.code = 'MISSING_MONGODB_URI';
     throw error;
   }
 
@@ -123,7 +128,7 @@ const connectDB = async (mongoUri, fallbackUri) => {
     }
 
     if (fallbackUri) {
-      console.warn('⚠️ Attempting fallback connection using MONGODB_DIRECT_URL...');
+      console.warn('⚠️ Attempting fallback connection using MONGODB_DIRECT_URI...');
       try {
         await connectWithMongoose(fallbackUri);
         console.log('✅ MongoDB connected using fallback direct-host connection string');
@@ -137,7 +142,7 @@ const connectDB = async (mongoUri, fallbackUri) => {
       }
     }
 
-    console.error('   hint: if SRV DNS resolution fails, set MONGODB_DIRECT_URL with a mongodb:// direct-host string from Atlas.');
+    console.error('   hint: if SRV DNS resolution fails, set MONGODB_DIRECT_URI with a mongodb:// direct-host string from Atlas.');
     throw err;
   }
 };

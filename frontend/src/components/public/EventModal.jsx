@@ -58,7 +58,7 @@ const EventModal = ({ event, onClose }) => {
           <div className="flex-1 rounded-lg overflow-hidden mb-4 relative" onTouchStart={onTouchStart} onTouchMove={onTouchMove}>
             {photos.length > 0 ? (
               <>
-                <img src={photos[index].url || photos[index].fileUrl || '/src/images/schoolphoto.png'} alt={current.title} className="w-full h-96 object-cover filter brightness-105" />
+                <img src={photos[index].url || photos[index].fileUrl || '/images/schoolphoto.png'} alt={current.title} className="w-full h-96 object-cover filter brightness-105" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/12 via-transparent to-black/6 pointer-events-none" />
                 <button onClick={prev} className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-2 shadow">‹</button>
                 <button onClick={next} className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-2 shadow">›</button>

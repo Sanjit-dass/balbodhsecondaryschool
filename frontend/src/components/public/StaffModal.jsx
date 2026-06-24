@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import defaultAvatar from '../../images/faculty1.png';
+const defaultAvatar = '/images/faculty1.png';
 
 export default function StaffModal({ staff, onClose }){
   if (!staff) return null;

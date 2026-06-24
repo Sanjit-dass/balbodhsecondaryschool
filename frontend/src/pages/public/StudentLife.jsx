@@ -125,7 +125,7 @@ const StudentLife = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
               <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }} className="rounded-xl overflow-hidden shadow-xl">
-                <img src="/src/images/studentlife.jpeg" alt="Student Activities" className="w-full h-96 object-cover" />
+                <img src="/images/studentlife.jpeg" alt="Student Activities" className="w-full h-96 object-cover" />
               </motion.div>
 
               <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>

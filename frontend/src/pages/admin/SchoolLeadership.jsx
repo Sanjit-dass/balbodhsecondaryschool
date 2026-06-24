@@ -207,7 +207,7 @@ export default function AdminSchoolLeadership(){
                   <tr key={s._id} className="border-b hover:bg-gray-50">
                     <td className="p-3 w-24">
                       <div className="w-16 h-16 rounded overflow-hidden bg-gray-100">
-                        <img src={(s.photo && s.photo.url) ? s.photo.url : '/src/images/faculty1.png'} alt={s.fullName} className="w-full h-full object-cover" />
+                        <img src={(s.photo && s.photo.url) ? s.photo.url : '/images/faculty1.png'} alt={s.fullName} className="w-full h-full object-cover" />
                       </div>
                     </td>
                     <td className="p-3">{s.fullName}</td>

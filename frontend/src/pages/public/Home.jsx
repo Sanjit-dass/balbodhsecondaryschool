@@ -240,7 +240,7 @@ import axios from 'axios';
             >
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <img
-                  src="/src/images/schoolphoto.png"
+                  src="/images/schoolphoto.png"
                   alt="School Campus"
                   className="w-full h-[500px] object-cover"
                 />
@@ -304,7 +304,7 @@ import axios from 'axios';
             >
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <img
-                  src="/src/images/principal.png"
+                  src="/images/principal.png"
                   alt="Founder"
                   className="w-full h-[500px] object-cover"
                 />

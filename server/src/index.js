@@ -16,21 +16,21 @@ if (envResult.error) {
 const app = express();
 
 const PORT = process.env.PORT || 5000;
-const MONGODB_URL = process.env.MONGODB_URL || process.env.MONGODB_URI;
-const MONGODB_DIRECT_URL = process.env.MONGODB_DIRECT_URL;
+const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGODB_URL;
+const MONGODB_DIRECT_URI = process.env.MONGODB_DIRECT_URI || process.env.MONGODB_DIRECT_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 console.log('NODE_ENV:', process.env.NODE_ENV || 'development');
 console.log('Working directory:', process.cwd());
 console.log('MONGODB_URL loaded:', Boolean(process.env.MONGODB_URL));
 console.log('MONGODB_URI loaded:', Boolean(process.env.MONGODB_URI));
-console.log('Using MongoDB connection source:', process.env.MONGODB_URL ? 'MONGODB_URL' : process.env.MONGODB_URI ? 'MONGODB_URI' : 'none');
-console.log('MONGODB_DIRECT_URL loaded:', Boolean(MONGODB_DIRECT_URL));
+console.log('Using MongoDB connection source:', process.env.MONGODB_URI ? 'MONGODB_URI' : process.env.MONGODB_URL ? 'MONGODB_URL' : 'none');
+console.log('MONGODB_DIRECT_URI loaded:', Boolean(MONGODB_DIRECT_URI));
 console.log('JWT_SECRET loaded:', Boolean(JWT_SECRET));
 console.log('PORT:', PORT);
 
 const missingEnv = [];
-if (!MONGODB_URL) missingEnv.push('MONGODB_URL or MONGODB_URI');
+if (!MONGODB_URI) missingEnv.push('MONGODB_URI (or MONGODB_URL)');
 if (!JWT_SECRET) missingEnv.push('JWT_SECRET');
 
 if (missingEnv.length > 0) {
@@ -350,7 +350,7 @@ const ensureStudentIndexes = async () => {
 
 const startServer = async () => {
   try {
-    await connectDB(MONGODB_URL, MONGODB_DIRECT_URL);
+    await connectDB(MONGODB_URI, MONGODB_DIRECT_URI);
     await ensureStudentIndexes();
 
     server = app.listen(PORT)

@@ -64,7 +64,7 @@ const Academics = () => {
               className="rounded-xl overflow-hidden shadow-xl"
             >
               <img
-                src="/src/images/projectclass10.png"
+                src="/images/projectclass10.png"
                 alt="Classroom"
                 className="w-full h-96 object-cover"
               />
