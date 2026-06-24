@@ -9,22 +9,48 @@ const LanguageContext = createContext();
  * ⚠️ IMPORTANT: Must wrap entire app to make context available everywhere
  */
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguage] = useState("en");
+  // Detect mobile devices (basic heuristic: viewport width or userAgent)
+  const isBrowser = typeof window !== 'undefined';
+  const initialIsMobile = isBrowser && (window.innerWidth <= 768 || /Mobi|Android|iPhone|iPad|Phone/i.test(navigator.userAgent));
 
-  // Load saved language on mount
+  const [isMobile, setIsMobile] = useState(initialIsMobile);
+  const [language, setLanguage] = useState(() => {
+    // On initial load, prefer saved setting but ensure mobile always starts in English
+    if (!isBrowser) return 'en';
+    const saved = localStorage.getItem('appLanguage');
+    if (initialIsMobile) return 'en';
+    return (saved === 'ne' || saved === 'en') ? saved : 'en';
+  });
+
+  // Keep isMobile updated on resize / orientation change
   useEffect(() => {
-    const savedLang = localStorage.getItem("appLanguage");
-    if (savedLang && ["en", "ne"].includes(savedLang)) {
-      setLanguage(savedLang);
-    }
+    if (!isBrowser) return;
+    const onResize = () => {
+      const mobile = window.innerWidth <= 768 || /Mobi|Android|iPhone|iPad|Phone/i.test(navigator.userAgent);
+      setIsMobile(mobile);
+      // If device became mobile, force English
+      if (mobile && language !== 'en') {
+        setLanguage('en');
+      }
+    };
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Change language and persist to localStorage
+  // Change language and persist to localStorage. On mobile, Nepali is disabled.
   const changeLanguage = (lang) => {
-    if (["en", "ne"].includes(lang)) {
-      setLanguage(lang);
-      localStorage.setItem("appLanguage", lang);
+    if (!['en', 'ne'].includes(lang)) return;
+    if (isMobile && lang === 'ne') {
+      // Do not allow Nepali on mobile devices
+      return;
     }
+    setLanguage(lang);
+    try { localStorage.setItem('appLanguage', lang); } catch (e) {}
   };
 
   // Memoize context value to prevent unnecessary re-renders

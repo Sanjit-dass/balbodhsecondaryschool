@@ -59,7 +59,7 @@ export default function Navbar({ onMenuClick }) {
               onClick={(e) => { e.stopPropagation(); try { window.__ignoreSidebarOverlay = true; setTimeout(() => { window.__ignoreSidebarOverlay = false; }, 300); } catch (err) {} console.log('[Navbar] mobile hamburger clicked'); onMenuClick(); }}
               className="p-2 rounded-md bg-blue-800/60 hover:bg-blue-800/80 relative"
               aria-label="Toggle Sidebar"
-              style={{ zIndex: 9999 }}
+              style={{ zIndex: 9999, marginRight: '8px' }}
             >
               <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
             </button>
@@ -141,16 +141,6 @@ export default function Navbar({ onMenuClick }) {
               }`}
             >
               EN
-            </button>
-            <button
-              onClick={() => changeLanguage('ne')}
-              className={`px-2.5 py-1.5 rounded-md text-sm font-semibold transition-all duration-300 ${
-                language === 'ne'
-                  ? 'bg-white text-indigo-600 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              ने
             </button>
           </div>
         )}
