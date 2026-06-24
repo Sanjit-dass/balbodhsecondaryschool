@@ -28,10 +28,10 @@ export const COLORS = {
 };
 
 export const STATISTICS = [
-  { label: 'Students', value: 1200, suffix: '+', icon: 'FaUsers' },
-  { label: 'Teachers', value: 85, suffix: '+', icon: 'FaChalkboardTeacher' },
-  { label: 'Classrooms', value: 40, suffix: '+', icon: 'FaSchool' },
-  { label: 'Awards', value: 150, suffix: '+', icon: 'FaTrophy' },
+  { label: 'Students', value: 600, suffix: '+', icon: 'FaUsers' },
+  { label: 'Teachers', value: 20, suffix: '+', icon: 'FaChalkboardTeacher' },
+  { label: 'Classrooms', value: 20, suffix: '+', icon: 'FaSchool' },
+  { label: 'Awards', value: 100, suffix: '+', icon: 'FaTrophy' },
   { label: 'Recognitions', value: 35, suffix: '+', icon: 'FaAward' },
   { label: 'Years', value: 21, suffix: '+', icon: 'FaCalendar' },
 ];
