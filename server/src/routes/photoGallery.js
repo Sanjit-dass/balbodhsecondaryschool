@@ -12,11 +12,27 @@ const upload = multer({ storage: multer.memoryStorage() });
 // Public: list all published photos (flattened)
 router.get('/photos', async (req, res) => {
   try {
-    const docs = await PhotoGallery.find({ status: 'published' }).lean();
+    // Support optional filtering by gallery category and photo className
+    const q = { status: 'published' };
+    if (req.query.category) {
+      q.category = req.query.category;
+    } else {
+      // By default exclude galleries that are actually document repositories
+      q.category = { $not: /document|important/i };
+    }
+    const docs = await PhotoGallery.find(q).lean();
     const photos = (docs || []).reduce((arr, g) => {
-      (g.photos||[]).forEach(p => arr.push(Object.assign({}, p, { galleryId: g._id, galleryTitle: g.title, galleryCategory: g.category, galleryCover: g.coverPhoto }))); return arr;
+      (g.photos||[]).forEach(p => {
+        const merged = Object.assign({}, p, { galleryId: g._id, galleryTitle: g.title, galleryCategory: g.category, galleryCover: g.coverPhoto, galleryClassName: g.className || '' });
+        arr.push(merged);
+      });
+      return arr;
     }, []);
-    return res.json({ success: true, data: photos });
+
+    // If className filter provided, only return photos that match (photo-level or gallery-level)
+    const classNameFilter = (req.query.className || '').toString().trim().toLowerCase();
+    const filtered = classNameFilter ? photos.filter(p => ((p.className || '') .toString().toLowerCase() === classNameFilter) || ((p.galleryClassName || '') .toString().toLowerCase() === classNameFilter)) : photos;
+    return res.json({ success: true, data: filtered });
   } catch (err) { console.error(err); return res.status(500).json({ success: false, message: 'Server error' }); }
 });
 
@@ -28,7 +44,7 @@ router.get('/', async (req, res) => {
 // Admin: create gallery
 router.post('/', auth, roles(['superadmin','principal','admin']), async (req, res) => {
   try {
-    const g = new PhotoGallery({ title: req.body.title||'', description: req.body.description||'', category: req.body.category||'other', status: req.body.status||'published', createdBy: req.user.id || req.user._id });
+    const g = new PhotoGallery({ title: req.body.title||'', description: req.body.description||'', category: req.body.category||'other', className: req.body.className||'', status: req.body.status||'published', createdBy: req.user.id || req.user._id });
     await g.save();
     return res.json({ success: true, data: g });
   } catch (err) { console.error(err); return res.status(500).json({ success: false, message: 'Server error' }); }
@@ -41,13 +57,15 @@ router.post('/:id/photos', auth, roles(['superadmin','principal','admin']), uplo
     if (!g) return res.status(404).json({ success: false, message: 'Not found' });
     if (req.files && req.files.length) {
       const folder = `balbodh-school/gallery/${g._id}`;
+      // optional className supplied with upload (per-photo)
+      const photoClassName = (req.body.className || req.body.class || g.className || '').toString();
       for (const file of req.files) {
         const result = await new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream({ folder, resource_type: 'auto', use_filename: true, unique_filename: false }, (err, r) => err? reject(err): resolve(r));
           streamifier.createReadStream(file.buffer).pipe(stream);
         });
         const url = result.secure_url || result.url;
-        g.photos.push({ title: file.originalname, url, caption: req.body.caption || '', publicId: result.public_id });
+        g.photos.push({ title: file.originalname, url, caption: req.body.caption || '', publicId: result.public_id, className: photoClassName });
         // If no cover set, make the first uploaded photo the cover
         if (!g.coverPhoto) {
           // will be populated after save; set to last pushed id after save below

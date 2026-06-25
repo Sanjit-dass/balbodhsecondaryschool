@@ -33,7 +33,7 @@ const Academics = () => {
   return (
     <TranslateText>
       <div>
-      <GoBackButton label="← Back" color="blue" />
+      <GoBackButton label="Back" color="blue" />
       {/* Page Header */}
       <motion.section
         initial={{ opacity: 0 }}

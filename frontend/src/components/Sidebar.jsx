@@ -277,7 +277,7 @@ export default function Sidebar({ isOpen, onClose, onLogoutRequest }){
                   <Link to="/contact" onClick={onClose} className="block py-3 px-3 rounded-lg bg-white text-slate-800 hover:bg-indigo-50 transition">Contact</Link>
 
                     <div className="mt-6">
-                    <Link to="/apply" onClick={onClose} className="inline-block w-full text-center bg-indigo-600 text-white font-semibold px-4 py-3 rounded-lg shadow-sm">Apply Now</Link>
+                    <Link to="/admissions" onClick={onClose} className="inline-block w-full text-center bg-indigo-600 text-white font-semibold px-4 py-3 rounded-lg shadow-sm">Apply Now</Link>
                   </div>
                 </>
               ) : (

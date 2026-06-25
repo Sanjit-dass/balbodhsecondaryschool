@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaSearch } from 'react-icons/fa';
 import { SectionTitle, FacilityCard } from '../../components/public/SectionComponents';
@@ -13,6 +14,7 @@ const Facilities = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [facilitiesData, setFacilitiesData] = useState([]);
   const [selectedFacility, setSelectedFacility] = useState(null);
+  const navigate = useNavigate();
 
   const categories = [
     { id: 'all', name: 'All Facilities' },
@@ -78,9 +80,9 @@ const Facilities = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
               {[
                 { count: '15+', label: 'Classrooms', icon: '🏛️' },
-                { count: '5+', label: 'Laboratories', icon: '🔬' },
-                { count: '20+', label: 'Computers', icon: '💻' },
-                { count: '10+', label: 'Acres', icon: '🌳' },
+                { count: '2+', label: 'Laboratories', icon: '🔬' },
+                { count: '10+', label: 'Computers', icon: '💻' },
+                { count: '1 Bigha', label: 'Land', icon: '🌳' },
               ].map((stat, index) => (
                 <motion.div
                   key={index}
@@ -186,7 +188,14 @@ const Facilities = () => {
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }} className="max-w-[1600px] mx-auto px-4 text-center">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">Experience Our Campus</h2>
             <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">Take a virtual tour of Balbodh Secondary School and explore all our world-class facilities</p>
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="px-8 py-4 rounded-lg font-bold text-white transition-all text-lg" style={{ backgroundColor: COLORS.accent, color: '#000' }}>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-4 rounded-lg font-bold text-white transition-all text-lg"
+              style={{ backgroundColor: COLORS.accent, color: '#000' }}
+              onClick={() => navigate('/')}
+              aria-label="Go to home and start virtual tour"
+            >
               Start Virtual Tour
             </motion.button>
           </motion.div>

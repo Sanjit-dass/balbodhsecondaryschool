@@ -70,7 +70,7 @@ const PublicHeader = () => {
           <div className="w-full px-0 py-3 flex items-center" style={{ paddingTop: 8 }}>
             <div className="flex items-center">
               <Link to="/">
-                <img src="/logo.png" alt="logo" loading="eager" decoding="sync" fetchPriority="high" className="rounded-md object-cover" style={{ width: '48px', height: '48px', marginLeft: '6px' }} />
+                <img src="/logo.png" alt="logo" loading="eager" decoding="sync" fetchpriority="high" className="rounded-md object-cover" style={{ width: '48px', height: '48px', marginLeft: '6px' }} />
               </Link>
             </div>
             <div className="flex-1 text-center">
@@ -185,7 +185,7 @@ const PublicHeader = () => {
                 {/* Mobile header inside menu: logo + school info */}
                 <div className="flex items-center gap-3 px-5 py-5 border-b">
                   <Link to="/" onClick={(e) => handleMobileNavClick(e, '/')} className="flex items-center gap-3">
-                    <img src="/logo.png" alt="logo" loading="eager" decoding="sync" fetchPriority="high" className="w-12 h-12 object-cover rounded-lg" width="48" height="48" />
+                    <img src="/logo.png" alt="logo" loading="eager" decoding="sync" fetchpriority="high" className="w-12 h-12 object-cover rounded-lg" width="48" height="48" />
                     <div className="flex flex-col leading-tight">
                       <span className="text-sm font-semibold text-[#0F172A]">{SCHOOL_INFO.name}</span>
                       <span className="text-xs text-gray-500">{SCHOOL_INFO.address}</span>

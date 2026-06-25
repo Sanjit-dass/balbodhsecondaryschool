@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const PhotoSchema = new mongoose.Schema({
   title: { type: String, default: '' },
   category: { type: String, default: 'Other' },
+  // optional class association for class-specific galleries/photos
+  className: { type: String, default: '' },
   url: { type: String, required: true },
   caption: { type: String },
   publicId: { type: String },
@@ -12,6 +14,8 @@ const PhotoGallerySchema = new mongoose.Schema({
   title: { type: String, default: '' },
   description: { type: String, default: '' },
   category: { type: String, default: 'other' },
+  // optional gallery-level class association (useful for class galleries)
+  className: { type: String, default: '' },
   photos: [PhotoSchema],
   coverPhoto: { type: mongoose.Schema.Types.ObjectId },
   status: { type: String, default: 'published' },

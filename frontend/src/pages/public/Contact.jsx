@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   FaPhone,
@@ -94,6 +94,30 @@ const Contact = () => {
       subtext: 'Monday to Friday',
     },
   ];
+
+  // If URL contains ?focus=phone then scroll to form and focus phone input
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const focus = params.get('focus');
+      if (focus === 'phone') {
+        const el = document.querySelector('#contact-form input[name="phone"]');
+        if (el) {
+          el.focus();
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          // fallback: scroll to form and try again shortly after render
+          scrollToForm();
+          setTimeout(() => {
+            const el2 = document.querySelector('#contact-form input[name="phone"]');
+            if (el2) el2.focus();
+          }, 350);
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
 
   return (
     <TranslateText>

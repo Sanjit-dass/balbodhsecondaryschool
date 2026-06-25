@@ -11,7 +11,26 @@ const storage = {
       return null;
     }
   },
-  getToken: () => localStorage.getItem('token') || sessionStorage.getItem('token'),
+  getToken: () => {
+    try {
+      const t = localStorage.getItem('token') || sessionStorage.getItem('token');
+      if (t) {
+        try { console.debug('[Auth][storage] token loaded (masked): %s', `${t.slice(0,8)}...`); } catch(e){}
+      } else {
+        try { console.debug('[Auth][storage] token missing'); } catch(e){}
+      }
+      return t;
+    } catch (e) {
+      // Some mobile browsers (private mode) may throw when accessing localStorage
+      console.warn('[Auth][storage] failed to read token from storage', e && e.message);
+      try {
+        return sessionStorage.getItem('token') || null;
+      } catch (e2) {
+        console.warn('[Auth][storage] sessionStorage also unavailable', e2 && e2.message);
+        return null;
+      }
+    }
+  },
   setAuth: (token, user, remember) => {
     if (remember) {
       localStorage.setItem('token', token);
@@ -61,6 +80,7 @@ export const AuthProvider = ({ children }) => {
     
     // Clear API authorization header
     api.setAuthToken(null);
+    console.debug('[Auth] logout invoked, redirect:', Boolean(redirect));
     
     // Clear language preferences if needed
     try {
@@ -92,30 +112,42 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (token) {
       api.setAuthToken(token);
+      console.debug('[Auth] token set on api defaults (masked): %s', token ? `${token.slice(0,8)}...` : '');
     } else {
       api.setAuthToken(null);
+      console.debug('[Auth] token cleared from api defaults');
     }
   }, [token]);
 
   useEffect(() => {
+    console.debug('[Auth] auth check effect running. token present?', Boolean(token));
     if (!token) {
+      console.debug('[Auth] no token available, skipping /auth/me');
       setLoading(false);
       return;
     }
 
     if (skipAuthCheckAfterLogin.current) {
       skipAuthCheckAfterLogin.current = false;
+      console.debug('[Auth] skipping auth check after recent login');
       setLoading(false);
       return;
     }
 
     setLoading(true);
+    console.debug('[Auth] calling /auth/me to validate token');
     api.get('/auth/me')
       .then((res) => {
+        console.debug('[Auth] /auth/me success, user restored:', res.data && res.data.user && res.data.user._id);
         setUser(res.data.user);
-        storage.setAuth(token, res.data.user, Boolean(localStorage.getItem('token')));
+        // store token and user; prefer localStorage if previously used
+        const remember = Boolean(() => {
+          try { return Boolean(localStorage.getItem('token')); } catch(e){ return false; }
+        })();
+        storage.setAuth(token, res.data.user, remember);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.warn('[Auth] /auth/me failed, logging out. reason:', err && err.message);
         logout();
       })
       .finally(() => {

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { SectionTitle, EventCard, AchievementCard } from '../../components/public/SectionComponents';
 import TranslateText from '../../components/public/TranslateText';
@@ -46,6 +47,8 @@ const EventsList = () => {
   if (loading) return <div className="text-center py-12">Loading events…</div>;
   const published = (events||[]).filter(e=> !e.status || e.status === 'published');
   if (!published.length) return <div className="text-center py-12 text-gray-500">No upcoming events available.</div>;
+
+  
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
@@ -109,6 +112,13 @@ const StudentLife = () => {
     { category: 'Leadership Programs', description: 'Student council, mentoring and leadership development programs' },
     { category: 'Educational Tours', description: 'Field trips and educational tours for experiential learning' },
   ];
+
+  const navigate = useNavigate();
+
+  const handleApplyNow = (e) => {
+    e && e.preventDefault();
+    navigate('/admissions');
+  };
 
   return (
     <TranslateText>
@@ -198,7 +208,7 @@ const StudentLife = () => {
           <div className="max-w-7xl mx-auto px-4 text-center">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">Join Our Vibrant Community</h2>
             <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">Experience the excitement, friendship, and growth that await you at Balbodh Secondary School</p>
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="px-8 py-4 rounded-lg font-bold text-white transition-all text-lg" style={{ backgroundColor: COLORS.accent, color: '#000' }}>Apply Now</motion.button>
+            <motion.button onClick={handleApplyNow} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="px-8 py-4 rounded-lg font-bold text-white transition-all text-lg" style={{ backgroundColor: COLORS.accent, color: '#000' }}>Apply Now</motion.button>
           </div>
         </section>
       </div>

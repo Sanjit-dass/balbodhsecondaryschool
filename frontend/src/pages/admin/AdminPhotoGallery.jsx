@@ -8,6 +8,7 @@ const AdminPhotoGallery = () => {
   const [galleries, setGalleries] = useState([]);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('school');
+  const [selectedClass, setSelectedClass] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('published');
   const [coverFile, setCoverFile] = useState(null);
@@ -92,11 +93,11 @@ const AdminPhotoGallery = () => {
     try {
       if (editingId) {
         // update metadata
-        await fetch(`${API}/api/photo-gallery/${editingId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: token? `Bearer ${token}`: undefined }, body: JSON.stringify({ title, description, status, category }) });
+        await fetch(`${API}/api/photo-gallery/${editingId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: token? `Bearer ${token}`: undefined }, body: JSON.stringify({ title, description, status, category, className: selectedClass }) });
 
         // upload cover if a new file was selected
         if (coverFile) {
-          const fd = new FormData(); fd.append('photos', coverFile);
+          const fd = new FormData(); fd.append('photos', coverFile); if (selectedClass) fd.append('className', selectedClass);
           const up = await fetch(`${API}/api/photo-gallery/${editingId}/photos`, { method: 'POST', body: fd, headers: { Authorization: token? `Bearer ${token}`: undefined } });
           const upj = await up.json(); if (upj && upj.success) {
             const last = upj.data && upj.data.photos && upj.data.photos[upj.data.photos.length-1];
@@ -106,7 +107,7 @@ const AdminPhotoGallery = () => {
 
         // upload other pending files
         if (pendingFiles.length) {
-          const fd2 = new FormData(); pendingFiles.forEach(p => fd2.append('photos', p.file));
+          const fd2 = new FormData(); pendingFiles.forEach(p => fd2.append('photos', p.file)); if (selectedClass) fd2.append('className', selectedClass);
           await fetch(`${API}/api/photo-gallery/${editingId}/photos`, { method: 'POST', body: fd2, headers: { Authorization: token? `Bearer ${token}`: undefined } });
         }
 
@@ -114,11 +115,11 @@ const AdminPhotoGallery = () => {
         setEditingId(null); setCoverPreview(null);
       } else {
         if (!coverFile) return alert('Cover photo is required');
-        const res = await fetch(`${API}/api/photo-gallery`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: token? `Bearer ${token}`: undefined }, body: JSON.stringify({ title, description, status, category }) });
+        const res = await fetch(`${API}/api/photo-gallery`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: token? `Bearer ${token}`: undefined }, body: JSON.stringify({ title, description, status, category, className: selectedClass }) });
         const j = await res.json(); if (!j.success) throw new Error('Failed to create album');
         const album = j.data;
         // upload cover
-        const fd = new FormData(); fd.append('photos', coverFile);
+        const fd = new FormData(); fd.append('photos', coverFile); if (selectedClass) fd.append('className', selectedClass);
         const up = await fetch(`${API}/api/photo-gallery/${album._id}/photos`, { method: 'POST', body: fd, headers: { Authorization: token? `Bearer ${token}`: undefined } });
         const upj = await up.json(); if (!upj.success) throw new Error('Cover upload failed');
         const uploadedAlbum = upj.data;
@@ -128,13 +129,13 @@ const AdminPhotoGallery = () => {
         }
         // upload other pending files
         if (pendingFiles.length) {
-          const fd2 = new FormData(); pendingFiles.forEach(p => fd2.append('photos', p.file));
+          const fd2 = new FormData(); pendingFiles.forEach(p => fd2.append('photos', p.file)); if (selectedClass) fd2.append('className', selectedClass);
           await fetch(`${API}/api/photo-gallery/${album._id}/photos`, { method: 'POST', body: fd2, headers: { Authorization: token? `Bearer ${token}`: undefined } });
         }
       }
 
       // reset
-      setTitle(''); setDescription(''); setStatus('published'); setCategory('school'); setCoverFile(null); setPendingFiles([]);
+      setTitle(''); setDescription(''); setStatus('published'); setCategory('school'); setCoverFile(null); setPendingFiles([]); setSelectedClass('');
       fetchGalleries();
     } catch (e) { console.error(e); alert('Failed to save album'); }
     setLoading(false);
@@ -196,6 +197,33 @@ const AdminPhotoGallery = () => {
               onChange={(v) => setCategory(v)}
               options={GALLERY_CATEGORIES.map(c => ({ value: c.id, label: c.name }))}
               placeholder="Select Category"
+              className="mt-1 w-full"
+              maxHeight={480}
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-600">Class (optional)</label>
+            <ResponsiveSelect
+              value={selectedClass}
+              onChange={(v) => setSelectedClass(v)}
+              options={[
+                { value: '', label: 'None' },
+                { value: 'Nursery', label: 'Nursery' },
+                { value: 'LKG', label: 'LKG' },
+                { value: 'UKG', label: 'UKG' },
+                { value: 'Class 1', label: 'Class 1' },
+                { value: 'Class 2', label: 'Class 2' },
+                { value: 'Class 3', label: 'Class 3' },
+                { value: 'Class 4', label: 'Class 4' },
+                { value: 'Class 5', label: 'Class 5' },
+                { value: 'Class 6', label: 'Class 6' },
+                { value: 'Class 7', label: 'Class 7' },
+                { value: 'Class 8', label: 'Class 8' },
+                { value: 'Class 9', label: 'Class 9' },
+                { value: 'Class 10', label: 'Class 10' },
+              ]}
+              placeholder="Select Class"
               className="mt-1 w-full"
               maxHeight={480}
             />
@@ -274,6 +302,7 @@ const AdminPhotoGallery = () => {
               <tr>
                 <th className="px-4 py-3">Cover</th>
                 <th className="px-4 py-3">Album Title</th>
+                <th className="px-4 py-3">Class</th>
                 <th className="px-4 py-3">Category</th>
                 <th className="px-4 py-3">Photos</th>
                 <th className="px-4 py-3">Status</th>
@@ -293,6 +322,7 @@ const AdminPhotoGallery = () => {
                     />
                   </td>
                   <td className="px-4 py-3 font-medium">{g.title || 'Untitled'}</td>
+                  <td className="px-4 py-3">{g.className || (g.photos && g.photos[0] && g.photos[0].className) || '-'}</td>
                   <td className="px-4 py-3">{g.category}</td>
                   <td className="px-4 py-3">{(g.photos||[]).length}</td>
                   <td className="px-4 py-3">{g.status}</td>

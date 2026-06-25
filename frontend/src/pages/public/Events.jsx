@@ -67,7 +67,7 @@ const Events = () => {
   return (
     <TranslateText>
       <div>
-      <GoBackButton label="← Back" color="blue" />
+      <GoBackButton label="Back" color="blue" />
       {/* Page Header */}
       <motion.section
         initial={{ opacity: 0 }}
@@ -189,23 +189,7 @@ const Events = () => {
           <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
             Be part of exciting events and create unforgettable memories at Bal Bodh Secondary School
           </p>
-          <div className="flex flex-col md:flex-row gap-4 justify-center">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 rounded-lg font-bold text-white transition-all text-lg"
-              style={{ backgroundColor: COLORS.accent, color: '#000' }}
-            >
-              Register for Events
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 rounded-lg font-bold border-2 border-white text-white hover:bg-white hover:text-blue-900 transition-all text-lg"
-            >
-              View Calendar
-            </motion.button>
-          </div>
+          
         </motion.div>
       </section>
     </div>

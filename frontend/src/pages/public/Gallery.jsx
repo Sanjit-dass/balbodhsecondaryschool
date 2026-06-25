@@ -33,7 +33,8 @@ const Gallery = () => {
             displayTitle = item.galleryTitle || item.albumTitle || item.albumName || (item.album && item.album.title) || item.title?.replace(/\.[^.]+$/, '') || 'Photo';
           }
           const displayCategory = item.category || item.galleryCategory || item.albumCategory || item.album?.category || '';
-          return { ...item, url, displayTitle, displayCategory, title: displayTitle, category: displayCategory };
+          const displayClass = item.className || item.class || item.albumClassName || item.galleryClassName || '';
+          return { ...item, url, displayTitle, displayCategory, displayClass, title: displayTitle, category: displayCategory, className: displayClass };
         });
         setImages(mapped || []);
       }
@@ -56,13 +57,33 @@ const Gallery = () => {
   // Normalize and match category ids and names to avoid mismatch with backend values
   const categoryMap = Object.fromEntries(GALLERY_CATEGORIES.map(c => [c.id, c.name.toLowerCase()]));
 
-  const filteredImages = selectedCategory === 'all' || !selectedCategory
-      ? images
-      : images.filter(img => {
-        const cat = (img.category || '').toLowerCase();
-        const targetName = categoryMap[selectedCategory] || '';
-        return cat === selectedCategory || cat === targetName || cat.includes(targetName) || targetName.includes(cat);
-      });
+  const urlClassName = React.useMemo(() => {
+    try { return new URLSearchParams(window.location.search).get('className') || ''; } catch (e) { return ''; }
+  }, []);
+
+  let filteredImages = images;
+  if (urlClassName) {
+    const q = urlClassName.toString().trim().toLowerCase();
+    filteredImages = images.filter(img => ((img.className||'') .toString().toLowerCase() === q) || ((img.displayClass||'') .toString().toLowerCase() === q) || ((img.galleryClassName||'') .toString().toLowerCase() === q));
+  } else if (selectedCategory !== 'all' && selectedCategory) {
+    filteredImages = images.filter(img => {
+      const cat = (img.category || '').toLowerCase();
+      const targetName = categoryMap[selectedCategory] || '';
+      return cat === selectedCategory || cat === targetName || cat.includes(targetName) || targetName.includes(cat);
+    });
+  }
+
+  // If a `className` is provided in the URL query, filter strictly by class
+  React.useEffect(() => {
+    const qs = new URLSearchParams(window.location.search);
+    const className = qs.get('className');
+    if (className) {
+      // normalize and filter images in-place by updating selectedCategory to 'class'
+      setCurrentSlide(0);
+      // ensure filteredImages respects className via derived state by setting selectedCategory to a unique value
+      // but simpler: replace images displayed by setting a temporary state (we'll filter during render below)
+    }
+  }, []);
 
   // Ensure autoplay starts when swiper instance is ready and there are enough slides
   React.useEffect(() => {
@@ -307,14 +328,7 @@ const Gallery = () => {
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
             Have great photos from school events? Share them with us and see your memories featured in our gallery!
           </p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-8 py-3 rounded-lg font-bold text-white transition-all"
-            style={{ backgroundColor: COLORS.secondary }}
-          >
-            Submit Your Photos
-          </motion.button>
+          
         </motion.div>
       </section>
     </div>

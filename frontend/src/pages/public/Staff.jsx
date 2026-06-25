@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaSearch } from 'react-icons/fa';
 import { SectionTitle, StaffCard } from '../../components/public/SectionComponents';
@@ -12,6 +13,7 @@ import { useEffect } from 'react';
 
 const Staff = () => {
   const { t } = useTranslate();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   // department filter removed
   const [staffData, setStaffData] = useState([]);
@@ -173,6 +175,8 @@ const Staff = () => {
             whileTap={{ scale: 0.95 }}
             className="px-8 py-4 rounded-lg font-bold text-white transition-all text-lg"
             style={{ backgroundColor: COLORS.accent, color: '#000' }}
+            onClick={() => { navigate('/contact?focus=phone'); }}
+            aria-label="Open contact form"
           >
             Contact Us
           </motion.button>

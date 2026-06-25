@@ -60,12 +60,18 @@ api.interceptors.request.use((config) => {
   }
 
   if (!config.headers?.Authorization) {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    if (token) {
-      config.headers = {
-        ...config.headers,
-        Authorization: `Bearer ${token}`
-      };
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      if (token) {
+        try { console.debug('[Auth][api] attaching token to request (masked): %s', `${token.slice(0,8)}...`); } catch(e){}
+        config.headers = {
+          ...config.headers,
+          Authorization: `Bearer ${token}`
+        };
+      }
+    } catch (e) {
+      // Accessing storage may fail in some environments (incognito, restricted mobile browsers)
+      console.warn('[Auth][api] failed to read token from storage during request build', e && e.message);
     }
   }
 
@@ -97,6 +103,7 @@ api.interceptors.response.use(
         
         // Force redirect to login
         if (typeof window !== 'undefined') {
+          console.debug('[Auth][api] received auth error, redirecting to login');
           // Use replace to prevent back button access
           window.location.replace('/login?force=true&t=' + Date.now());
         }
