@@ -18,7 +18,7 @@ router.get('/photos', async (req, res) => {
       q.category = req.query.category;
     } else {
       // By default exclude galleries that are actually document repositories
-      q.category = { $not: /document|important/i };
+      q.category = { $nin: ['important-document'] };
     }
     const docs = await PhotoGallery.find(q).lean();
     const photos = (docs || []).reduce((arr, g) => {
@@ -38,13 +38,22 @@ router.get('/photos', async (req, res) => {
 
 // Public: list galleries
 router.get('/', async (req, res) => {
-  try { const list = await PhotoGallery.find({}).sort({ createdAt: -1 }).lean(); return res.json({ success: true, data: list }); } catch (err) { console.error(err); return res.status(500).json({ success: false, message: 'Server error' }); }
+  try {
+    // require category filter for precise results; if not provided, return non-document galleries
+    const q = {};
+    if (req.query.category) q.category = req.query.category;
+    else q.category = { $nin: ['important-document'] };
+    const list = await PhotoGallery.find(q).sort({ createdAt: -1 }).lean();
+    return res.json({ success: true, data: list });
+  } catch (err) { console.error(err); return res.status(500).json({ success: false, message: 'Server error' }); }
 });
 
 // Admin: create gallery
 router.post('/', auth, roles(['superadmin','principal','admin']), async (req, res) => {
   try {
-    const g = new PhotoGallery({ title: req.body.title||'', description: req.body.description||'', category: req.body.category||'other', className: req.body.className||'', status: req.body.status||'published', createdBy: req.user.id || req.user._id });
+    const allowed = ['important-document','class-gallery','event-gallery','staff-gallery','student-gallery','other'];
+    const category = req.body.category && allowed.includes(req.body.category) ? req.body.category : 'class-gallery';
+    const g = new PhotoGallery({ title: req.body.title||'', description: req.body.description||'', category, className: req.body.className||'', status: req.body.status||'published', createdBy: req.user.id || req.user._id });
     await g.save();
     return res.json({ success: true, data: g });
   } catch (err) { console.error(err); return res.status(500).json({ success: false, message: 'Server error' }); }
@@ -65,7 +74,9 @@ router.post('/:id/photos', auth, roles(['superadmin','principal','admin']), uplo
           streamifier.createReadStream(file.buffer).pipe(stream);
         });
         const url = result.secure_url || result.url;
-        g.photos.push({ title: file.originalname, url, caption: req.body.caption || '', publicId: result.public_id, className: photoClassName });
+        // photo category should match gallery category to avoid cross-display
+        const photoCategory = g.category || req.body.category || 'class-gallery';
+        g.photos.push({ title: file.originalname, url, caption: req.body.caption || '', publicId: result.public_id, className: photoClassName, category: photoCategory });
         // If no cover set, make the first uploaded photo the cover
         if (!g.coverPhoto) {
           // will be populated after save; set to last pushed id after save below

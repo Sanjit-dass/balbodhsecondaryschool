@@ -87,6 +87,15 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     try {
+      // If the original request didn't include an Authorization header,
+      // it's likely a public request — avoid forcing a global logout in that case.
+      const reqHasAuth = Boolean(
+        err?.config?.headers && (err.config.headers.Authorization || err.config.headers.authorization)
+      );
+      if (!reqHasAuth) {
+        try { console.debug('[Auth][api] auth error on request without Authorization header — not clearing session'); } catch(e){}
+        return Promise.reject(err);
+      }
       const status = err?.response?.status;
       const message = err?.response?.data?.message || '';
       // Check for auth errors and clear session
@@ -114,6 +123,7 @@ api.interceptors.response.use(
     return Promise.reject(err);
   }
 );
+
 
 api.setAuthToken = (token) => {
   if (token) {

@@ -125,6 +125,7 @@ app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/results', require('./routes/results'));
 app.use('/api/exports', require('./routes/exports'));
 app.use('/api/audit', require('./routes/audit'));
+app.use('/api/upload', require('./routes/upload'));
 app.use('/api/uploads', require('./routes/uploads'));
 app.use('/api/pdf', require('./routes/pdf'));
 app.use('/api/fileview', require('./routes/fileview'));

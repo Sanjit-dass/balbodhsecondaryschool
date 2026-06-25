@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
 
-export default function FileUploader({ folder = 'others', accept = 'image/*,application/pdf,.doc,.docx', onUploaded }){
+export default function FileUploader({ folder = 'others', accept = 'image/*,application/pdf,.doc,.docx', onUploaded, persistDocument = false }){
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState('');
   const [progress, setProgress] = useState(0);
@@ -57,7 +57,10 @@ export default function FileUploader({ folder = 'others', accept = 'image/*,appl
     fd.append('file', file);
 
     try{
-      const res = await api.post(`/uploads?folder=${encodeURIComponent(folder)}`, fd, {
+      // By default use the lightweight upload endpoint that only stores the file in Cloudinary
+      // and returns fileUrl/publicId. Set persistDocument=true to create a Document DB record (/uploads).
+      const endpoint = persistDocument ? `/uploads?folder=${encodeURIComponent(folder)}` : `/upload?folder=${encodeURIComponent(folder)}`;
+      const res = await api.post(endpoint, fd, {
         onUploadProgress: (e) => {
           if (e.total) {
             setProgress(Math.round((e.loaded / e.total) * 100));

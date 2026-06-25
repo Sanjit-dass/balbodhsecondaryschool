@@ -5,7 +5,7 @@ const roles = require('../middleware/roles');
 const { createStorage } = require('../middleware/upload');
 
 // Generic upload endpoint — returns fileUrl and publicId
-router.post('/', auth, roles(['superadmin','principal','teacher','accountant']), (req, res, next) => {
+router.post('/', auth, roles(['superadmin','principal','admin','teacher','accountant']), (req, res, next) => {
   // allow folder param to decide storage folder
   const folder = `balbodh-school/${req.query.folder || 'others'}`;
   const upload = createStorage(folder).single('file');

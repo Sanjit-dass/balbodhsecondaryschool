@@ -55,6 +55,8 @@ export default function Uploads(){
     const fd = new FormData();
     fd.append('file', file);
     fd.append('type', uploadType);
+    // mark uploads from this admin page as important documents
+    fd.append('category', 'important-document');
     fd.append('title', title.trim() || uploadTypes.find(type => type.value === uploadType)?.label || file.name);
     fd.append('description', description);
 

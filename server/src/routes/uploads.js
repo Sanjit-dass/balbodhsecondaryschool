@@ -58,10 +58,29 @@ router.post('/', auth, roles(['superadmin','principal','admin']), upload.single(
         console.log('SAVED FILE URL:', fileUrl, 'PUBLIC ID:', result.public_id);
 
         const docType = req.body.type || req.query.folder || 'other';
+        // determine strict category
+        let category = req.body.category || req.query.category || null;
+        const mime = (req.file.mimetype || '').toLowerCase();
+        const ext = (req.file.originalname || '').split('.').pop().toLowerCase();
+        if (!category) {
+          if (mime.startsWith('image/')) {
+            // infer from folder name hints
+            if (/staff|teacher/i.test(folder)) category = 'staff-gallery';
+            else if (/event|events/i.test(folder)) category = 'event-gallery';
+            else if (/class|classroom|class-?/i.test(folder) || /students?/i.test(folder)) category = 'class-gallery';
+            else category = 'student-gallery';
+          } else if (['pdf','doc','docx'].includes(ext) || mime === 'application/pdf' || /word|pdf/.test(mime)) {
+            category = 'important-document';
+          } else {
+            category = 'important-document';
+          }
+        }
+
         const documentData = {
           title: (req.body.title || req.file.originalname || `${docType} document`).trim(),
           description: req.body.description,
           type: docType,
+          category,
           folder,
           fileUrl,
           publicId: result.public_id,
@@ -105,7 +124,8 @@ router.post('/', auth, roles(['superadmin','principal','admin']), upload.single(
 
 router.get('/public', async (req, res) => {
   try {
-    const documents = await Document.find({ status: 'published', audience: 'public' })
+    // Return only published public documents that are explicitly important documents
+    const documents = await Document.find({ status: 'published', audience: 'public', category: 'important-document' })
       .sort({ createdAt: -1 })
       .lean();
     res.json({ documents });

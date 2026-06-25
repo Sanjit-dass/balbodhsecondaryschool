@@ -39,6 +39,23 @@ const AdminPhotoGallery = () => {
     return { ...g, photos };
   };
 
+  // Map UI gallery category ids to backend category enums
+  const mapToServerCategory = (uiId) => {
+    if (!uiId) return 'class-gallery';
+    const mapping = {
+      events: 'event-gallery',
+      school: 'class-gallery',
+      classrooms: 'class-gallery',
+      labs: 'class-gallery',
+      sports: 'class-gallery',
+      activities: 'class-gallery',
+      celebration: 'class-gallery',
+      hostel: 'class-gallery',
+      transport: 'class-gallery'
+    };
+    return mapping[uiId] || 'class-gallery';
+  };
+
   const fetchGalleries = async () => {
     try {
       const r = await fetch(`${API}/api/photo-gallery`);
@@ -93,7 +110,7 @@ const AdminPhotoGallery = () => {
     try {
       if (editingId) {
         // update metadata
-        await fetch(`${API}/api/photo-gallery/${editingId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: token? `Bearer ${token}`: undefined }, body: JSON.stringify({ title, description, status, category, className: selectedClass }) });
+        await fetch(`${API}/api/photo-gallery/${editingId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: token? `Bearer ${token}`: undefined }, body: JSON.stringify({ title, description, status, category: mapToServerCategory(category), className: selectedClass }) });
 
         // upload cover if a new file was selected
         if (coverFile) {
@@ -115,7 +132,7 @@ const AdminPhotoGallery = () => {
         setEditingId(null); setCoverPreview(null);
       } else {
         if (!coverFile) return alert('Cover photo is required');
-        const res = await fetch(`${API}/api/photo-gallery`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: token? `Bearer ${token}`: undefined }, body: JSON.stringify({ title, description, status, category, className: selectedClass }) });
+        const res = await fetch(`${API}/api/photo-gallery`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: token? `Bearer ${token}`: undefined }, body: JSON.stringify({ title, description, status, category: mapToServerCategory(category), className: selectedClass }) });
         const j = await res.json(); if (!j.success) throw new Error('Failed to create album');
         const album = j.data;
         // upload cover

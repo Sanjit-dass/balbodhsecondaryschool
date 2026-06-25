@@ -72,7 +72,8 @@ export default function AdminEvents(){
     const fd = new FormData();
     fd.append('file', file);
     try{
-      const res = await api.post('/uploads', fd);
+      // upload to singular /upload so we only get fileUrl/publicId and avoid creating a Document DB record
+      const res = await api.post('/upload?folder=events', fd);
       const body = res.data || {};
       const source = body.document || body;
       const fileUrlCandidate = (source && (source.fileUrl || source.fileURL || source.secure_url || source.url)) || body.fileUrl || body.secure_url || body.url || null;

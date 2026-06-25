@@ -192,13 +192,35 @@ const PublicHeader = () => {
                       <span className="text-xs text-gray-400">ESTD. {SCHOOL_INFO.established}</span>
                     </div>
                   </Link>
-                  <Link
-                    to="/login?force=true"
-                    onClick={(e) => { setIsOpen(false); }}
-                    className="ml-auto px-4 py-2 rounded-md text-sm font-semibold text-[#0F172A] bg-gray-50 hover:bg-gray-100"
-                  >
-                    LOGIN
-                  </Link>
+                  { !user ? (
+                    <Link
+                      to="/login?force=true"
+                      onClick={(e) => { setIsOpen(false); }}
+                      className="ml-auto px-4 py-2 rounded-md text-sm font-semibold text-[#0F172A] bg-gray-50 hover:bg-gray-100"
+                    >
+                      LOGIN
+                    </Link>
+                  ) : (
+                    (() => {
+                      const role = (user.role || '').toLowerCase();
+                      let dashboardPath = '/';
+                      if (['superadmin','admin','principal'].includes(role)) dashboardPath = '/admin';
+                      else if (role === 'student') dashboardPath = '/student';
+                      else if (role === 'teacher') dashboardPath = '/teacher';
+                      else if (role === 'parent') dashboardPath = '/parent';
+                      else if (role === 'accountant') dashboardPath = '/account';
+                      else if (role === 'examcontroller') dashboardPath = '/exam';
+                      return (
+                        <Link
+                          to={dashboardPath}
+                          onClick={(e) => { setIsOpen(false); }}
+                          className="ml-auto px-4 py-2 rounded-md text-sm font-semibold text-[#0F172A] bg-gray-50 hover:bg-gray-100"
+                        >
+                          Dashboard
+                        </Link>
+                      );
+                    })()
+                  )}
                 </div>
 
                 {/* Menu items */}

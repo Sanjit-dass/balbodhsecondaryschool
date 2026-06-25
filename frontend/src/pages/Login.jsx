@@ -78,6 +78,12 @@ export default function Login() {
       className="relative min-h-screen overflow-hidden text-slate-100"
       style={{ backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
+      {/* Top-left Home link (visible on all viewports) */}
+      <div className="absolute top-4 left-4 z-30 bg-black rounded-3xl px-2 py-1 shadow-md hover:shadow-lg transition">
+        <Link to="/" className="inline-flex items-center justify-center rounded-md  px-3 py-2 text-sm font-semibold text-white hover:bg-white/20 transition">
+          Go to Home
+        </Link>
+      </div>
       <div className="absolute inset-0 bg-black/50" />
       <div className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
@@ -271,14 +277,7 @@ export default function Login() {
                 </button>
               </form>
 
-              <div className="mt-6 flex justify-center">
-                <Link
-                  to="/"
-                  className="inline-flex items-center justify-center rounded-3xl border border-white/10 bg-slate-900/90 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-                >
-                  Go to Home
-                </Link>
-              </div>
+             
             </div>
           </div>
         </motion.div>

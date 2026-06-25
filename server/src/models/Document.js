@@ -4,6 +4,8 @@ const DocumentSchema = new mongoose.Schema({
   title: { type: String, required: true, trim: true },
   description: { type: String, trim: true },
   type: { type: String, trim: true, default: 'other' },
+  // category to strictly separate content types across the system
+  category: { type: String, enum: ['important-document','class-gallery','event-gallery','staff-gallery','student-gallery','other'], required: true, default: 'important-document' },
   folder: { type: String, trim: true },
   fileUrl: { type: String, required: true, trim: true },
   publicId: { type: String, trim: true },

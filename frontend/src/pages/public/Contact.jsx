@@ -10,7 +10,7 @@ import {
   FaYoutube,
   FaInstagram,
 } from 'react-icons/fa';
-import api from '../../services/api';
+import api, { apiBaseURL, API_BASE } from '../../services/api';
 import { SectionTitle } from '../../components/public/SectionComponents';
 import TranslateText from '../../components/public/TranslateText';
 import { SCHOOL_INFO, COLORS } from '../../constants/schoolData';
@@ -31,11 +31,24 @@ const Contact = () => {
 
   const [submitting, setSubmitting] = useState(false);
   const [submissionStatus, setSubmissionStatus] = useState(null);
+  const [diagStatus, setDiagStatus] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     setSubmissionStatus(null);
+    // Basic client-side validation to avoid unnecessary 400 responses
+    try {
+      if (!formData.name || String(formData.name).trim() === '') throw new Error('Name is required');
+      if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(formData.email))) throw new Error('A valid email is required');
+      const okSubjects = ['admission', 'fees', 'academics', 'facilities', 'other'];
+      if (!formData.subject || !okSubjects.includes(formData.subject)) throw new Error('Please select a subject');
+      if (!formData.message || String(formData.message).trim() === '') throw new Error('Message is required');
+    } catch (clientErr) {
+      setSubmissionStatus({ type: 'error', message: clientErr.message });
+      setSubmitting(false);
+      return;
+    }
 
     try {
       const response = await api.post('/contact', formData);
@@ -46,12 +59,94 @@ const Contact = () => {
         setSubmissionStatus({ type: 'success', message: response.data?.message || 'Your message has been sent.' });
       }
     } catch (err) {
-      console.error('Contact submit failed', err);
-      const errorMessage = err?.response?.data?.message || 'Failed to send your message. Please try again later.';
-      setSubmissionStatus({ type: 'error', message: errorMessage });
+      console.error('Contact submit failed (axios):', err);
+      // If no response (network error / CORS / unreachable host), try fallbacks
+      if (err && err.request && !err.response) {
+        try {
+          console.debug('[Contact] no axios response — attempting fetch fallback to apiBaseURL', apiBaseURL, API_BASE);
+          const candidates = [];
+          if (apiBaseURL) candidates.push(`${apiBaseURL}/contact`);
+          if (API_BASE) candidates.push(`${API_BASE}/api/contact`);
+          try { candidates.push(`${window.location.origin}/api/contact`); } catch(e) {}
+
+          let ok = false;
+          let fetchErr = null;
+          for (const url of candidates) {
+            try {
+              console.debug('[Contact] trying fallback URL', url);
+              const fres = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+              });
+              if (fres && (fres.status === 200 || fres.status === 201)) {
+                const body = await fres.json().catch(()=>({}));
+                setSubmissionStatus({ type: 'success', message: body?.message || 'Your message has been sent.' });
+                setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+                ok = true;
+                break;
+              } else {
+                fetchErr = fetchErr || new Error('fallback failed: ' + (fres && fres.status));
+              }
+            } catch (e) {
+              fetchErr = e;
+            }
+          }
+          if (ok) {
+            // success via fallback
+          } else {
+            console.error('[Contact] all fallbacks failed', fetchErr);
+            const msg = (fetchErr && fetchErr.message) ? `Network error: ${fetchErr.message}` : 'Failed to send your message. Please check your network or try again later.';
+            setSubmissionStatus({ type: 'error', message: msg });
+          }
+        } catch (fallbackErr) {
+          console.error('[Contact] fallback attempt error', fallbackErr);
+          setSubmissionStatus({ type: 'error', message: 'Failed to send your message. Please try again later.' });
+        }
+      } else {
+        // If server returned validation errors, show them
+        try {
+          const resp = err.response && err.response.data;
+          if (resp) {
+            if (Array.isArray(resp.errors) && resp.errors.length > 0) {
+              const msgs = resp.errors.map(e => (e.msg ? `${e.param}: ${e.msg}` : JSON.stringify(e))).join(' | ');
+              setSubmissionStatus({ type: 'error', message: msgs });
+            } else if (resp.message) {
+              setSubmissionStatus({ type: 'error', message: resp.message });
+            } else {
+              setSubmissionStatus({ type: 'error', message: 'Failed to send your message. Please try again later.' });
+            }
+          } else {
+            setSubmissionStatus({ type: 'error', message: 'Failed to send your message. Please try again later.' });
+          }
+        } catch (e) {
+          setSubmissionStatus({ type: 'error', message: 'Failed to send your message. Please try again later.' });
+        }
+      }
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const runDiagnostics = async () => {
+    setDiagStatus({ running: true, results: [] });
+    const candidates = [];
+    if (apiBaseURL) candidates.push({ url: `${apiBaseURL}/contact`, label: 'apiBaseURL/contact' });
+    if (API_BASE) candidates.push({ url: `${API_BASE}/api/contact`, label: 'API_BASE/api/contact' });
+    try { candidates.push({ url: `${window.location.origin}/api/contact`, label: 'origin/api/contact' }); } catch(e){}
+
+    const results = [];
+    for (const c of candidates) {
+      try {
+        console.debug('[Contact][diag] testing', c.url);
+        const res = await fetch(c.url, { method: 'OPTIONS' });
+        results.push({ url: c.url, ok: res.ok, status: res.status, type: 'options' });
+      } catch (e) {
+        results.push({ url: c.url, ok: false, error: String(e && e.message), type: 'error' });
+      }
+    }
+    setDiagStatus({ running: false, results });
+    console.debug('[Contact][diag] results', results);
   };
 
   const scrollToForm = (e) => {
@@ -307,6 +402,22 @@ const Contact = () => {
                     {submissionStatus.message}
                   </div>
                 ) : null}
+                {diagStatus && diagStatus.results ? (
+                  <div className="mt-4 text-sm">
+                    {diagStatus.running ? (
+                      <div className="rounded-lg p-3 bg-yellow-50 text-yellow-800">Running diagnostics…</div>
+                    ) : (
+                      <div className="space-y-2">
+                        {diagStatus.results.map((r, i) => (
+                          <div key={i} className={`rounded-md p-2 ${r.ok ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-800'}`}>
+                            <div className="font-semibold">{r.url}</div>
+                            <div className="text-xs">{r.ok ? `OK (${r.status || 'n/a'})` : `Error: ${r.error || 'no response'}`}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : null}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -317,6 +428,7 @@ const Contact = () => {
                 >
                   {submitting ? 'Sending...' : 'Send Message'}
                 </motion.button>
+                <button type="button" onClick={runDiagnostics} className="mt-3 w-full py-2 rounded-lg bg-white text-sm font-semibold text-slate-800">Test API connectivity</button>
               </form>
             </motion.div>
 

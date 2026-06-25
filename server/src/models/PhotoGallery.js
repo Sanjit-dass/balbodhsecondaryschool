@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 
+const VALID_CATEGORIES = ['important-document','class-gallery','event-gallery','staff-gallery','student-gallery','other'];
+
 const PhotoSchema = new mongoose.Schema({
   title: { type: String, default: '' },
-  category: { type: String, default: 'Other' },
+  category: { type: String, enum: VALID_CATEGORIES, required: true, default: 'student-gallery' },
   // optional class association for class-specific galleries/photos
   className: { type: String, default: '' },
   url: { type: String, required: true },
@@ -13,7 +15,7 @@ const PhotoSchema = new mongoose.Schema({
 const PhotoGallerySchema = new mongoose.Schema({
   title: { type: String, default: '' },
   description: { type: String, default: '' },
-  category: { type: String, default: 'other' },
+  category: { type: String, enum: VALID_CATEGORIES, required: true, default: 'class-gallery' },
   // optional gallery-level class association (useful for class galleries)
   className: { type: String, default: '' },
   photos: [PhotoSchema],

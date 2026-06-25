@@ -34,6 +34,7 @@ const ROLE_MENU = {
       title: 'Student Management',
       items: [
         { path: '/admin/students', label: 'Students', icon: FaUsers },
+        { path: '/admin/subjects', label: 'Subjects', icon: FaBook },
         { path: '/admin/admissions', label: 'Admissions', icon: FaRegAddressCard },
         { path: '/admin/attendance', label: 'Attendance', icon: FaClipboardList }
       ]
