@@ -69,6 +69,10 @@ api.interceptors.request.use((config) => {
     }
   }
 
+  // Add cache-control headers to prevent caching of API responses
+  config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0';
+  config.headers['Pragma'] = 'no-cache';
+
   return config;
 });
 
@@ -79,13 +83,23 @@ api.interceptors.response.use(
     try {
       const status = err?.response?.status;
       const message = err?.response?.data?.message || '';
-      if (status === 401 && /token is not valid|no token/i.test(message)) {
+      // Check for auth errors and clear session
+      if ((status === 401 || status === 403) && /token is not valid|no token|unauthorized|forbidden/i.test(message)) {
+        // Clear all auth data
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         sessionStorage.removeItem('token');
         sessionStorage.removeItem('user');
-        // reload so app can show login screen
-        if (typeof window !== 'undefined') window.location.reload();
+        localStorage.removeItem('language');
+        sessionStorage.removeItem('language');
+        localStorage.removeItem('remember-me');
+        sessionStorage.removeItem('currentUser');
+        
+        // Force redirect to login
+        if (typeof window !== 'undefined') {
+          // Use replace to prevent back button access
+          window.location.replace('/login?force=true&t=' + Date.now());
+        }
       }
     } catch (e) {
       // ignore

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 
@@ -14,10 +14,28 @@ const DEFAULT_ROLE_HOME = {
 };
 
 export default function PrivateRoute({ children, roles = [] }) {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading, token } = useContext(AuthContext);
+
+  // Prevent caching and back-button access
+  useEffect(() => {
+    // Set cache-control headers in browser
+    if (typeof window !== 'undefined') {
+      // Prevent page caching
+      window.history.pushState(null, null, window.location.href);
+      window.addEventListener('popstate', () => {
+        window.history.pushState(null, null, window.location.href);
+      });
+    }
+  }, []);
 
   if (loading) return null;
-  if (!user) return <Navigate to="/login" replace />;
+  
+  // No token or no user: redirect to login
+  if (!token || !user) {
+    return <Navigate to="/login?force=true" replace />;
+  }
+  
+  // Role check: if roles specified and user role doesn't match, redirect to role home
   if (roles.length > 0 && !roles.includes(user.role)) {
     const fallback = DEFAULT_ROLE_HOME[user.role] || '/login';
     return <Navigate to={fallback} replace />;

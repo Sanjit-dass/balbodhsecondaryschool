@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import { useLocation, useNavigate } from 'react-router-dom';
 import StaffModal from '../../components/public/StaffModal';
+import GoBackButton from '../../components/common/GoBackButton';
 
 export default function SchoolLeadership(){
   const [list, setList] = useState([]);
@@ -12,7 +13,7 @@ export default function SchoolLeadership(){
   useEffect(() => {
     const fetchList = async () => {
       try {
-        const res = await axios.get('/api/staff-leadership');
+        const res = await api.get('/staff-leadership');
         if (res.data && res.data.data) {
           const list = res.data.data;
           // only show entries that have a photo URL (avoid stale/deleted photo placeholders)
@@ -29,7 +30,7 @@ export default function SchoolLeadership(){
     if (!id) return setSelected(null);
     const fetchOne = async () => {
       try {
-        const res = await axios.get(`/api/staff-leadership/${id}`);
+        const res = await api.get(`/staff-leadership/${id}`);
         if (res.data && res.data.data) setSelected(res.data.data);
       } catch (e) { console.error(e); }
     };
@@ -42,6 +43,7 @@ export default function SchoolLeadership(){
 
   return (
     <div className="max-w-6xl mx-auto py-8 px-4">
+      <GoBackButton label="← Back" color="blue" />
       <h1 className="text-3xl font-bold mb-4">School Leadership</h1>
       <p className="text-slate-600 mb-6">Meet our leadership team.</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">

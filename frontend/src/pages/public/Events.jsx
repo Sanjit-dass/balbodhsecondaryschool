@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FaCalendarAlt, FaClock, FaMapMarkerAlt } from 'react-icons/fa';
 import { SectionTitle, EventCard } from '../../components/public/SectionComponents';
 import TranslateText from '../../components/public/TranslateText';
+import GoBackButton from '../../components/common/GoBackButton';
 import { COLORS } from '../../constants/schoolData';
 import api from '../../services/api';
 import EventModal from '../../components/public/EventModal';
@@ -66,6 +67,7 @@ const Events = () => {
   return (
     <TranslateText>
       <div>
+      <GoBackButton label="← Back" color="blue" />
       {/* Page Header */}
       <motion.section
         initial={{ opacity: 0 }}

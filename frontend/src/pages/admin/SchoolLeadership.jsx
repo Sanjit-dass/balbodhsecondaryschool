@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import api from '../../services/api';
 import StaffModal from '../../components/public/StaffModal';
 

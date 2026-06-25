@@ -48,15 +48,17 @@ if (process.env.CORS_ORIGIN && String(process.env.CORS_ORIGIN).trim()) {
   console.error('❌ CORS_ORIGIN is not set. In production you must set CORS_ORIGIN to the allowed origins.');
   process.exit(1);
 } else {
-  // development defaults
-  allowedOrigins = [
-    'http://localhost:5173',
+  // Development defaults: use only 127.0.0.1 and current hostname, avoid hardcoded localhost
+  const devOrigins = [
     'http://127.0.0.1:5173',
-    'http://localhost:5177',
     'http://127.0.0.1:5177',
-    'http://localhost:5000',
     'http://127.0.0.1:5000',
   ];
+  // Add current hostname dynamically in dev (if available)
+  if (typeof process.env.FRONTEND_URL === 'string' && process.env.FRONTEND_URL.trim()) {
+    devOrigins.push(process.env.FRONTEND_URL);
+  }
+  allowedOrigins = devOrigins;
 }
 
 // In development, use a permissive CORS policy for the known local frontends.
@@ -71,7 +73,7 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With', 'Cache-Control', 'Pragma'],
   exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
   maxAge: 86400,
 };

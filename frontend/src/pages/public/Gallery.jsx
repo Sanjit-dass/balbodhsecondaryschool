@@ -4,6 +4,7 @@ import { FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { SectionTitle, GalleryImage } from '../../components/public/SectionComponents';
 import { getImageUrl } from '../../services/api';
 import TranslateText from '../../components/public/TranslateText';
+import GoBackButton from '../../components/common/GoBackButton';
 import { GALLERY_CATEGORIES, COLORS } from '../../constants/schoolData';
 import { useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -117,6 +118,7 @@ const Gallery = () => {
   return ( 
     <TranslateText>
       <div>
+      <GoBackButton label=" Back" color="blue" />
       {/* Page Header */}
       <motion.section
         initial={{ opacity: 0 }}

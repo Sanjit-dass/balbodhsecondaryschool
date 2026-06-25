@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 
 /**
  * CreateFeeCategory Component
@@ -32,7 +32,7 @@ const CreateFeeCategory = () => {
   const fetchClasses = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/fees/classes-dropdown');
+      const response = await api.get('/fees/classes-dropdown');
       if (response.data.success) {
         setClasses(response.data.data);
       }
@@ -54,7 +54,7 @@ const CreateFeeCategory = () => {
   const fetchCurrentStructure = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/fees/class/${selectedClass._id}/fee-structure`);
+      const response = await api.get(`/fees/class/${selectedClass._id}/fee-structure`);
       if (response.data.success) {
         setClassDetails(response.data.data);
         
@@ -146,8 +146,8 @@ const CreateFeeCategory = () => {
         return;
       }
 
-      const response = await axios.post(
-        `/api/fees/class/${selectedClass._id}/assign-categories`,
+      const response = await api.post(
+        `/fees/class/${selectedClass._id}/assign-categories`,
         {
           mandatory: mandatoryData,
           optional: optionalData

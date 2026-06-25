@@ -51,18 +51,42 @@ export const AuthProvider = ({ children }) => {
   const skipAuthCheckAfterLogin = useRef(false);
 
   const logout = useCallback((redirect = false) => {
+    // Clear all auth state
     setToken(null);
     setUser(null);
     setError(null);
+    
+    // Clear all storage
     storage.clear();
+    
+    // Clear API authorization header
     api.setAuthToken(null);
-    if (redirect && typeof window !== 'undefined') {
-      window.location.href = '/login?force=true';
+    
+    // Clear language preferences if needed
+    try {
+      localStorage.removeItem('language');
+      sessionStorage.removeItem('language');
+    } catch (e) {
+      // ignore
+    }
+    
+    // Clear any cached user data
+    try {
+      localStorage.removeItem('remember-me');
+      sessionStorage.removeItem('currentUser');
+      localStorage.removeItem('lastUser');
+    } catch (e) {
+      // ignore
+    }
+    
+    // Note: do not force full page reload here; let the app handle SPA navigation.
+    if (redirect) {
+      // noop - redirect is handled by calling component via React Router.
     }
   }, []);
 
   const logoutAndRedirect = useCallback(() => {
-    logout(true);
+    logout(false);
   }, [logout]);
 
   useEffect(() => {

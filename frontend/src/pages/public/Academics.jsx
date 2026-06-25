@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FaBook, FaFlask, FaLaptop, FaMedal } from 'react-icons/fa';
 import { SectionTitle, FeatureCard } from '../../components/public/SectionComponents';
 import TranslateText from '../../components/public/TranslateText';
+import GoBackButton from '../../components/common/GoBackButton';
 import { COLORS, ACADEMIC_PROGRAMS } from '../../constants/schoolData';
 
 const Academics = () => {
@@ -32,6 +33,7 @@ const Academics = () => {
   return (
     <TranslateText>
       <div>
+      <GoBackButton label="← Back" color="blue" />
       {/* Page Header */}
       <motion.section
         initial={{ opacity: 0 }}

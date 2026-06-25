@@ -4,6 +4,7 @@ import { FaSearch } from 'react-icons/fa';
 import { SectionTitle, FacilityCard } from '../../components/public/SectionComponents';
 import FacilityModal from '../../components/public/FacilityModal';
 import TranslateText from '../../components/public/TranslateText';
+import GoBackButton from '../../components/common/GoBackButton';
 import { apiBaseURL, API_BASE } from '../../services/api';
 import { COLORS } from '../../constants/schoolData';
 

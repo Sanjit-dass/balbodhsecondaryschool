@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { SectionTitle, EventCard, AchievementCard } from '../../components/public/SectionComponents';
 import TranslateText from '../../components/public/TranslateText';
+import GoBackButton from '../../components/common/GoBackButton';
 import { COLORS } from '../../constants/schoolData';
 import api from '../../services/api';
 import { useState, useEffect } from 'react';

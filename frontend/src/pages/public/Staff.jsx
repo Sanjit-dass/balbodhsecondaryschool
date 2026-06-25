@@ -4,9 +4,10 @@ import { FaSearch } from 'react-icons/fa';
 import { SectionTitle, StaffCard } from '../../components/public/SectionComponents';
 import TranslateText from '../../components/public/TranslateText';
 import StaffModal from '../../components/public/StaffModal';
+import GoBackButton from '../../components/common/GoBackButton';
 import { COLORS } from '../../constants/schoolData';
 import { useTranslate } from '../../hooks/useTranslate';
-import axios from 'axios';
+import api from '../../services/api';
 import { useEffect } from 'react';
 
 const Staff = () => {
@@ -20,7 +21,7 @@ const Staff = () => {
     let mounted = true;
       const fetchStaff = async () => {
       try {
-        const res = await axios.get('/api/staff-leadership');
+        const res = await api.get('/staff-leadership');
         if (!mounted) return;
         const list = (res.data && res.data.data) ? res.data.data : [];
         // Only include staff with valid photo URLs to avoid showing deleted images or demo entries
@@ -50,6 +51,7 @@ const Staff = () => {
   return (
     <TranslateText>
       <div>
+      <GoBackButton label="Back" color="blue" />
       {/* Page Header */}
       <motion.section
         initial={{ opacity: 0 }}

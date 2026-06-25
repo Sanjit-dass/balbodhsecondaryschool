@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FaCheckCircle, FaFileAlt, FaQuestionCircle } from 'react-icons/fa';
 import { SectionTitle } from '../../components/public/SectionComponents';
 import TranslateText from '../../components/public/TranslateText';
+import GoBackButton from '../../components/common/GoBackButton';
 import { COLORS } from '../../constants/schoolData';
 import api from '../../services/api';
 
@@ -123,6 +124,7 @@ const Admissions = () => {
   return (
     <TranslateText>
       <div className="overflow-x-hidden">
+      <GoBackButton label="← Back" color="blue" />
       {/* Page Header */}
       <motion.section
         initial={{ opacity: 0 }}

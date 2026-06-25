@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaArrowLeft, FaArrowRight, FaTimes } from 'react-icons/fa';
 import TranslateText from '../../components/public/TranslateText';
+import GoBackButton from '../../components/common/GoBackButton';
 import { SCHOOL_INFO } from '../../constants/schoolData';
 import { apiBaseURL, API_BASE } from '../../services/api';
 

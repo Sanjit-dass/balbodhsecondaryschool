@@ -17,8 +17,9 @@ export default function Layout({ children }) {
   const openLogout = () => setLogoutOpen(true);
   const closeLogout = () => setLogoutOpen(false);
   const confirmLogout = () => {
-    logoutAndRedirect();
     closeLogout();
+    logout();
+    navigate('/login', { replace: true });
   };
 
   useEffect(() => {

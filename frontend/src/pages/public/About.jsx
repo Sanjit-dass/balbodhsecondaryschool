@@ -4,6 +4,7 @@ import { FaCheckCircle, FaLightbulb, FaHandshake, FaUsers } from 'react-icons/fa
 import { SectionTitle, FeatureCard } from '../../components/public/SectionComponents';
 import AcademicExcellence from '../../components/public/AcademicExcellence';
 import TranslateText from '../../components/public/TranslateText';
+import GoBackButton from '../../components/common/GoBackButton';
 import { SCHOOL_INFO, COLORS } from '../../constants/schoolData';
 
 const About = () => {
@@ -34,6 +35,7 @@ const About = () => {
   return (
     <TranslateText>
       <div>
+      <GoBackButton label="Back" color="blue" />
       {/* Page Header */}
       <motion.section
         initial={{ opacity: 0 }}

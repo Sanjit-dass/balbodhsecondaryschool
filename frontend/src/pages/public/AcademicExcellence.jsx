@@ -1,12 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import TranslateText from '../../components/public/TranslateText';
+import GoBackButton from '../../components/common/GoBackButton';
 import AcademicExcellence from '../../components/public/AcademicExcellence';
 
 const AcademicExcellencePage = () => {
   return (
     <TranslateText>
       <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white pt-24 pb-20">
+      <GoBackButton label="← Back" color="blue" />
       <div className="max-w-[1600px] mx-auto px-4">
         <div className="mb-12">
           <AcademicExcellence />

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FaDownload, FaCalendarAlt } from 'react-icons/fa';
 import { SectionTitle } from '../../components/public/SectionComponents';
 import TranslateText from '../../components/public/TranslateText';
+import GoBackButton from '../../components/common/GoBackButton';
 import { COLORS } from '../../constants/schoolData';
 import api, { apiBaseURL } from '../../services/api';
 import { useContext } from 'react';
@@ -91,6 +92,7 @@ const NoticeBoard = () => {
   return (
     <TranslateText>
       <div>
+      <GoBackButton label="Back" color="blue" />
       {/* Page Header */}
       <motion.section
         initial={{ opacity: 0 }}

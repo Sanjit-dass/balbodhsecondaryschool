@@ -56,7 +56,7 @@ import {
   TESTIMONIALS,
   PRINCIPAL_MESSAGE,
 } from '../../constants/schoolData';
-import axios from 'axios';
+import api from '../../services/api';
 
   const Home = () => {
     const { t } = useTranslate();
@@ -142,7 +142,7 @@ import axios from 'axios';
       let mounted = true;
       const fetchStaff = async () => {
         try {
-          const res = await axios.get('/api/staff-leadership');
+          const res = await api.get('/staff-leadership');
           if (!mounted) return;
           const list = (res.data && res.data.data) ? res.data.data : [];
           // Only show staff that have an explicit photo URL to avoid showing deleted/placeholder records
