@@ -99,12 +99,12 @@ export default function ExamForm({ existing, onSaved }){
   };
 
   return (
-    <form onSubmit={submit} className="bg-white p-6 shadow rounded-lg border border-slate-200">
-      <h2 className="text-xl font-semibold mb-4">{existing ? 'Edit Exam' : 'Create New Exam'}</h2>
+    <form onSubmit={submit} className="bg-white p-4 md:p-5 lg:p-6 shadow rounded-xl md:rounded-2xl border border-slate-200">
+      <h2 className="text-lg md:text-xl font-semibold mb-4">{existing ? 'Edit Exam' : 'Create New Exam'}</h2>
       
-      <div className="grid gap-4 sm:grid-cols-2 mb-4">
+      <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 mb-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Exam Type *</label>
+          <label className="block text-xs md:text-sm font-medium text-slate-700 mb-1">Exam Type *</label>
           <ResponsiveSelect
             value={form.type}
             onChange={(v) => setForm(prev => ({ ...prev, type: v }))}
@@ -115,7 +115,7 @@ export default function ExamForm({ existing, onSaved }){
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Class *</label>
+          <label className="block text-xs md:text-sm font-medium text-slate-700 mb-1">Class *</label>
           <ResponsiveSelect
             value={form.class}
             onChange={(v) => setForm(prev => ({ ...prev, class: v }))}
@@ -126,92 +126,92 @@ export default function ExamForm({ existing, onSaved }){
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Academic Year *</label>
+          <label className="block text-xs md:text-sm font-medium text-slate-700 mb-1">Academic Year *</label>
           <input
             type="text"
             value={form.academicYear}
             onChange={e => setForm({ ...form, academicYear: e.target.value })}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+            className="w-full p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none"
             placeholder="e.g. 2024-2025"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Max Marks</label>
+          <label className="block text-xs md:text-sm font-medium text-slate-700 mb-1">Max Marks</label>
           <input
             type="text"
             value={form.maxMarks}
             onChange={e => setForm({ ...form, maxMarks: e.target.value })}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+            className="w-full p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Pass Marks</label>
+          <label className="block text-xs md:text-sm font-medium text-slate-700 mb-1">Pass Marks</label>
           <input
             type="text"
             value={form.passMarks}
             onChange={e => setForm({ ...form, passMarks: e.target.value })}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+            className="w-full p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
+          <label className="block text-xs md:text-sm font-medium text-slate-700 mb-1">Start Date</label>
           <input
             type="date"
             value={form.startDate}
             onChange={e => setForm({ ...form, startDate: e.target.value })}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+            className="w-full p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">End Date</label>
+          <label className="block text-xs md:text-sm font-medium text-slate-700 mb-1">End Date</label>
           <input
             type="date"
             value={form.endDate}
             onChange={e => setForm({ ...form, endDate: e.target.value })}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+            className="w-full p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none"
           />
         </div>
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-slate-700 mb-2">Subjects</label>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <label className="block text-xs md:text-sm font-medium text-slate-700 mb-2">Subjects</label>
+        <div className="grid gap-2 md:gap-3 grid-cols-1 sm:grid-cols-2">
           {subjects.map(s => (
             <label key={s._id} className="flex items-center gap-2">
               <input
                 type="checkbox"
                 checked={selectedSubjects.includes(s._id)}
                 onChange={() => toggleSubject(s._id)}
-                className="rounded"
+                className="w-4 h-4 md:w-5 md:h-5 rounded border-slate-300"
               />
-              <span className="text-sm">{s.name}</span>
+              <span className="text-xs md:text-sm">{s.name}</span>
             </label>
           ))}
         </div>
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
+        <label className="block text-xs md:text-sm font-medium text-slate-700 mb-1">Notes</label>
         <textarea
           value={form.notes}
           onChange={e => setForm({ ...form, notes: e.target.value })}
-          className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+          className="w-full p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none"
           rows="3"
           placeholder="Additional notes about the exam"
         />
       </div>
 
-      {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">{error}</div>}
+      {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-xs md:text-sm">{error}</div>}
 
       <button
         type="submit"
         disabled={saving}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+        className="w-full sm:w-auto px-4 md:px-6 py-2.5 md:py-3 bg-blue-600 text-white text-xs md:text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
       >
         {saving ? 'Saving...' : (existing ? 'Update Exam' : 'Create Exam')}
       </button>

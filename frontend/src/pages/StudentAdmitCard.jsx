@@ -139,15 +139,23 @@ export default function StudentAdmitCard() {
       const origPaddingBottom = element.style.paddingBottom;
       const origOverflow = element.style.overflow;
       const origWidth = element.style.width;
-      const origHeight = element.style.height;
+      const origMaxWidth = element.style.maxWidth;
+      const origMinWidth = element.style.minWidth;
 
       try {
         // Add modest extra bottom padding so signatures/footer aren't clipped in the PDF
         element.style.paddingBottom = '60px';
         element.style.overflow = 'visible';
+        element.style.width = '800px';
+        element.style.minWidth = '800px';
+        element.style.maxWidth = 'none';
         element.scrollIntoView({ behavior: 'auto', block: 'center' });
 
-        const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+        });
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
 
         const pdf = new jsPDF('p', 'mm', 'a4');
@@ -170,7 +178,8 @@ export default function StudentAdmitCard() {
         element.style.paddingBottom = origPaddingBottom;
         element.style.overflow = origOverflow;
         element.style.width = origWidth;
-        element.style.height = origHeight;
+        element.style.maxWidth = origMaxWidth;
+        element.style.minWidth = origMinWidth;
       }
     } catch (err) {
       console.error('PDF generation failed:', err);
@@ -289,41 +298,42 @@ export default function StudentAdmitCard() {
               </button>
             </div>
 
-            <div
-              id="admit-card-display"
-              className="admit-card mx-auto w-full max-w-[420px] -mt-4 rounded-[8px] border-2 border-[#B91C1C] bg-white p-[10px] pb-[28px] shadow-[0_6px_12px_rgba(15,23,42,0.06)]"
-            >
-              <div className="flex flex-col items-center text-center">
-                <img src="/logo.png" alt="School Logo" className="mx-auto h-[80px] w-[80px] object-contain" />
-                <h2 className="mt-3 text-[18px] font-bold uppercase tracking-[0.06em] text-[#B91C1C]">BAL BODH SECONDARY SCHOOL</h2>
-                <p className="mt-1 text-[12px] font-normal text-[#2563EB]">Kanchanrup Municipality-8, Kanchanpur</p>
-                <p className="text-[12px] font-semibold text-[#64748B]">ESTD. 2055</p>
-                <p className="mt-3 text-[14px] font-semibold text-[#15803D]">Academic Year: {academicYear}</p>
-                <p className="mt-2 text-[14px] font-bold uppercase tracking-[0.06em] text-[#EA580C]">{examTitle}</p>
-                <p className="mt-1 text-[14px] font-bold uppercase tracking-[0.08em] text-[#7C3AED]">EXAMINATION ADMIT CARD</p>
-              </div>
-
-              <div className={"mt-8 grid gap-4" + (hasPhoto ? ' sm:grid-cols-[1fr_auto]' : '')}>
-                <div className="rounded-3xl bg-slate-50 p-5 shadow-sm">
-                  <dl className="space-y-3 text-sm text-slate-800">
-                    <div className="grid grid-cols-[auto_1fr] items-center gap-2">
-                      <dt className="font-semibold text-slate-600">Name :</dt>
-                      <dd className="text-slate-900 font-semibold">{titleCase(studentName)}</dd>
-                    </div>
-                    <div className="grid grid-cols-[auto_1fr] items-center gap-2">
-                      <dt className="font-semibold text-slate-600">Class :</dt>
-                      <dd className="text-slate-900 font-semibold">{studentClass || 'N/A'}</dd>
-                    </div>
-                    <div className="grid grid-cols-[auto_1fr] items-center gap-2">
-                      <dt className="font-semibold text-slate-600">Roll No :</dt>
-                      <dd className="text-slate-900 font-semibold">{rollNumber || 'N/A'}</dd>
-                    </div>
-                  </dl>
+            <div className="overflow-x-auto">
+              <div
+                id="admit-card-display"
+                className="admit-card mx-auto w-full max-w-[420px] -mt-4 rounded-[8px] border-2 border-[#B91C1C] bg-white p-[10px] pb-[28px] shadow-[0_6px_12px_rgba(15,23,42,0.06)]"
+              >
+                <div className="flex flex-col items-center text-center">
+                  <img src="/logo.png" alt="School Logo" className="mx-auto h-[80px] w-[80px] object-contain" />
+                  <h2 className="mt-3 text-[18px] font-bold uppercase tracking-[0.06em] text-[#B91C1C]">BAL BODH SECONDARY SCHOOL</h2>
+                  <p className="mt-1 text-[12px] font-normal text-[#2563EB]">Kanchanrup Municipality-8, Kanchanpur</p>
+                  <p className="text-[12px] font-semibold text-[#64748B]">ESTD. 2055</p>
+                  <p className="mt-3 text-[14px] font-semibold text-[#15803D]">Academic Year: {academicYear}</p>
+                  <p className="mt-2 text-[14px] font-bold uppercase tracking-[0.06em] text-[#EA580C]">{examTitle}</p>
+                  <p className="mt-1 text-[14px] font-bold uppercase tracking-[0.08em] text-[#7C3AED]">EXAMINATION ADMIT CARD</p>
                 </div>
 
-                {hasPhoto && (
-                  <div className="flex justify-end">
-                    <div className="h-[110px] w-[110px] overflow-hidden rounded-md border border-slate-300 shadow-sm bg-slate-100 mx-auto">
+                <div className="mt-8 flex flex-row flex-nowrap gap-4 items-start justify-between">
+                  <div className="flex-1 min-w-0 text-sm text-slate-800">
+                    <dl className="space-y-3">
+                      <div className="grid grid-cols-[auto_1fr] items-center gap-2">
+                        <dt className="font-semibold text-slate-600">Name :</dt>
+                        <dd className="text-slate-900 font-semibold">{titleCase(studentName)}</dd>
+                      </div>
+                      <div className="grid grid-cols-[auto_1fr] items-center gap-2">
+                        <dt className="font-semibold text-slate-600">Class :</dt>
+                        <dd className="text-slate-900 font-semibold">{studentClass || 'N/A'}</dd>
+                      </div>
+                      <div className="grid grid-cols-[auto_1fr] items-center gap-2">
+                        <dt className="font-semibold text-slate-600">Roll No :</dt>
+                        <dd className="text-slate-900 font-semibold">{rollNumber || 'N/A'}</dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  {hasPhoto && (
+                    <div className="flex-shrink-0 w-24">
+                      <div className="h-24 w-24 overflow-hidden rounded-md border border-slate-300 shadow-sm bg-slate-100">
                         <img
                           src={studentPhoto}
                           alt="Student Photo"
@@ -331,18 +341,19 @@ export default function StudentAdmitCard() {
                           style={{ display: 'block' }}
                         />
                       </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-6 flex flex-row gap-6 text-sm text-slate-900 items-end justify-between">
-                <div className="flex flex-col items-start">
-                  <div className="h-[1px] w-[120px] bg-black" />
-                  <div className="mt-2 font-semibold">Accountant Signature</div>
+                    </div>
+                  )}
                 </div>
-                <div className="flex flex-col items-end">
-                  <div className="h-[1px] w-[120px] bg-black" />
-                  <div className="mt-2 font-semibold">Founder Signature</div>
+
+                <div className="mt-6 flex flex-row gap-6 text-sm text-slate-900 items-end justify-between">
+                  <div className="flex flex-col items-start">
+                    <div className="h-[1px] w-[120px] bg-black" />
+                    <div className="mt-2 font-semibold">Accountant Signature</div>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <div className="h-[1px] w-[120px] bg-black" />
+                    <div className="mt-2 font-semibold">Founder Signature</div>
+                  </div>
                 </div>
               </div>
             </div>

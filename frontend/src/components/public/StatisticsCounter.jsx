@@ -28,11 +28,11 @@ export default function StatisticsCounter({ statistics }) {
   };
 
   return (
-    <section className="relative py-32 md:py-40 overflow-hidden bg-gradient-to-b from-blue-50 via-white to-indigo-50">
+    <section className="relative py-16 md:py-20 lg:py-24 xl:py-32 overflow-hidden bg-gradient-to-b from-blue-50 via-white to-indigo-50">
       {/* Premium Background */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-b from-blue-50 via-white to-indigo-50"></div>
-        
+
         {/* Subtle Animated Background Elements */}
         <motion.div
           animate={{
@@ -46,7 +46,7 @@ export default function StatisticsCounter({ statistics }) {
           }}
           className="absolute top-0 left-0 w-96 h-96 bg-blue-400 rounded-full blur-3xl"
         ></motion.div>
-        
+
         <motion.div
           animate={{
             scale: [1.2, 1, 1.2],
@@ -75,26 +75,26 @@ export default function StatisticsCounter({ statistics }) {
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 relative z-10">
-        
+      <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
+
         {/* Heading */}
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
           variants={sectionVariants}
-          className="text-center mb-20 md:mb-24"
+          className="text-center mb-12 md:mb-16 lg:mb-20 xl:mb-24"
         >
           <motion.span
             variants={titleVariants}
-            className="inline-block px-6 py-3 rounded-full bg-blue-50 backdrop-blur-xl border border-blue-200 text-blue-700 font-bold text-xs md:text-sm uppercase tracking-widest mb-6"
+            className="inline-block px-4 py-2 md:px-6 md:py-3 rounded-full bg-blue-50 backdrop-blur-xl border border-blue-200 text-blue-700 font-bold text-xs md:text-sm uppercase tracking-widest mb-4 md:mb-6"
           >
             {t('✨ School Excellence Metrics')}
           </motion.span>
 
           <motion.h2
             variants={titleVariants}
-            className="text-4xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-6 leading-tight"
+            className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl lg:text-7xl font-black text-gray-900 mb-4 md:mb-6 leading-tight"
           >
             <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
               {t('By The Numbers')}
@@ -103,7 +103,7 @@ export default function StatisticsCounter({ statistics }) {
 
           <motion.p
             variants={titleVariants}
-            className="text-lg md:text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed"
+            className="text-base md:text-lg lg:text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed px-2"
           >
             {t('Excellence reflected through our achievements, dedicated faculty, and successful students worldwide')}
           </motion.p>
@@ -115,7 +115,7 @@ export default function StatisticsCounter({ statistics }) {
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
           variants={sectionVariants}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 md:gap-8"
+          className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-6 lg:gap-8"
         >
           {statistics?.map((stat, index) => (
             <AnimatedCounter

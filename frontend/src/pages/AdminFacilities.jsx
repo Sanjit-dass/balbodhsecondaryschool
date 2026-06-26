@@ -139,136 +139,162 @@ export default function AdminFacilities(){
 
   function renderForm(){
     if (!showForm || !editing) return null;
-    
+
     return (
-      <div className="fixed inset-0 z-50 flex items-start justify-center pt-20">
-        <div className="absolute inset-0 bg-black/40" onClick={closeForm}></div>
-        <div className="relative z-10 w-full max-w-6xl bg-white rounded shadow-lg p-6">
-          <div className="md:flex gap-6">
-            <div className="md:w-full overflow-hidden">
-              <div style={{ maxHeight: '78vh', overflowY: 'auto', paddingRight: 8 }}>
-                <div className="md:flex gap-6">
-                  <div className="md:w-3/4 space-y-4">
-                    <div>
-                      <label className="block font-semibold">Facility Name *</label>
-                      <input className="w-full border p-2 rounded" value={editing.facilityName} onChange={(e)=> setEditing(prev=> ({ ...prev, facilityName: e.target.value }))} />
-                    </div>
-                    <div>
-                      <label className="block font-semibold">Short Description *</label>
-                      <textarea className="w-full border p-2 rounded h-20" value={editing.shortDescription} onChange={(e)=> setEditing(prev=> ({ ...prev, shortDescription: e.target.value }))} />
-                    </div>
-                    <div>
-                      <label className="block font-semibold">Full Description</label>
-                      <textarea className="w-full border p-2 rounded h-40" value={editing.fullDescription} onChange={(e)=> setEditing(prev=> ({ ...prev, fullDescription: e.target.value }))} />
-                    </div>
-
-                    <div>
-                      <div className="font-semibold mb-2">Photos</div>
-                      <div className="border-dashed border-2 border-slate-300 p-4 rounded text-center text-sm">
-                        <div>Drag & drop images to your OS file manager into this area, or use the selector below.</div>
-                        <input ref={fileRef} onChange={handleFileSelect} className="mt-2" type="file" multiple accept="image/*" />
-                      </div>
-                      <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                        {(editing._newFiles||[]).map((f,i)=> (
-                          <div key={i} className="border rounded overflow-hidden p-1">
-                            <div className="relative">
-                              <img src={f.previewUrl||''} alt={f.name} className="w-full h-24 object-cover" />
-                              {editing._coverIndex===i && (
-                                <div className="absolute left-1 top-1 bg-blue-600 text-white text-xs px-2 py-0.5 rounded">Cover</div>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1 mt-1 flex-wrap">
-                              <button onClick={()=> removeNewFile(i)} className="px-2 py-1 text-xs border rounded text-red-600">Delete</button>
-                              <button onClick={()=> setCover(i)} className="px-2 py-1 text-xs border rounded">Set Cover</button>
-                            </div>
-                          </div>
-                        ))}
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 px-4 py-6 sm:px-6">
+        <div className="absolute inset-0" onClick={closeForm} />
+        <div className="relative z-10 mx-auto w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl">
+          <div className="flex min-h-[80vh] flex-col overflow-hidden md:min-h-[70vh]">
+            <div className="flex-1 overflow-hidden p-4 sm:p-6">
+              <div className="md:flex md:gap-6">
+                <div className="md:w-3/4">
+                  <div className="max-h-[70vh] overflow-y-auto pr-0 md:pr-4">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block font-semibold">Facility Name *</label>
+                        <input
+                          className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none"
+                          value={editing.facilityName}
+                          onChange={(e)=> setEditing(prev=> ({ ...prev, facilityName: e.target.value }))}
+                        />
                       </div>
 
-                      <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                        {(editing.photos||[]).map((p,i)=> (
-                          <div key={i} className="border rounded overflow-hidden p-1">
-                            <div className="relative">
-                              <img src={p.url} alt={p.caption||''} className="w-full h-24 object-cover" />
-                              {editing.photos && editing.photos[0] && editing.photos[0].url === p.url && (
-                                <div className="absolute left-1 top-1 bg-blue-600 text-white text-xs px-2 py-0.5 rounded">Cover</div>
-                              )}
+                      <div>
+                        <label className="block font-semibold">Short Description *</label>
+                        <textarea
+                          className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none"
+                          value={editing.shortDescription}
+                          onChange={(e)=> setEditing(prev=> ({ ...prev, shortDescription: e.target.value }))}
+                          rows={3}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold">Full Description</label>
+                        <textarea
+                          className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none"
+                          value={editing.fullDescription}
+                          onChange={(e)=> setEditing(prev=> ({ ...prev, fullDescription: e.target.value }))}
+                          rows={6}
+                        />
+                      </div>
+
+                      <div>
+                        <div className="font-semibold mb-3">Photos</div>
+                        <div className="rounded-2xl border border-dashed border-slate-300 p-4 text-center text-sm text-slate-600">
+                          <div>Upload images for the facility or drag them into this area.</div>
+                          <input
+                            ref={fileRef}
+                            onChange={handleFileSelect}
+                            className="mt-3 w-full text-sm text-slate-700"
+                            type="file"
+                            multiple
+                            accept="image/*"
+                          />
+                        </div>
+
+                        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+                          {(editing._newFiles||[]).map((f,i)=> (
+                            <div key={i} className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                              <div className="relative h-24 overflow-hidden">
+                                <img src={f.previewUrl||''} alt={f.name} className="h-full w-full object-cover" />
+                                {editing._coverIndex===i && (
+                                  <div className="absolute left-2 top-2 rounded-full bg-blue-600 px-2 py-0.5 text-[11px] font-semibold text-white">Cover</div>
+                                )}
+                              </div>
+                              <div className="flex flex-wrap gap-1 border-t border-slate-200 p-2">
+                                <button onClick={()=> removeNewFile(i)} className="flex-1 rounded-xl border border-red-300 px-2 py-1 text-[11px] text-red-700">Delete</button>
+                                <button onClick={()=> setCover(i)} className="flex-1 rounded-xl border border-slate-300 px-2 py-1 text-[11px] text-slate-700">Set Cover</button>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-1 mt-1 flex-wrap">
-                              <button disabled={i===0} onClick={()=> handlePhotoReorder(i,i-1)} className="px-2 py-1 text-xs border rounded">↑</button>
-                              <button disabled={i===(editing.photos||[]).length-1} onClick={()=> handlePhotoReorder(i,i+1)} className="px-2 py-1 text-xs border rounded">↓</button>
-                              <button onClick={()=> handlePhotoDelete(i)} className="px-2 py-1 text-xs border rounded text-red-600">Delete</button>
-                              <button onClick={()=> setCover((editing._newFiles||[]).length + i)} className="px-2 py-1 text-xs border rounded">Set Cover</button>
+                          ))}
+                        </div>
+
+                        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+                          {(editing.photos||[]).map((p,i)=> (
+                            <div key={i} className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                              <div className="relative h-24 overflow-hidden">
+                                <img src={p.url} alt={p.caption||''} className="h-full w-full object-cover" />
+                              </div>
+                              <div className="flex flex-wrap gap-1 border-t border-slate-200 p-2">
+                                <button disabled={i===0} onClick={()=> handlePhotoReorder(i,i-1)} className="rounded-xl border border-slate-300 px-2 py-1 text-[11px] text-slate-700 disabled:opacity-40">↑</button>
+                                <button disabled={i===(editing.photos||[]).length-1} onClick={()=> handlePhotoReorder(i,i+1)} className="rounded-xl border border-slate-300 px-2 py-1 text-[11px] text-slate-700 disabled:opacity-40">↓</button>
+                                <button onClick={()=> handlePhotoDelete(i)} className="rounded-xl border border-red-300 px-2 py-1 text-[11px] text-red-700">Delete</button>
+                                <button onClick={()=> setCover((editing._newFiles||[]).length + i)} className="rounded-xl border border-slate-300 px-2 py-1 text-[11px] text-slate-700">Set Cover</button>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  <div className="md:w-1/4">
-                    <div className="sticky top-5 bg-white p-3 rounded border">
-                      <div className="mb-3">
-                        <label className="block font-semibold">Category</label>
-                        <ResponsiveSelect
-                          value={editing.category}
-                          onChange={(v) => setEditing(prev=> ({...prev, category: v}))}
-                          options={[
-                            'Academic','Technology','Science','Sports','Hostel','Library','Transportation','Medical','Infrastructure','Other'
-                          ].map(c=> ({ value: c, label: c }))}
-                          placeholder="Select category"
-                          className="w-full"
-                          maxHeight={300}
-                        />
+                <div className="mt-6 md:mt-0 md:w-1/4">
+                  <div className="sticky top-6 space-y-4 rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                    <div>
+                      <label className="block font-semibold">Category</label>
+                      <ResponsiveSelect
+                        value={editing.category}
+                        onChange={(v) => setEditing(prev=> ({...prev, category: v}))}
+                        options={[
+                          'Academic','Technology','Science','Sports','Hostel','Library','Transportation','Medical','Infrastructure','Other'
+                        ].map(c=> ({ value: c, label: c }))}
+                        placeholder="Select category"
+                        className="w-full"
+                        maxHeight={300}
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-semibold">Status</label>
+                      <ResponsiveSelect
+                        value={editing.status}
+                        onChange={(v) => setEditing(prev=> ({...prev, status: v}))}
+                        options={[
+                          { value: 'draft', label: 'Draft' },
+                          { value: 'published', label: 'Published' },
+                          { value: 'hidden', label: 'Hidden' }
+                        ]}
+                        placeholder="Select status"
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" checked={editing.featured||false} onChange={(e)=> setEditing(prev=> ({...prev, featured: e.target.checked}))} className="h-4 w-4 rounded border-slate-300 text-blue-600" />
+                      <span className="font-semibold">Featured Facility</span>
+                    </div>
+                    <div>
+                      <label className="block font-semibold">Display Order</label>
+                      <input
+                        type="number"
+                        className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none"
+                        value={editing.displayOrder||0}
+                        onChange={(e)=> setEditing(prev=> ({...prev, displayOrder: Number(e.target.value)}))}
+                      />
+                    </div>
+                    <div>
+                      <div className="font-semibold">Preview Card</div>
+                      <div className="mt-2 h-32 rounded-2xl border border-slate-200 bg-white p-2 flex items-center justify-center text-sm text-slate-500">
+                        {(() => {
+                          const newFilesLen = editing._newFiles ? editing._newFiles.length : 0;
+                          if (editing._coverIndex !== undefined && editing._coverIndex < newFilesLen) {
+                            const f = editing._newFiles[editing._coverIndex];
+                            return <img src={f.previewUrl||''} alt="cover" className="h-full w-full object-cover rounded-2xl" />;
+                          }
+                          const photoIdx = editing._coverIndex !== undefined ? editing._coverIndex - newFilesLen : 0;
+                          if (editing.photos && editing.photos[photoIdx]) {
+                            return <img src={editing.photos[photoIdx].url} alt="cover" className="h-full w-full object-cover rounded-2xl" />;
+                          }
+                          return <div>No preview</div>;
+                        })()}
                       </div>
-                      <div className="mb-3">
-                        <label className="block font-semibold">Status</label>
-                        <ResponsiveSelect
-                          value={editing.status}
-                          onChange={(v) => setEditing(prev=> ({...prev, status: v}))}
-                          options={[
-                            { value: 'draft', label: 'Draft' },
-                            { value: 'published', label: 'Published' },
-                            { value: 'hidden', label: 'Hidden' }
-                          ]}
-                          placeholder="Select status"
-                          className="w-full"
-                        />
-                      </div>
-                      <div className="mb-3">
-                        <label className="flex items-center gap-2">
-                          <input type="checkbox" checked={editing.featured||false} onChange={(e)=> setEditing(prev=> ({...prev, featured: e.target.checked}))} />
-                          <span className="font-semibold">Featured Facility</span>
-                        </label>
-                      </div>
-                      <div className="mb-3">
-                        <label className="block font-semibold">Display Order</label>
-                        <input type="number" className="w-full border p-2 rounded" value={editing.displayOrder||0} onChange={(e)=> setEditing(prev=> ({...prev, displayOrder: Number(e.target.value)}))} />
-                      </div>
-                      <div className="mb-3">
-                        <div className="font-semibold">Preview Card</div>
-                        <div className="mt-2 h-32 border rounded flex items-center justify-center text-sm text-slate-500">
-                          {(() => {
-                            const newFilesLen = editing._newFiles ? editing._newFiles.length : 0;
-                            if (editing._coverIndex !== undefined && editing._coverIndex < newFilesLen) {
-                              const f = editing._newFiles[editing._coverIndex];
-                              return <img src={f.previewUrl||''} alt="cover" className="h-full object-cover" />;
-                            }
-                            const photoIdx = editing._coverIndex !== undefined ? editing._coverIndex - newFilesLen : 0;
-                            if (editing.photos && editing.photos[photoIdx]) {
-                              return <img src={editing.photos[photoIdx].url} alt="cover" className="h-full object-cover" />;
-                            }
-                            return <div>No preview</div>;
-                          })()}
-                        </div>
-                      </div>
-                      {saveError && <div className="text-sm text-red-600 mb-2">{saveError}</div>}
-                      <div className="flex gap-2">
-                        <button onClick={closeForm} disabled={saving} className="flex-1 px-3 py-2 border rounded">Cancel</button>
-                        <button onClick={saveFacility} disabled={saving} className={`flex-1 px-3 py-2 text-white rounded ${saving? 'bg-slate-400':'bg-blue-600'}`}>
-                          {saving? 'Saving…':'Save'}
-                        </button>
-                      </div>
+                    </div>
+                    {saveError && <div className="rounded-2xl bg-rose-50 px-3 py-2 text-sm text-rose-700">{saveError}</div>}
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                      <button onClick={closeForm} disabled={saving} className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-50">Cancel</button>
+                      <button onClick={saveFacility} disabled={saving} className={`w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white transition ${saving? 'bg-slate-400':'bg-blue-600 hover:bg-blue-700'} disabled:opacity-50`}>
+                        {saving? 'Saving…':'Save'}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -282,27 +308,16 @@ export default function AdminFacilities(){
 
   // lock body scroll when form modal is open
   useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+
     if (showForm) {
-      const y = window.scrollY || window.pageYOffset;
-      modalScrollY.current = y;
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${y}px`;
-      document.body.style.left = '0';
-      document.body.style.right = '0';
+      document.body.style.overflow = 'hidden';
     } else {
-      // restore
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
-      window.scrollTo(0, modalScrollY.current || 0);
+      document.body.style.overflow = previousOverflow || 'auto';
     }
+
     return () => {
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
-      window.scrollTo(0, modalScrollY.current || 0);
+      document.body.style.overflow = previousOverflow || 'auto';
     };
   }, [showForm]);
 

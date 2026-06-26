@@ -53,14 +53,22 @@
 }
 
 :root{
-  /* Premium palette */
-  --color-deep-navy: #0F172A; /* Primary */
-  --color-royal-blue: #1E40AF; /* Secondary */
-  --color-gold: #F59E0B; /* Accent */
+  /* Premium palette - matches schoolData.js COLORS */
+  --color-primary: #1E3A8A; /* Premium Navy Blue */
+  --color-secondary: #3B82F6; /* Royal Blue */
+  --color-accent: #D4AF37; /* Premium Gold */
+  --color-accent-light: #F59E0B; /* Light Gold */
+  --color-dark: #1E293B; /* Slate Dark */
+  --color-slate: #64748B; /* Slate */
+  --color-gray: #F8FAFC; /* Light Gray Background */
+  --color-light-gray: #E2E8F0; /* Light Gray Border */
+  --color-success: #10B981;
+  --color-warning: #F97316;
+  --color-error: #EF4444;
+  --color-info: #0EA5E9;
   --color-bg: #FFFFFF;
   --color-card: #FFFFFF;
-  --color-border: #E6E9F2;
-  --color-text: #0F172A;
+  --color-text: #1E293B;
 }
 
 /* Custom Scrollbars */
@@ -193,19 +201,56 @@
 
 
 .btn-primary {
-  @apply px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300 flex items-center justify-center gap-2;
+  @apply px-4 py-2.5 active:scale-95 text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2;
+  background: var(--color-primary);
+  box-shadow: 0 4px 14px rgba(30, 58, 138, 0.15);
+}
+.btn-primary:hover {
+  background: #1e40af;
+  box-shadow: 0 6px 20px rgba(30, 58, 138, 0.25);
 }
 
 .btn-secondary {
-  @apply px-4 py-2.5 bg-white hover:bg-slate-50 active:scale-95 text-slate-700 border border-slate-200 rounded-xl font-medium text-sm transition-all duration-300 flex items-center justify-center gap-2;
+  @apply px-4 py-2.5 active:scale-95 border rounded-xl font-medium text-sm transition-all duration-300 flex items-center justify-center gap-2;
+  background: var(--color-bg);
+  color: var(--color-dark);
+  border-color: var(--color-light-gray);
+}
+.btn-secondary:hover {
+  background: var(--color-gray);
+  border-color: var(--color-secondary);
+  color: var(--color-primary);
 }
 
 .btn-danger {
-  @apply px-4 py-2.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white rounded-xl font-medium text-sm shadow-sm transition-all duration-300 flex items-center justify-center gap-2;
+  @apply px-4 py-2.5 active:scale-95 text-white rounded-xl font-medium text-sm shadow-sm transition-all duration-300 flex items-center justify-center gap-2;
+  background: var(--color-error);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.15);
+}
+.btn-danger:hover {
+  background: #dc2626;
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.25);
 }
 
 .btn-warning {
-  @apply px-4 py-2.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white rounded-xl font-medium text-sm shadow-sm transition-all duration-300 flex items-center justify-center gap-2;
+  @apply px-4 py-2.5 active:scale-95 text-white rounded-xl font-medium text-sm shadow-sm transition-all duration-300 flex items-center justify-center gap-2;
+  background: var(--color-warning);
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.15);
+}
+.btn-warning:hover {
+  background: #ea580c;
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.25);
+}
+
+.btn-accent {
+  @apply px-4 py-2.5 active:scale-95 text-white rounded-xl font-medium text-sm shadow-sm transition-all duration-300 flex items-center justify-center gap-2;
+  background: var(--color-accent);
+  color: #000;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.2);
+}
+.btn-accent:hover {
+  background: #b8962e;
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
 }
 
 @keyframes slowZoom {

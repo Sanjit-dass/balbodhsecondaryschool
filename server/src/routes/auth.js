@@ -53,7 +53,14 @@ router.put('/update-profile', auth, [
 router.post('/logout', auth, authController.logout);
 router.get('/me', auth, authController.me);
 
-router.post('/forgot', authController.forgotPassword);
-router.post('/reset/:token', authController.resetPassword);
+router.post('/forgot', [
+  body('email').isEmail().withMessage('Please provide a valid email address.')
+], validate, authController.forgotPassword);
+
+router.get('/reset/:token', authController.validateResetToken);
+
+router.post('/reset/:token', [
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long.')
+], validate, authController.resetPassword);
 
 module.exports = router;

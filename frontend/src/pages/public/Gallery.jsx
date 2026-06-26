@@ -145,19 +145,32 @@ const Gallery = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="bg-gradient-to-r from-blue-900 to-blue-700 text-white py-10 md:py-16"
+        className="text-white py-10 md:py-16"
+        style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}
       >
         <div className="max-w-[1600px] mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Photo Gallery</h1>
-          <p className="text-lg text-blue-100">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
+          >
+            Photo Gallery
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-lg md:text-xl text-white/90"
+          >
             Explore the vibrant campus life and memorable moments
-          </p>
+          </motion.p>
         </div>
       </motion.section>
 
       {/* Gallery Info (intro) */}
       <div className="max-w-[1600px] mx-auto px-4 text-center py-4">
-        <p className="text-gray-600">
+        <p style={{ color: COLORS.slate }}>
           Click on any image to view in fullscreen. Use arrow keys to navigate.
         </p>
       </div>
@@ -218,7 +231,7 @@ const Gallery = () => {
                                 delay={0}
                               />
                               <div className="mt-3 text-center">
-                                <div className="text-sm font-semibold text-gray-900">{image.title}</div>
+                                <div className="text-sm font-semibold" style={{ color: COLORS.dark }}>{image.title}</div>
                               </div>
                       </div>
                     </SwiperSlide>
@@ -234,7 +247,7 @@ const Gallery = () => {
               animate={{ opacity: 1 }}
               className="text-center py-12"
             >
-              <p className="text-xl text-gray-600">
+              <p className="text-xl" style={{ color: COLORS.slate }}>
                 No images found in this category.
               </p>
             </motion.div>
@@ -249,7 +262,8 @@ const Gallery = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.95)' }}
             onClick={() => setSelectedImage(null)}
           >
             {/* Close Button */}
@@ -257,7 +271,7 @@ const Gallery = () => {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               onClick={() => setSelectedImage(null)}
-              className="absolute top-6 right-6 text-white text-3xl hover:scale-110 transition-transform z-60"
+              className="absolute top-6 right-6 text-white text-3xl hover:scale-110 transition-transform z-60 p-2 rounded-full hover:bg-white/10"
             >
               <FaTimes />
             </motion.button>
@@ -271,14 +285,14 @@ const Gallery = () => {
               className="relative max-w-5xl w-full"
             >
               {/* Main Image */}
-              <div className="relative bg-black rounded-lg overflow-hidden">
+              <div className="relative bg-black rounded-2xl overflow-hidden shadow-2xl">
                 <img
                   src={selectedImage.url}
                   alt={selectedImage.title}
                   onError={(e)=>{ e.currentTarget.onerror = null; e.currentTarget.src = '/default-placeholder.png'; }}
                   className="w-full max-h-96 md:max-h-[600px] object-contain"
                 />
-                <p className="text-center text-white mt-4 font-semibold">
+                <p className="text-center text-white mt-4 font-semibold px-4">
                   {selectedImage.title}
                 </p>
               </div>
@@ -288,7 +302,8 @@ const Gallery = () => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => prevImage()}
-                className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full transition-all"
+                className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 text-white p-3 rounded-full transition-all shadow-xl hover:shadow-2xl"
+                style={{ backgroundColor: `${COLORS.white}20`, backdropFilter: 'blur(10px)' }}
               >
                 <FaChevronLeft size={24} />
               </motion.button>
@@ -297,13 +312,16 @@ const Gallery = () => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => nextImage()}
-                className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full transition-all"
+                className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 text-white p-3 rounded-full transition-all shadow-xl hover:shadow-2xl"
+                style={{ backgroundColor: `${COLORS.white}20`, backdropFilter: 'blur(10px)' }}
               >
                 <FaChevronRight size={24} />
               </motion.button>
 
               {/* Image Counter */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm font-semibold">
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-xl"
+                style={{ backgroundColor: `${COLORS.black}70`, backdropFilter: 'blur(10px)' }}
+              >
                 {currentImageIndex + 1} / {filteredImages.length}
               </div>
             </motion.div>
@@ -314,7 +332,7 @@ const Gallery = () => {
       {/* Gallery Stats removed — statistics now omitted per request */}
 
       {/* Share Gallery CTA */}
-      <section className="py-8 md:py-12 bg-white">
+      <section className="py-8 md:py-12" style={{ backgroundColor: COLORS.gray }}>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -322,10 +340,10 @@ const Gallery = () => {
           viewport={{ once: true }}
           className="max-w-[1600px] mx-auto px-4 text-center"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: COLORS.dark }}>
             Share Your School Memories
           </h2>
-          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg mb-8 max-w-2xl mx-auto" style={{ color: COLORS.slate }}>
             Have great photos from school events? Share them with us and see your memories featured in our gallery!
           </p>
           

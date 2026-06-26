@@ -67,20 +67,20 @@ const PublicHeader = () => {
       <motion.header initial={{ y: -6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.22 }} className="relative z-50">
         {/* Mobile fast bar: logo, centered name/address/ESTD, hamburger */}
         <div className="md:hidden w-full bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white" style={{ zIndex: 2147483647, position: 'fixed', top: 0, left: 0, right: 0 }}>
-          <div className="w-full px-0 py-3 flex items-center" style={{ paddingTop: 8 }}>
+          <div className="w-full px-0 py-3 flex items-center" style={{ paddingTop: 12, paddingBottom: 12 }}>
             <div className="flex items-center">
               <Link to="/">
-                <img src="/logo.png" alt="logo" loading="eager" decoding="sync" fetchpriority="high" className="rounded-md object-cover" style={{ width: '48px', height: '48px', marginLeft: '6px' }} />
+                <img src="/logo.png" alt="logo" loading="eager" decoding="sync" fetchpriority="high" className="rounded-md object-cover" style={{ width: '44px', height: '44px', marginLeft: '12px' }} />
               </Link>
             </div>
-            <div className="flex-1 text-center">
-              <div className="text-[16px] leading-tight font-semibold tracking-wide text-white">{SCHOOL_INFO.name}</div>
-              <div className="mobile-location mt-0.5">{SCHOOL_INFO.address}</div>
-              <div className="mt-1"><span className="inline-block text-xs text-white font-bold">ESTD. {SCHOOL_INFO.established}</span></div>
+            <div className="flex-1 text-center px-2">
+              <div className="text-[15px] leading-tight font-semibold tracking-wide text-white">{SCHOOL_INFO.name}</div>
+              <div className="mobile-location mt-0.5 text-[11px] text-blue-100">{SCHOOL_INFO.address}</div>
+              <div className="mt-1"><span className="inline-block text-[11px] text-white font-bold">ESTD. {SCHOOL_INFO.established}</span></div>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={() => { try { console.log('[PublicHeader] Hamburger clicked (fastbar)'); } catch (e) {} ; toggleMobileMenu(); }} className="p-3 rounded-md bg-blue-800/60 hover:bg-blue-800/80 relative focus:outline-none focus:ring-2 focus:ring-white" aria-label="Toggle menu" aria-expanded={isOpen} style={{ zIndex: 2147483648, marginRight: '8px' }}>
-                {isOpen ? <FaTimes className="w-5 h-5 text-white" /> : <FaBars className="w-5 h-5 text-white" />}
+              <button onClick={() => { try { console.log('[PublicHeader] Hamburger clicked (fastbar)'); } catch (e) {} ; toggleMobileMenu(); }} className="p-4 rounded-md bg-blue-800/60 hover:bg-blue-800/80 relative focus:outline-none focus:ring-2 focus:ring-white transition-all active:scale-95" aria-label="Toggle menu" aria-expanded={isOpen} style={{ zIndex: 2147483648, marginRight: '12px' }}>
+                {isOpen ? <FaTimes className="w-6 h-6 text-white" /> : <FaBars className="w-6 h-6 text-white" />}
               </button>
             </div>
           </div>
@@ -181,22 +181,32 @@ const PublicHeader = () => {
                 style={{ zIndex: 2147483650 }}
               aria-label="Mobile menu"
             >
-              <div className="h-full bg-white shadow-xl overflow-auto">
+              <div className="h-full overflow-auto relative" style={{ background: `linear-gradient(135deg, ${COLORS.dark} 0%, ${COLORS.primary} 40%, ${COLORS.secondary} 100%)` }}>
+                {/* Decorative gradient overlays */}
+                <div className="absolute inset-0 opacity-15 pointer-events-none" style={{ background: `radial-gradient(circle at 10% 20%, ${COLORS.accent} 0%, transparent 40%)` }}></div>
+                <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ background: `radial-gradient(circle at 90% 80%, ${COLORS.accent} 0%, transparent 40%)` }}></div>
+                
                 {/* Mobile header inside menu: logo + school info */}
-                <div className="flex items-center gap-3 px-5 py-5 border-b">
-                  <Link to="/" onClick={(e) => handleMobileNavClick(e, '/')} className="flex items-center gap-3">
-                    <img src="/logo.png" alt="logo" loading="eager" decoding="sync" fetchpriority="high" className="w-12 h-12 object-cover rounded-lg" width="48" height="48" />
+                <div className="relative flex items-center gap-3 px-5 py-6 border-b" style={{ borderColor: `${COLORS.white}20`, background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.secondary} 100%)` }}>
+                  <div className="absolute inset-0 opacity-20" style={{ background: `radial-gradient(circle at 50% 0%, ${COLORS.accent} 0%, transparent 60%)` }}></div>
+                  <Link to="/" onClick={(e) => handleMobileNavClick(e, '/')} className="relative flex items-center gap-3">
+                    <div className="relative group">
+                      <div className="absolute inset-0 rounded-full blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-300" style={{ backgroundColor: COLORS.accent }}></div>
+                      <div className="relative h-14 w-14 rounded-full flex items-center justify-center shadow-2xl" style={{ background: `linear-gradient(135deg, ${COLORS.white}25, ${COLORS.white}10)`, border: `2px solid ${COLORS.accent}50` }}>
+                        <img src="/logo.png" alt="logo" loading="eager" decoding="sync" fetchpriority="high" className="h-10 w-10 rounded-full object-contain" width="40" height="40" />
+                      </div>
+                    </div>
                     <div className="flex flex-col leading-tight">
-                      <span className="text-sm font-semibold text-[#0F172A]">{SCHOOL_INFO.name}</span>
-                      <span className="text-xs text-gray-500">{SCHOOL_INFO.address}</span>
-                      <span className="text-xs text-gray-400">ESTD. {SCHOOL_INFO.established}</span>
+                      <span className="text-sm font-bold bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent">{SCHOOL_INFO.name}</span>
+                      <span className="text-xs text-white/80">Est. {SCHOOL_INFO.established}</span>
                     </div>
                   </Link>
                   { !user ? (
                     <Link
                       to="/login?force=true"
                       onClick={(e) => { setIsOpen(false); }}
-                      className="ml-auto px-4 py-2 rounded-md text-sm font-semibold text-[#0F172A] bg-gray-50 hover:bg-gray-100"
+                      className="ml-auto px-4 py-2 rounded-md text-sm font-semibold text-white shadow-xl transition-all hover:scale-105 active:scale-95"
+                      style={{ background: `${COLORS.white}20`, border: `1px solid ${COLORS.white}30`, backdropFilter: 'blur(10px)' }}
                     >
                       LOGIN
                     </Link>
@@ -214,7 +224,8 @@ const PublicHeader = () => {
                         <Link
                           to={dashboardPath}
                           onClick={(e) => { setIsOpen(false); }}
-                          className="ml-auto px-4 py-2 rounded-md text-sm font-semibold text-[#0F172A] bg-gray-50 hover:bg-gray-100"
+                          className="ml-auto px-4 py-2 rounded-md text-sm font-semibold text-white shadow-xl transition-all hover:scale-105 active:scale-95"
+                          style={{ background: `${COLORS.white}20`, border: `1px solid ${COLORS.white}30`, backdropFilter: 'blur(10px)' }}
                         >
                           Dashboard
                         </Link>
@@ -224,12 +235,15 @@ const PublicHeader = () => {
                 </div>
 
                 {/* Menu items */}
-                <div className="px-1 py-4">
-                  <div className="flex flex-col divide-y divide-gray-100">
+                <div className="relative px-1 py-4">
+                  <div className="flex flex-col divide-y" style={{ borderColor: `${COLORS.white}10` }}>
                     {navItems.map((item, idx) => (
                       <div key={idx} className="px-0">
-                        <Link to={item.path} onClick={() => setIsOpen(false)} className="block px-5 py-4 text-[#0F172A] text-lg font-medium hover:text-blue-600 transition-colors">
-                          {item.label}
+                        <Link to={item.path} onClick={() => setIsOpen(false)} className="group block px-5 py-4 text-white font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{ background: `linear-gradient(135deg, ${COLORS.white}15, ${COLORS.white}5)`, border: `1px solid ${COLORS.white}25`, backdropFilter: 'blur(10px)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                          <span className="flex items-center gap-3">
+                            <span className="text-lg">{idx === 0 ? '🏠' : idx === 1 ? 'ℹ️' : idx === 2 ? '📚' : idx === 3 ? '🎓' : idx === 4 ? '🏢' : idx === 5 ? '🎯' : idx === 6 ? '🖼️' : idx === 7 ? '👨‍🏫' : '📞'}</span>
+                            <span>{item.label}</span>
+                          </span>
                         </Link>
                       </div>
                     ))}
@@ -237,11 +251,12 @@ const PublicHeader = () => {
                 </div>
 
                 {/* CTA */}
-                <div className="px-5 pb-8 pt-4">
+                <div className="relative px-5 pb-8 pt-4">
                   <a
                     href="/admissions"
                     onClick={(e) => handleMobileNavClick(e, '/admissions')}
-                    className="w-full inline-flex items-center justify-center py-4 rounded-lg text-white font-semibold bg-gradient-to-r from-[#2563EB] to-[#1E40AF] shadow-lg"
+                    className="w-full inline-flex items-center justify-center py-4 rounded-xl text-white font-semibold shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95"
+                    style={{ background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentLight})`, boxShadow: `0 10px 40px ${COLORS.accent}50` }}
                   >
                     {t('applyNow')}
                   </a>

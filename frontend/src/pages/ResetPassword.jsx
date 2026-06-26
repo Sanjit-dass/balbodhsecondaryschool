@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../services/api';
@@ -11,6 +11,37 @@ export default function ResetPassword() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [tokenValid, setTokenValid] = useState(null);
+  const [checkingToken, setCheckingToken] = useState(true);
+
+  useEffect(() => {
+    if (!token) {
+      setError('Missing password reset token. Please use the link sent to your email.');
+      setTokenValid(false);
+      setCheckingToken(false);
+      return;
+    }
+
+    let isMounted = true;
+    const validateToken = async () => {
+      setCheckingToken(true);
+      try {
+        await api.get(`/auth/reset/${token}`);
+        if (!isMounted) return;
+        setTokenValid(true);
+      } catch (err) {
+        if (!isMounted) return;
+        setTokenValid(false);
+        setError(err.response?.data?.message || 'This password reset link is invalid or expired.');
+      } finally {
+        if (isMounted) setCheckingToken(false);
+      }
+    };
+    validateToken();
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -42,6 +73,8 @@ export default function ResetPassword() {
     }
   };
 
+  const canSubmit = tokenValid && !checkingToken && !submitting;
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-100">
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-950 via-violet-950 to-slate-950" />
@@ -60,6 +93,12 @@ export default function ResetPassword() {
             </p>
           </div>
 
+          {checkingToken && (
+            <div className="mb-6 rounded-3xl border border-slate-400/20 bg-slate-900/70 p-4 text-sm text-slate-200">
+              Validating password reset link…
+            </div>
+          )}
+
           {error && (
             <div className="mb-6 rounded-3xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-100">
               {error}
@@ -72,39 +111,47 @@ export default function ResetPassword() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-slate-300">New password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter new password"
-                className="mt-3 w-full rounded-3xl border border-white/10 bg-slate-900/90 px-5 py-3 text-slate-100 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20"
-                disabled={submitting}
-              />
-            </div>
+          {tokenValid ? (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-slate-300">New password</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  className="mt-3 w-full rounded-3xl border border-white/10 bg-slate-900/90 px-5 py-3 text-slate-100 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20"
+                  disabled={submitting}
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-300">Confirm new password</label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm new password"
-                className="mt-3 w-full rounded-3xl border border-white/10 bg-slate-900/90 px-5 py-3 text-slate-100 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20"
-                disabled={submitting}
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300">Confirm new password</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                  className="mt-3 w-full rounded-3xl border border-white/10 bg-slate-900/90 px-5 py-3 text-slate-100 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20"
+                  disabled={submitting}
+                />
+              </div>
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full rounded-3xl bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 px-5 py-3 text-sm font-semibold text-white shadow-xl shadow-indigo-500/30 transition hover:shadow-2xl disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {submitting ? 'Resetting password…' : 'Reset password'}
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                className="w-full rounded-3xl bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 px-5 py-3 text-sm font-semibold text-white shadow-xl shadow-indigo-500/30 transition hover:shadow-2xl disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {submitting ? 'Resetting password…' : 'Reset password'}
+              </button>
+            </form>
+          ) : (
+            !checkingToken && (
+              <div className="rounded-3xl border border-slate-400/20 bg-slate-900/70 p-5 text-sm text-slate-300">
+                If your password reset link has expired, please request a new reset from the login page.
+              </div>
+            )
+          )}
 
           <div className="mt-6 text-sm text-slate-400">
             <Link

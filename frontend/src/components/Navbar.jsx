@@ -36,18 +36,41 @@ export default function Navbar({ onMenuClick, onLogoutRequest }) {
 
   return (
     <>
-      {/* Mobile fast bar: blue background with logo, school name, address and ESTD */}
-      <div className="md:hidden w-full bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white">
-        <div className="w-full px-0 py-3 flex items-center">
+      {/* Mobile Premium Navbar */}
+      <div className="md:hidden w-full text-white relative overflow-hidden"
+        style={{ background: `linear-gradient(135deg, ${COLORS.dark} 0%, ${COLORS.primary} 50%, ${COLORS.secondary} 100%)` }}
+      >
+        {/* Decorative gradient overlay */}
+        <div className="absolute inset-0 opacity-20" style={{ background: `radial-gradient(circle at 20% 50%, ${COLORS.accent} 0%, transparent 50%)` }}></div>
+        <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at 80% 50%, ${COLORS.accent} 0%, transparent 50%)` }}></div>
+        
+        <div className="relative w-full px-4 py-4 flex items-center gap-3">
           <div className="flex items-center">
-            <Link to="/">
-              <img src="/logo.png" alt="logo" className="rounded-md object-cover" style={{ width: '48px', height: '48px', marginLeft: '6px' }} />
+            <Link to="/" className="relative group">
+              <div className="absolute inset-0 rounded-full blur-xl opacity-50 group-hover:opacity-70 transition-opacity duration-300" style={{ backgroundColor: COLORS.accent }}></div>
+              <div className="relative h-14 w-14 rounded-full flex items-center justify-center shadow-2xl" style={{ background: `linear-gradient(135deg, ${COLORS.white}20, ${COLORS.white}5)`, border: `2px solid ${COLORS.accent}40` }}>
+                <img 
+                  src="/logo.png" 
+                  alt="Bal Bodh Secondary School Logo" 
+                  className="h-10 w-10 rounded-full object-contain"
+                />
+              </div>
             </Link>
           </div>
-          <div className="flex-1 text-center">
-            <div className="text-[16px] leading-tight font-semibold tracking-wide text-white">{SCHOOL_INFO.name}</div>
-            <div className="mobile-location mt-0.5">{SCHOOL_INFO.address}</div>
-            <div className="mt-1"><span className="inline-block text-xs text-white font-bold">ESTD. {SCHOOL_INFO.established}</span></div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[15px] leading-tight font-bold bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent truncate">
+              {SCHOOL_INFO.name}
+            </div>
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full shadow-lg" style={{ 
+                background: `linear-gradient(135deg, ${COLORS.accent}30, ${COLORS.accent}15)`, 
+                color: COLORS.accent, 
+                border: `1px solid ${COLORS.accent}50`,
+                backdropFilter: 'blur(10px)'
+              }}>
+                Est. {SCHOOL_INFO.established}
+              </span>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <div className="block">
@@ -57,9 +80,13 @@ export default function Navbar({ onMenuClick, onLogoutRequest }) {
               onTouchStart={(e) => { e.stopPropagation(); }}
               onPointerDown={(e) => { e.stopPropagation(); }}
               onClick={(e) => { e.stopPropagation(); try { window.__ignoreSidebarOverlay = true; setTimeout(() => { window.__ignoreSidebarOverlay = false; }, 300); } catch (err) {} console.log('[Navbar] mobile hamburger clicked'); onMenuClick(); }}
-              className="p-2 rounded-md bg-blue-800/60 hover:bg-blue-800/80 relative"
+              className="p-3 rounded-xl relative transition-all duration-300 hover:scale-110 active:scale-95 shadow-xl"
+              style={{ 
+                background: `linear-gradient(135deg, ${COLORS.white}20, ${COLORS.white}10)`, 
+                border: `1px solid ${COLORS.white}30`,
+                backdropFilter: 'blur(10px)'
+              }}
               aria-label="Toggle Sidebar"
-              style={{ zIndex: 9999, marginRight: '8px' }}
             >
               <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
             </button>
@@ -69,7 +96,9 @@ export default function Navbar({ onMenuClick, onLogoutRequest }) {
 
       {/* Mobile-only welcome marquee for guests */}
       {!user && (
-        <div className="md:hidden marquee-outer bg-gradient-to-r from-indigo-700 via-purple-600 to-indigo-500 text-white shadow-md">
+        <div className="md:hidden marquee-outer text-white shadow-md"
+          style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}
+        >
           <div className="marquee-track">
             <div className="marquee-inner px-4 py-2 items-center">
               <span className="text-sm font-semibold mr-8">Welcome To Bal Bodh Secondary School</span>
@@ -105,22 +134,33 @@ export default function Navbar({ onMenuClick, onLogoutRequest }) {
         {/* LOGO + NAME */}
         <Link to={homePath} className="flex items-center gap-3">
 
-          <img
-            src="/logo.png"
-            alt="Bal Bodh School Logo"
-            className={`w-10 h-10 ${isAdminOrPortal ? 'md:w-10 md:h-10' : 'md:w-16 md:h-16'} rounded-xl object-cover shadow-md shadow-indigo-500/20`}
-          />
+          <div className="relative">
+            <div className="absolute inset-0 rounded-xl blur-lg opacity-40" style={{ backgroundColor: COLORS.accent }}></div>
+            <img
+              src="/logo.png"
+              alt="Bal Bodh School Logo"
+              className={`relative w-10 h-10 ${isAdminOrPortal ? 'md:w-10 md:h-10' : 'md:w-16 md:h-16'} rounded-xl object-cover border-2 shadow-lg`}
+              style={{ borderColor: isAdminOrPortal ? COLORS.accent : 'transparent' }}
+            />
+          </div>
 
           <div>
-            <span className={`font-bold text-sm md:text-lg block ${isAdminOrPortal ? 'text-white' : 'text-slate-900'}`}>
-              Bal Bodh School
+            <span className={`font-bold text-sm md:text-lg block ${isAdminOrPortal ? 'bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent' : 'text-slate-900'}`}>
+              {SCHOOL_INFO.name}
             </span>
-            <span
-              className="text-[11px] md:text-sm uppercase tracking-widest font-semibold block mt-1 leading-tight"
-              style={isAdminOrPortal ? { color: COLORS.accent } : undefined}
-            >
-              {subtitleText}
-            </span>
+            <div className="flex items-center gap-2 mt-1">
+              <span
+                className="text-[11px] md:text-sm uppercase tracking-widest font-semibold block leading-tight"
+                style={isAdminOrPortal ? { color: COLORS.accent } : undefined}
+              >
+                {subtitleText}
+              </span>
+              {isAdminOrPortal && (
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${COLORS.accent}25`, color: COLORS.accent, border: `1px solid ${COLORS.accent}40` }}>
+                  Est. {SCHOOL_INFO.established}
+                </span>
+              )}
+            </div>
           </div>
 
         </Link>
@@ -176,10 +216,13 @@ export default function Navbar({ onMenuClick, onLogoutRequest }) {
               <img
                 src={user.profile.photoUrl}
                 alt={user.name}
-                className="w-9 h-9 rounded-xl object-cover border border-white shadow-sm"
+                className="w-9 h-9 rounded-xl object-cover border shadow-sm transition-all duration-200 hover:shadow-md"
+                style={{ borderColor: COLORS.white }}
               />
             ) : (
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+              <div className="w-9 h-9 rounded-xl text-white flex items-center justify-center font-bold text-sm shadow-sm transition-all duration-200 hover:shadow-md"
+                style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}
+              >
                 {getInitials(user.name)}
               </div>
             )}

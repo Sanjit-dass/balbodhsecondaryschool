@@ -3,52 +3,74 @@ import api from '../services/api';
 
 export const AuthContext = createContext();
 
+const safeStorage = {
+  local: {
+    getItem: (key) => {
+      try { return localStorage.getItem(key); } catch (e) { return null; }
+    },
+    setItem: (key, value) => {
+      try { localStorage.setItem(key, value); return true; } catch (e) { return false; }
+    },
+    removeItem: (key) => {
+      try { localStorage.removeItem(key); } catch (e) {}
+    }
+  },
+  session: {
+    getItem: (key) => {
+      try { return sessionStorage.getItem(key); } catch (e) { return null; }
+    },
+    setItem: (key, value) => {
+      try { sessionStorage.setItem(key, value); return true; } catch (e) { return false; }
+    },
+    removeItem: (key) => {
+      try { sessionStorage.removeItem(key); } catch (e) {}
+    }
+  }
+};
+
 const storage = {
   getUser: () => {
     try {
-      return JSON.parse(localStorage.getItem('user')) || JSON.parse(sessionStorage.getItem('user')) || null;
+      const stored = safeStorage.local.getItem('user') || safeStorage.session.getItem('user');
+      return stored ? JSON.parse(stored) : null;
     } catch {
       return null;
     }
   },
   getToken: () => {
     try {
-      const t = localStorage.getItem('token') || sessionStorage.getItem('token');
-      if (t) {
-        try { console.debug('[Auth][storage] token loaded (masked): %s', `${t.slice(0,8)}...`); } catch(e){}
+      let token = safeStorage.local.getItem('token');
+      if (!token) {
+        token = safeStorage.session.getItem('token');
+        if (token) {
+          // Migrate older session-storage tokens to persistent localStorage
+          safeStorage.local.setItem('token', token);
+          const storedUser = safeStorage.session.getItem('user');
+          if (storedUser) safeStorage.local.setItem('user', storedUser);
+        }
+      }
+      if (token) {
+        try { console.debug('[Auth][storage] token loaded (masked): %s', `${token.slice(0,8)}...`); } catch(e){}
       } else {
         try { console.debug('[Auth][storage] token missing'); } catch(e){}
       }
-      return t;
+      return token;
     } catch (e) {
-      // Some mobile browsers (private mode) may throw when accessing localStorage
       console.warn('[Auth][storage] failed to read token from storage', e && e.message);
-      try {
-        return sessionStorage.getItem('token') || null;
-      } catch (e2) {
-        console.warn('[Auth][storage] sessionStorage also unavailable', e2 && e2.message);
-        return null;
-      }
+      return safeStorage.session.getItem('token') || null;
     }
   },
-  setAuth: (token, user, remember) => {
-    if (remember) {
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      sessionStorage.removeItem('token');
-      sessionStorage.removeItem('user');
-    } else {
-      sessionStorage.setItem('token', token);
-      sessionStorage.setItem('user', JSON.stringify(user));
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-    }
+  setAuth: (token, user) => {
+    safeStorage.local.setItem('token', token);
+    safeStorage.local.setItem('user', JSON.stringify(user));
+    safeStorage.session.removeItem('token');
+    safeStorage.session.removeItem('user');
   },
   clear: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
+    safeStorage.local.removeItem('token');
+    safeStorage.local.removeItem('user');
+    safeStorage.session.removeItem('token');
+    safeStorage.session.removeItem('user');
   }
 };
 
@@ -140,11 +162,7 @@ export const AuthProvider = ({ children }) => {
       .then((res) => {
         console.debug('[Auth] /auth/me success, user restored:', res.data && res.data.user && res.data.user._id);
         setUser(res.data.user);
-        // store token and user; prefer localStorage if previously used
-        const remember = Boolean(() => {
-          try { return Boolean(localStorage.getItem('token')); } catch(e){ return false; }
-        })();
-        storage.setAuth(token, res.data.user, remember);
+        storage.setAuth(token, res.data.user);
       })
       .catch((err) => {
         console.warn('[Auth] /auth/me failed, logging out. reason:', err && err.message);
@@ -169,7 +187,7 @@ export const AuthProvider = ({ children }) => {
       setToken(t);
       api.setAuthToken(t);
       setUser(u);
-      storage.setAuth(t, u, remember);
+      storage.setAuth(t, u);
       return u;
     } catch (err) {
       const message = err.response?.data?.message || 'Login failed. Please verify your credentials.';
@@ -184,8 +202,7 @@ export const AuthProvider = ({ children }) => {
     const res = await api.put('/auth/update-profile', payload);
     const updatedUser = res.data.user;
     setUser(updatedUser);
-    const remember = Boolean(localStorage.getItem('token'));
-    storage.setAuth(token, updatedUser, remember);
+    storage.setAuth(token, updatedUser);
     return updatedUser;
   };
 

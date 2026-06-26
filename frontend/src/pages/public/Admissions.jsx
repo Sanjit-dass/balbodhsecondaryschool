@@ -130,13 +130,26 @@ const Admissions = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="bg-gradient-to-r from-blue-900 to-blue-700 text-white py-16 md:py-24"
+        className="text-white py-16 md:py-24"
+        style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}
       >
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Admissions</h1>
-          <p className="text-lg text-blue-100">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
+          >
+            Admissions
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-lg md:text-xl text-white/90"
+          >
             Join Balbodh Secondary School and Start Your Journey of Excellence
-          </p>
+          </motion.p>
         </div>
       </motion.section>
 
@@ -150,7 +163,7 @@ const Admissions = () => {
 
           <div className="relative">
             {/* Desktop Timeline Line */}
-            <div className="hidden md:block absolute top-20 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-blue-400"></div>
+            <div className="hidden md:block absolute top-20 left-0 right-0 h-1" style={{ background: `linear-gradient(to right, ${COLORS.primary}, ${COLORS.secondary})` }}></div>
 
             <div className="grid grid-cols-1 md:grid-cols-6 gap-6 md:gap-4">
               {admissionProcess.map((item, index) => (
@@ -165,7 +178,7 @@ const Admissions = () => {
                   {/* Step Circle */}
                   <div className="flex justify-center mb-4 md:mb-6">
                     <div
-                      className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg"
+                      className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-xl hover:shadow-2xl transition-all duration-300"
                       style={{ backgroundColor: COLORS.secondary }}
                     >
                       {item.step}
@@ -173,8 +186,8 @@ const Admissions = () => {
                   </div>
 
                   {/* Content */}
-                  <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
-                  <p className="text-gray-600 text-sm">{item.description}</p>
+                  <h3 className="font-bold mb-2" style={{ color: COLORS.dark }}>{item.title}</h3>
+                  <p className="text-sm" style={{ color: COLORS.slate }}>{item.description}</p>
                 </motion.div>
               ))}
             </div>
@@ -183,16 +196,18 @@ const Admissions = () => {
       </section>
 
       {/* Eligibility Criteria */}
-      <section className="py-16 md:py-24 bg-gray-50">
+      <section className="py-16 md:py-24" style={{ backgroundColor: COLORS.gray }}>
         <div className="max-w-7xl mx-auto px-4">
           <SectionTitle
             title="Eligibility Criteria"
             subtitle="Age and requirements for each grade"
           />
 
-          <div className="overflow-x-auto bg-white rounded-lg shadow-lg">
+          <div className="overflow-x-auto bg-white rounded-xl shadow-xl">
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-blue-900 to-blue-700 text-white">
+              <thead className="text-white"
+                style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}
+              >
                 <tr>
                   <th className="px-6 py-4 text-left font-bold">Class</th>
                   <th className="px-6 py-4 text-left font-bold">Age Group</th>
@@ -207,11 +222,12 @@ const Admissions = () => {
                     whileInView={{ opacity: 1 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                     viewport={{ once: true }}
-                    className="border-b border-gray-200 hover:bg-blue-50 transition-colors"
+                    className="border-b hover:bg-blue-50 transition-colors"
+                    style={{ borderColor: COLORS.lightGray }}
                   >
-                    <td className="px-6 py-4 font-semibold text-gray-900">{criteria.class}</td>
-                    <td className="px-6 py-4 text-gray-600">{criteria.age}</td>
-                    <td className="px-6 py-4 text-gray-600">{criteria.requirements}</td>
+                    <td className="px-6 py-4 font-semibold" style={{ color: COLORS.dark }}>{criteria.class}</td>
+                    <td className="px-6 py-4" style={{ color: COLORS.slate }}>{criteria.age}</td>
+                    <td className="px-6 py-4" style={{ color: COLORS.slate }}>{criteria.requirements}</td>
                   </motion.tr>
                 ))}
               </tbody>
@@ -231,7 +247,7 @@ const Admissions = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="bg-white rounded-lg p-8 shadow-lg"
+              className="bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300"
             >
               <div className="space-y-4">
                 {[
@@ -252,13 +268,15 @@ const Admissions = () => {
                     whileInView={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                     viewport={{ once: true }}
-                    className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                    className="flex items-center gap-4 p-4 rounded-lg hover:shadow-md transition-all duration-300"
+                    style={{ backgroundColor: `${COLORS.secondary}10` }}
                   >
                     <FaCheckCircle
-                      className="text-green-500 flex-shrink-0"
+                      className="flex-shrink-0"
                       size={20}
+                      style={{ color: COLORS.success }}
                     />
-                    <span className="text-gray-700">{doc}</span>
+                    <span style={{ color: COLORS.dark }}>{doc}</span>
                   </motion.div>
                 ))}
               </div>
@@ -269,9 +287,10 @@ const Admissions = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
               viewport={{ once: true }}
-              className="mt-8 p-6 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg"
+              className="mt-8 p-6 rounded-xl shadow-lg"
+              style={{ backgroundColor: `${COLORS.accent}15`, borderLeft: `4px solid ${COLORS.accent}` }}
             >
-              <p className="text-sm text-yellow-900">
+              <p className="text-sm" style={{ color: COLORS.dark }}>
                 <strong>Note:</strong> All documents must be original or certified copies. Incomplete applications will not be processed.
               </p>
             </motion.div>
@@ -280,24 +299,48 @@ const Admissions = () => {
       </section>
 
       {/* Online Admission Form */}
-      <section className="py-16 md:py-24 bg-gray-50 overflow-x-hidden">
-        <div className="max-w-7xl mx-auto px-4 overflow-x-hidden">
-          <SectionTitle
-            title="Online Admission Form"
-            subtitle="Fill the form below to start your application"
-          />
+      <section className="py-16 md:py-24 overflow-x-hidden" style={{ backgroundColor: COLORS.gray }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start max-w-7xl mx-auto px-4 overflow-x-hidden">
+          <div className="w-full">
+            <SectionTitle
+              title="Online Admission Form"
+              subtitle="Fill the form below to start your application"
+            />
 
-          <div className="max-w-2xl w-full mx-auto bg-white rounded-lg shadow-lg p-8 md:p-12 overflow-x-hidden">
+            <div className="mt-8 p-6 rounded-xl shadow-lg" style={{ backgroundColor: `${COLORS.primary}10`, borderLeft: `4px solid ${COLORS.primary}` }}>
+              <h4 className="font-bold text-lg mb-3" style={{ color: COLORS.dark }}>Why Apply Online?</h4>
+              <ul className="space-y-2" style={{ color: COLORS.slate }}>
+                <li className="flex items-center gap-2">
+                  <FaCheckCircle size={16} style={{ color: COLORS.secondary }} />
+                  Quick and convenient application process
+                </li>
+                <li className="flex items-center gap-2">
+                  <FaCheckCircle size={16} style={{ color: COLORS.secondary }} />
+                  Track your application status
+                </li>
+                <li className="flex items-center gap-2">
+                  <FaCheckCircle size={16} style={{ color: COLORS.secondary }} />
+                  Receive updates via email and phone
+                </li>
+                <li className="flex items-center gap-2">
+                  <FaCheckCircle size={16} style={{ color: COLORS.secondary }} />
+                  Secure and confidential data handling
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="w-full bg-white rounded-2xl shadow-xl p-8 md:p-12 overflow-x-hidden">
             {submissionSuccess && (
-              <div className="mb-6 p-6 rounded-lg bg-green-50 border border-green-200">
-                <h3 className="text-xl font-bold text-green-800">Application Submitted Successfully!</h3>
-                <p className="mt-2 text-gray-700">Thank you for applying to Bal Bodh Secondary School.</p>
-                <p className="mt-2 text-gray-700">Your admission application has been received successfully and is currently under review. Our admissions team will contact you shortly using the phone number provided in the application for further admission procedures and guidance.</p>
-                <p className="mt-2 text-gray-700">Please keep your phone available and check your contact details for accuracy.</p>
+              <div className="mb-6 p-6 rounded-xl border" style={{ backgroundColor: `${COLORS.success}10`, borderColor: COLORS.success }}>
+                <h3 className="text-xl font-bold" style={{ color: COLORS.success }}>Application Submitted Successfully!</h3>
+                <p className="mt-2" style={{ color: COLORS.slate }}>Thank you for applying to Bal Bodh Secondary School.</p>
+                <p className="mt-2" style={{ color: COLORS.slate }}>Your admission application has been received successfully and is currently under review. Our admissions team will contact you shortly using the phone number provided in the application for further admission procedures and guidance.</p>
+                <p className="mt-2" style={{ color: COLORS.slate }}>Please keep your phone available and check your contact details for accuracy.</p>
                 {submittedApplicationId && (
-                  <p className="mt-3 font-semibold">Application ID: {submittedApplicationId}</p>
+                  <p className="mt-3 font-semibold" style={{ color: COLORS.dark }}>Application ID: {submittedApplicationId}</p>
                 )}
-                <p className="mt-3 text-gray-700">We look forward to welcoming you to Bal Bodh Secondary School.</p>
+                <p className="mt-3" style={{ color: COLORS.slate }}>We look forward to welcoming you to Bal Bodh Secondary School.</p>
               </div>
             )}
             <form onSubmit={handleSubmit} className="space-y-6 overflow-hidden min-w-0 admissions-form">
@@ -308,7 +351,7 @@ const Admissions = () => {
                   transition={{ duration: 0.4 }}
                   viewport={{ once: true }}
                 >
-                  <label className="block text-gray-700 font-semibold mb-2">
+                  <label className="block font-semibold mb-2" style={{ color: COLORS.dark }}>
                     Student Name *
                   </label>
                   <input
@@ -317,8 +360,8 @@ const Admissions = () => {
                     value={formData.studentName}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
-                    style={{ '--tw-ring-color': COLORS.secondary }}
+                    className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-300"
+                    style={{ borderColor: COLORS.lightGray, '--tw-ring-color': COLORS.secondary }}
                   />
                 </motion.div>
 
@@ -328,7 +371,7 @@ const Admissions = () => {
                   transition={{ duration: 0.4, delay: 0.1 }}
                   viewport={{ once: true }}
                 >
-                  <label className="block text-gray-700 font-semibold mb-2">
+                  <label className="block font-semibold mb-2" style={{ color: COLORS.dark }}>
                     Parent/Guardian Name *
                   </label>
                   <input
@@ -337,8 +380,8 @@ const Admissions = () => {
                     value={formData.parentName}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
-                    style={{ '--tw-ring-color': COLORS.secondary }}
+                    className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-300"
+                    style={{ borderColor: COLORS.lightGray, '--tw-ring-color': COLORS.secondary }}
                   />
                 </motion.div>
               </div>
@@ -351,7 +394,7 @@ const Admissions = () => {
                   viewport={{ once: true }}
                   className="min-w-0"
                 >
-                  <label className="block text-gray-700 font-semibold mb-2">
+                  <label className="block font-semibold mb-2" style={{ color: COLORS.dark }}>
                     Email *
                   </label>
                   <input
@@ -360,8 +403,8 @@ const Admissions = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
-                    style={{ '--tw-ring-color': COLORS.secondary }}
+                    className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-300"
+                    style={{ borderColor: COLORS.lightGray, '--tw-ring-color': COLORS.secondary }}
                   />
                 </motion.div>
 
@@ -372,7 +415,7 @@ const Admissions = () => {
                   viewport={{ once: true }}
                   className="min-w-0"
                 >
-                  <label className="block text-gray-700 font-semibold mb-2">
+                  <label className="block font-semibold mb-2" style={{ color: COLORS.dark }}>
                     Phone *
                   </label>
                   <input
@@ -381,8 +424,8 @@ const Admissions = () => {
                     value={formData.phone}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
-                    style={{ '--tw-ring-color': COLORS.secondary }}
+                    className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-300"
+                    style={{ borderColor: COLORS.lightGray, '--tw-ring-color': COLORS.secondary }}
                   />
                 </motion.div>
               </div>
@@ -394,7 +437,7 @@ const Admissions = () => {
                 viewport={{ once: true }}
                 className="min-w-0 w-full overflow-hidden"
               >
-                <label className="block text-gray-700 font-semibold mb-2">
+                <label className="block font-semibold mb-2" style={{ color: COLORS.dark }}>
                   Applying for Class *
                 </label>
                 <div className="w-full max-w-full min-w-0 overflow-hidden select-wrapper">
@@ -403,8 +446,8 @@ const Admissions = () => {
                     value={formData.class}
                     onChange={handleChange}
                     required
-                    className="block w-full max-w-full min-w-0 appearance-none px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
-                    style={{ '--tw-ring-color': COLORS.secondary, boxSizing: 'border-box' }}
+                    className="block w-full max-w-full min-w-0 appearance-none px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-300"
+                    style={{ borderColor: COLORS.lightGray, '--tw-ring-color': COLORS.secondary, boxSizing: 'border-box' }}
                   >
                     <option value="">Select Class</option>
                     {['Nursery', 'LKG', 'UKG', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'].map(
@@ -424,7 +467,7 @@ const Admissions = () => {
                 transition={{ duration: 0.4, delay: 0.5 }}
                 viewport={{ once: true }}
               >
-                <label className="block text-gray-700 font-semibold mb-2">
+                <label className="block font-semibold mb-2" style={{ color: COLORS.dark }}>
                   Address
                 </label>
                 <textarea
@@ -432,16 +475,16 @@ const Admissions = () => {
                   value={formData.address}
                   onChange={handleChange}
                   rows="3"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
-                  style={{ '--tw-ring-color': COLORS.secondary }}
+                  className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-300"
+                  style={{ borderColor: COLORS.lightGray, '--tw-ring-color': COLORS.secondary }}
                 ></textarea>
               </motion.div>
 
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="w-full py-3 rounded-lg font-bold text-white transition-all text-lg"
+                className="w-full py-3.5 rounded-xl font-bold text-white transition-all text-lg shadow-lg hover:shadow-xl"
                 style={{ backgroundColor: COLORS.secondary }}
               >
                 Submit Application
@@ -472,16 +515,17 @@ const Admissions = () => {
                   onClick={() =>
                     setExpandedFaq(expandedFaq === index ? -1 : index)
                   }
-                  className="w-full bg-gradient-to-r from-blue-50 to-gray-50 p-6 rounded-lg text-left hover:shadow-lg transition-all flex items-center justify-between border-l-4"
-                  style={{ borderLeftColor: COLORS.secondary }}
+                  className="w-full p-6 rounded-xl text-left hover:shadow-lg transition-all duration-300 flex items-center justify-between"
+                  style={{ backgroundColor: COLORS.gray, borderLeft: `4px solid ${COLORS.secondary}` }}
                 >
-                  <span className="font-semibold text-gray-900 flex items-center gap-3">
+                  <span className="font-semibold flex items-center gap-3" style={{ color: COLORS.dark }}>
                     <FaQuestionCircle style={{ color: COLORS.secondary }} />
                     {faq.question}
                   </span>
                   <span
-                    className="text-gray-600 transition-transform"
+                    className="transition-transform"
                     style={{
+                      color: COLORS.slate,
                       transform:
                         expandedFaq === index ? 'rotate(180deg)' : 'rotate(0)',
                     }}
@@ -499,7 +543,7 @@ const Admissions = () => {
                   transition={{ duration: 0.3 }}
                   className="overflow-hidden"
                 >
-                  <div className="bg-white p-6 text-gray-600 border-l-4" style={{ borderLeftColor: COLORS.accent }}>
+                  <div className="bg-white p-6 rounded-b-xl border-l-4" style={{ color: COLORS.slate, borderLeftColor: COLORS.accent }}>
                     {faq.answer}
                   </div>
                 </motion.div>

@@ -49,28 +49,28 @@ const EventModal = ({ event, onClose }) => {
   function onTouchMove(e){ if(!touchStartX.current) return; const diff = e.touches[0].clientX - touchStartX.current; if(Math.abs(diff) > 50){ if(diff < 0) next(); else prev(); touchStartX.current = null; } }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose}></div>
 
-      <div className="relative w-full max-w-6xl bg-white rounded-xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-12">
+      <div className="relative w-full max-w-6xl bg-white rounded-xl md:rounded-2xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-12 max-h-[90vh] md:max-h-[95vh]">
         {/* Left: images */}
-        <div className="md:col-span-5 bg-gray-100 p-4 flex flex-col">
-          <div className="flex-1 rounded-lg overflow-hidden mb-4 relative" onTouchStart={onTouchStart} onTouchMove={onTouchMove}>
+        <div className="md:col-span-5 bg-gray-100 p-3 md:p-4 flex flex-col">
+          <div className="flex-1 rounded-lg overflow-hidden mb-3 md:mb-4 relative" onTouchStart={onTouchStart} onTouchMove={onTouchMove}>
             {photos.length > 0 ? (
               <>
-                <img src={photos[index].url || photos[index].fileUrl || '/images/schoolphoto.png'} alt={current.title} className="w-full h-96 object-cover filter brightness-105" />
+                <img src={photos[index].url || photos[index].fileUrl || '/images/schoolphoto.png'} alt={current.title} className="w-full h-64 md:h-96 object-cover filter brightness-105" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/12 via-transparent to-black/6 pointer-events-none" />
-                <button onClick={prev} className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-2 shadow">‹</button>
-                <button onClick={next} className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-2 shadow">›</button>
+                <button onClick={prev} className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-2 md:p-2 shadow text-sm md:text-base">‹</button>
+                <button onClick={next} className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-2 md:p-2 shadow text-sm md:text-base">›</button>
               </>
             ) : (
-              <div className="w-full h-96 bg-gray-200 flex items-center justify-center">No Image</div>
+              <div className="w-full h-64 md:h-96 bg-gray-200 flex items-center justify-center text-xs md:text-sm">No Image</div>
             )}
 
             {photos.length > 1 && (
-              <div className="mt-3 overflow-x-auto flex gap-2">
+              <div className="mt-2 md:mt-3 overflow-x-auto flex gap-2">
                 {photos.map((p, i) => (
-                  <button key={i} onClick={() => setIndex(i)} className={`flex-shrink-0 w-20 h-12 overflow-hidden rounded ${i===index? 'ring-2 ring-blue-500':'ring-0'}`}>
+                  <button key={i} onClick={() => setIndex(i)} className={`flex-shrink-0 w-16 md:w-20 h-12 overflow-hidden rounded ${i===index? 'ring-2 ring-blue-500':'ring-0'}`}>
                     <img src={p.url || p.fileUrl} alt={p.caption || `thumb-${i}`} className="w-full h-full object-cover" />
                   </button>
                 ))}
@@ -80,32 +80,32 @@ const EventModal = ({ event, onClose }) => {
         </div>
 
         {/* Right: details */}
-        <div className="md:col-span-7 p-6 flex flex-col">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">{current.title}</h2>
-              <p className="text-gray-600 mt-1">{current.location} • {current.eventDate ? new Date(current.eventDate).toLocaleString() : ''}</p>
+        <div className="md:col-span-7 p-4 md:p-6 flex flex-col">
+          <div className="flex items-start justify-between gap-3 md:gap-4">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg md:text-2xl font-bold text-gray-900 truncate">{current.title}</h2>
+              <p className="text-gray-600 mt-1 text-xs md:text-sm">{current.location} • {current.eventDate ? new Date(current.eventDate).toLocaleString() : ''}</p>
             </div>
             <div>
-              <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">Close</button>
+              <button onClick={onClose} className="px-3 md:px-4 py-2 bg-gray-200 rounded text-xs md:text-sm">Close</button>
             </div>
           </div>
 
-          <div className="mt-4 overflow-auto" style={{ maxHeight: '52vh' }}>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Description</h3>
+          <div className="mt-3 md:mt-4 overflow-auto" style={{ maxHeight: '40vh', maxHeight: '52vh' }}>
+              <h3 className="text-base md:text-lg font-semibold text-gray-800 mb-2">Description</h3>
             {loading ? (
-              <p className="text-gray-600">Loading details…</p>
+              <p className="text-gray-600 text-xs md:text-sm">Loading details…</p>
             ) : (
-              <p className="text-gray-700 whitespace-pre-line leading-relaxed">{current.fullDescription || current.shortDescription}</p>
+              <p className="text-gray-700 whitespace-pre-line leading-relaxed text-xs md:text-sm">{current.fullDescription || current.shortDescription}</p>
             )}
 
             {current.schedule && current.schedule.length > 0 && (
-              <div className="mt-4">
-                <h4 className="font-semibold text-gray-800">Event Schedule</h4>
-                <ul className="mt-2 space-y-2 text-gray-700">
+              <div className="mt-3 md:mt-4">
+                <h4 className="font-semibold text-gray-800 text-sm md:text-base">Event Schedule</h4>
+                <ul className="mt-2 space-y-2 text-gray-700 text-xs md:text-sm">
                   {current.schedule.map((s, idx) => (
-                    <li key={idx} className="flex items-start gap-3">
-                      <div className="w-20 text-sm text-gray-600">{s.time}</div>
+                    <li key={idx} className="flex items-start gap-2 md:gap-3">
+                      <div className="w-16 md:w-20 text-xs md:text-sm text-gray-600">{s.time}</div>
                       <div className="flex-1">{s.activity}</div>
                     </li>
                   ))}
@@ -114,16 +114,16 @@ const EventModal = ({ event, onClose }) => {
             )}
 
             {current.additionalInfo && (
-              <div className="mt-4">
-                <h4 className="font-semibold text-gray-800">Additional Information</h4>
-                <p className="text-gray-700 mt-2">{current.additionalInfo}</p>
+              <div className="mt-3 md:mt-4">
+                <h4 className="font-semibold text-gray-800 text-sm md:text-base">Additional Information</h4>
+                <p className="text-gray-700 mt-2 text-xs md:text-sm">{current.additionalInfo}</p>
               </div>
             )}
           </div>
 
-          <div className="mt-4 sticky bottom-0 bg-white py-3 flex justify-end gap-3">
-            <button className="px-6 py-2 bg-blue-600 text-white rounded font-semibold">Inquire</button>
-            <button onClick={onClose} className="px-6 py-2 border rounded">Close</button>
+          <div className="mt-3 md:mt-4 sticky bottom-0 bg-white py-2 md:py-3 flex justify-end gap-2 md:gap-3">
+            <button className="px-4 md:px-6 py-2 bg-blue-600 text-white rounded font-semibold text-xs md:text-sm">Inquire</button>
+            <button onClick={onClose} className="px-4 md:px-6 py-2 border rounded text-xs md:text-sm">Close</button>
           </div>
         </div>
       </div>

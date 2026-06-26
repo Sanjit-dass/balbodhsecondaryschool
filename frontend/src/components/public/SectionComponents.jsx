@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useTranslate } from '../../hooks/useTranslate';
+import { COLORS } from '../../constants/schoolData';
 const defaultAvatar = '/images/faculty1.png';
 import { getImageUrl } from '../../services/api';
 
@@ -15,16 +16,16 @@ export const SectionTitle = ({ title, subtitle, align = 'center' }) => {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       viewport={{ once: true }}
-      className={`mb-12 ${align === 'center' ? 'text-center' : ''}`}
+      className={`mb-10 md:mb-14 ${align === 'center' ? 'text-center' : ''}`}
     >
-      <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+      <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 md:mb-4" style={{ color: COLORS.dark }}>
         {translatedTitle}
       </h2>
       {subtitle && (
-        <p className="text-gray-600 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">{translatedSubtitle}</p>
+        <p className="text-gray-600 text-base md:text-lg lg:text-xl max-w-3xl mx-auto leading-relaxed px-4 md:px-0" style={{ color: COLORS.slate }}>{translatedSubtitle}</p>
       )}
-      <div className={`flex mt-6 ${align === 'center' ? 'justify-center' : 'justify-start'}`}>
-        <div className="w-24 h-1.5 bg-gradient-to-r from-blue-600 via-blue-500 to-yellow-400 rounded-full shadow-lg"></div>
+      <div className={`flex mt-4 md:mt-6 ${align === 'center' ? 'justify-center' : 'justify-start'}`}>
+        <div className="w-20 md:w-24 h-1.5 rounded-full shadow-lg" style={{ background: `linear-gradient(to right, ${COLORS.primary}, ${COLORS.secondary}, ${COLORS.accent})` }}></div>
       </div>
     </motion.div>
   );
@@ -41,15 +42,16 @@ export const StatCard = ({ icon: Icon, label, value, delay }) => {
       transition={{ duration: 0.5, delay }}
       viewport={{ once: true }}
       whileHover={{ y: -10, scale: 1.02 }}
-      className="bg-white rounded-2xl p-8 text-center shadow-xl border-t-4 border-blue-600 hover:shadow-2xl transition-all duration-300"
+      className="bg-white rounded-2xl p-6 md:p-8 text-center shadow-xl hover:shadow-2xl transition-all duration-300"
+      style={{ borderTop: `4px solid ${COLORS.primary}` }}
     >
       <div className="flex justify-center mb-4">
-        <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-yellow-400 rounded-xl flex items-center justify-center text-white text-xl shadow-md">
+        <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-white text-xl shadow-md" style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}>
   {Icon ? <Icon /> : <span>📘</span>}
 </div>
       </div>
-      <h3 className="text-4xl font-bold text-gray-900 mb-2">{value}</h3>
-      <p className="text-gray-600 font-medium text-lg">{translatedLabel}</p>
+      <h3 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: COLORS.dark }}>{value}</h3>
+      <p className="font-medium text-base md:text-lg" style={{ color: COLORS.slate }}>{translatedLabel}</p>
     </motion.div>
   );
 };
@@ -66,15 +68,16 @@ export const FeatureCard = ({ icon: Icon, title, description, delay }) => {
       transition={{ duration: 0.5, delay }}
       viewport={{ once: true }}
       whileHover={{ y: -8, scale: 1.02 }}
-      className="group bg-white rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-200 hover:scale-[1.01]"
+      className="group bg-white rounded-xl p-5 md:p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border hover:scale-[1.01]"
+      style={{ borderColor: COLORS.lightGray }}
     >
-      <div className="flex items-center gap-4 mb-4">
-        <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-yellow-400 rounded-xl flex items-center justify-center text-white text-xl shadow-md">
+      <div className="flex items-center gap-3 md:gap-4 mb-4">
+        <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-white text-xl shadow-md flex-shrink-0" style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}>
           <Icon />
         </div>
-        <h3 className="text-xl font-bold text-gray-900 transition-colors duration-300 group-hover:text-blue-600">{translatedTitle}</h3>
+        <h3 className="text-lg md:text-xl font-bold transition-colors duration-300" style={{ color: COLORS.dark }} className="group-hover:text-blue-600">{translatedTitle}</h3>
       </div>
-      <p className="text-gray-600 leading-relaxed transition-colors duration-300 group-hover:text-gray-700">{translatedDescription}</p>
+      <p className="text-sm md:text-base leading-relaxed transition-colors duration-300" style={{ color: COLORS.slate }}>{translatedDescription}</p>
     </motion.div>
   );
 };
@@ -91,10 +94,11 @@ export const FacilityCard = ({ title, description, image, delay }) => {
       transition={{ duration: 0.5, delay }}
       viewport={{ once: true }}
       whileHover={{ y: -10 }}
-      className="group rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 bg-white border border-gray-100 hover:border-blue-200 hover:scale-[1.02]"
+      className="group rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 bg-white border hover:scale-[1.02]"
+      style={{ borderColor: COLORS.lightGray }}
     >
       {/* Image Container */}
-      <div className="relative h-64 md:h-72 overflow-hidden bg-gray-200">
+      <div className="relative h-56 md:h-64 lg:h-72 overflow-hidden bg-gray-200">
         <img
           src={typeof image === 'string' && (image.startsWith('http') || image.startsWith('/')) ? image : (image ? `/images/${image}` : '/images/schoolphoto.png')}
           alt={title}
@@ -107,9 +111,9 @@ export const FacilityCard = ({ title, description, image, delay }) => {
       </div>
 
       {/* Content */}
-      <div className="bg-white p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-2 transition-colors duration-300 group-hover:text-blue-600">{translatedTitle}</h3>
-        <p className="text-gray-600 text-sm leading-relaxed transition-colors duration-300 group-hover:text-gray-700">{translatedDescription}</p>
+      <div className="bg-white p-5 md:p-6">
+        <h3 className="text-lg md:text-xl font-bold mb-2 transition-colors duration-300" style={{ color: COLORS.dark }}>{translatedTitle}</h3>
+        <p className="text-sm leading-relaxed transition-colors duration-300" style={{ color: COLORS.slate }}>{translatedDescription}</p>
       </div>
     </motion.div>
   );
@@ -126,24 +130,24 @@ export const TestimonialCard = ({ name, role, text, image, delay }) => {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay }}
       viewport={{ once: true }}
-      className="rounded-xl p-6 md:p-8 shadow-lg hover:shadow-2xl transition-transform transform hover:-translate-y-2 h-full flex flex-col bg-white/40 backdrop-blur-md border border-white/10"
+      className="rounded-xl p-5 md:p-6 lg:p-8 shadow-lg hover:shadow-2xl transition-transform transform hover:-translate-y-2 h-full flex flex-col bg-white/40 backdrop-blur-md border border-white/10"
     >
       <div className="flex-1 flex flex-col">
-        <div className="flex justify-center -mt-12 mb-4">
-          <img src={`/images/${image}`} alt={name} className="w-28 h-28 md:w-32 md:h-32 rounded-full object-cover ring-4 ring-white shadow-md" />
+        <div className="flex justify-center -mt-10 md:-mt-12 mb-4">
+          <img src={`/images/${image}`} alt={name} className="w-24 h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full object-cover ring-4 ring-white shadow-md" />
         </div>
 
         <div className="flex justify-center mb-4">
           {[...Array(5)].map((_, i) => (
-            <span key={i} className="text-yellow-400 text-xl">★</span>
+            <span key={i} className="text-lg md:text-xl" style={{ color: COLORS.accent }}>★</span>
           ))}
         </div>
 
-        <blockquote className="text-gray-800 italic text-center mb-6 px-2 md:px-6" style={{ lineHeight: '1.6' }}>{translatedText}</blockquote>
+        <blockquote className="italic text-center mb-6 px-2 md:px-6 text-sm md:text-base" style={{ lineHeight: '1.6', color: COLORS.dark }}>{translatedText}</blockquote>
 
         <div className="mt-auto text-center">
-          <p className="font-semibold text-gray-900">{name}</p>
-          <p className="text-sm text-gray-600">{translatedRole}</p>
+          <p className="font-semibold text-base md:text-lg" style={{ color: COLORS.dark }}>{name}</p>
+          <p className="text-sm" style={{ color: COLORS.slate }}>{translatedRole}</p>
         </div>
       </div>
     </motion.div>
@@ -162,10 +166,11 @@ export const EventCard = ({ title, date, description, image, delay, onLearnMore 
       transition={{ duration: 0.5, delay }}
       viewport={{ once: true }}
       whileHover={{ y: -5 }}
-      className="group bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-50 hover:border-blue-100 hover:scale-[1.01] flex flex-col h-full"
+      className="group bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border hover:scale-[1.01] flex flex-col h-full"
+      style={{ borderColor: COLORS.lightGray }}
     >
       {/* Image */}
-      <div className="relative h-48 md:h-56 overflow-hidden bg-gray-200 group">
+      <div className="relative h-44 md:h-48 lg:h-56 overflow-hidden bg-gray-200 group">
         <img
           src={
             typeof image === 'string'
@@ -182,19 +187,19 @@ export const EventCard = ({ title, date, description, image, delay, onLearnMore 
       </div>
 
       {/* Content */}
-      <div className="p-6 flex flex-col flex-1">
+      <div className="p-5 md:p-6 flex flex-col flex-1">
         <div className="mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-bold text-gray-900 flex-1 transition-colors duration-300 group-hover:text-blue-600">{translatedTitle}</h3>
-            <span className="text-sm font-semibold text-white px-3 py-1 rounded-full bg-blue-600 ml-4">
+          <div className="flex items-center justify-between mb-3 gap-2">
+            <h3 className="text-base md:text-lg font-bold flex-1 transition-colors duration-300" style={{ color: COLORS.dark }}>{translatedTitle}</h3>
+            <span className="text-xs md:text-sm font-semibold text-white px-2 md:px-3 py-1 rounded-full whitespace-nowrap" style={{ backgroundColor: COLORS.primary }}>
               {date}
             </span>
           </div>
-          <p className="text-gray-600 text-sm transition-colors duration-300 group-hover:text-gray-700">{translatedDescription}</p>
+          <p className="text-sm transition-colors duration-300" style={{ color: COLORS.slate }}>{translatedDescription}</p>
         </div>
 
         <div className="mt-auto">
-          <button onClick={onLearnMore} className="w-full text-center text-blue-600 font-semibold hover:text-blue-800 transition py-2">
+          <button onClick={onLearnMore} className="w-full text-center font-semibold transition py-2 text-sm md:text-base" style={{ color: COLORS.secondary }}>
             {t('Learn More →')}
           </button>
         </div>
@@ -215,10 +220,11 @@ export const AchievementCard = ({ title, description, image, count, delay }) => 
       transition={{ duration: 0.5, delay }}
       viewport={{ once: true }}
       whileHover={{ y: -10 }}
-      className="group rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all border border-gray-50 hover:border-blue-100"
+      className="group rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all border"
+      style={{ borderColor: COLORS.lightGray }}
     >
       {/* Image Container */}
-      <div className="relative h-56 md:h-64 overflow-hidden bg-gray-200">
+      <div className="relative h-48 md:h-56 lg:h-64 overflow-hidden bg-gray-200">
         <img
           src={getImageUrl(image)}
           alt={title}
@@ -230,15 +236,15 @@ export const AchievementCard = ({ title, description, image, count, delay }) => 
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
 
         {/* Count Badge */}
-        <div className="absolute bottom-4 left-4 bg-yellow-400 text-black px-4 py-2 rounded-lg font-bold text-lg">
+        <div className="absolute bottom-3 md:bottom-4 left-3 md:left-4 text-black px-3 py-1.5 md:px-4 md:py-2 rounded-lg font-bold text-base md:text-lg" style={{ backgroundColor: COLORS.accent }}>
           {count}
         </div>
       </div>
 
       {/* Content */}
-      <div className="bg-white p-6">
-        <h3 className="text-lg font-bold text-gray-900 mb-2 transition-colors duration-300 group-hover:text-blue-600">{translatedTitle}</h3>
-        <p className="text-gray-600 text-sm transition-colors duration-300 group-hover:text-gray-700">{translatedDescription}</p>
+      <div className="bg-white p-5 md:p-6">
+        <h3 className="text-base md:text-lg font-bold mb-2 transition-colors duration-300" style={{ color: COLORS.dark }}>{translatedTitle}</h3>
+        <p className="text-sm transition-colors duration-300" style={{ color: COLORS.slate }}>{translatedDescription}</p>
       </div>
     </motion.div>
   );
@@ -285,9 +291,10 @@ export const GalleryImage = ({ image, title, category, onClick, delay, size }) =
       viewport={{ once: true }}
       whileHover={{ scale: 1.05 }}
       onClick={onClick}
-      className={`group relative overflow-hidden rounded-xl cursor-pointer bg-gray-200 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-200 hover:scale-[1.02] ${
-        size === 'large' ? 'h-72 md:h-80 lg:h-96' : 'h-64 md:h-72'
+      className={`group relative overflow-hidden rounded-xl cursor-pointer bg-gray-200 shadow-lg hover:shadow-2xl transition-all duration-300 border hover:scale-[1.02] ${
+        size === 'large' ? 'h-64 md:h-72 lg:h-80 xl:h-96' : 'h-52 md:h-56 lg:h-64'
       }`}
+      style={{ borderColor: COLORS.lightGray }}
     >
       <img
         src={src}
@@ -298,11 +305,11 @@ export const GalleryImage = ({ image, title, category, onClick, delay, size }) =
         style={{ willChange: 'transform', transform: 'translateZ(0)' }}
         className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-start p-4">
-        <div className="backdrop-blur-sm bg-black/40/80 rounded-lg px-4 py-3 transition-all duration-300 transform-gpu">
-          <p className="text-white font-semibold text-lg leading-tight truncate max-w-[260px]">{translatedTitle}</p>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-start p-3 md:p-4">
+        <div className="backdrop-blur-sm bg-black/40/80 rounded-lg px-3 py-2 md:px-4 md:py-3 transition-all duration-300 transform-gpu">
+          <p className="text-white font-semibold text-base md:text-lg leading-tight truncate max-w-[200px] md:max-w-[260px]">{translatedTitle}</p>
           {translatedCategory && (
-            <p className="text-white/80 text-sm mt-1">{translatedCategory}</p>
+            <p className="text-white/80 text-xs md:text-sm mt-1">{translatedCategory}</p>
           )}
         </div>
       </div>
@@ -322,11 +329,12 @@ export const StaffCard = ({ name, role, image, department, delay, onClick }) => 
       transition={{ duration: 0.5, delay }}
       viewport={{ once: true }}
       whileHover={{ y: -8, scale: 1.02 }}
-      className="group rounded-xl overflow-hidden shadow-md hover:shadow-2xl transition-transform duration-300 transform bg-white border border-gray-100 hover:border-blue-200"
+      className="group rounded-xl overflow-hidden shadow-md hover:shadow-2xl transition-transform duration-300 transform bg-white border"
+      style={{ borderColor: COLORS.lightGray }}
     >
       {/* Image */}
       <div onClick={onClick} className="cursor-pointer">
-        <div className="overflow-hidden rounded-t-lg h-44 md:h-56 relative bg-gray-100 flex items-center justify-center">
+        <div className="overflow-hidden rounded-t-lg h-40 md:h-44 lg:h-56 relative bg-gray-100 flex items-center justify-center">
           <img
             src={ image ? (image.startsWith('http') || image.startsWith('/') ? image : `/images/${image}`) : defaultAvatar }
             alt={name}
@@ -339,15 +347,15 @@ export const StaffCard = ({ name, role, image, department, delay, onClick }) => 
       </div>
 
       {/* Content */}
-      <div className="p-4 text-center flex flex-col justify-between">
+      <div className="p-4 md:p-5 text-center flex flex-col justify-between">
         <div>
-          <h3 className="text-lg font-bold text-gray-900 mb-1 transition-colors duration-300 group-hover:text-blue-600">{name}</h3>
-          <p className="text-blue-600 font-semibold mb-1">{translatedRole}</p>
-          {translatedDepartment ? <p className="text-gray-600 text-sm">{translatedDepartment}</p> : null}
+          <h3 className="text-base md:text-lg font-bold mb-1 transition-colors duration-300" style={{ color: COLORS.dark }}>{name}</h3>
+          <p className="font-semibold mb-1 text-sm md:text-base" style={{ color: COLORS.secondary }}>{translatedRole}</p>
+          {translatedDepartment ? <p className="text-sm" style={{ color: COLORS.slate }}>{translatedDepartment}</p> : null}
         </div>
 
         <div className="mt-3">
-          <button onClick={() => { console.log('StaffCard View More:', name); if (onClick) onClick(); }} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">View More →</button>
+          <button onClick={() => { console.log('StaffCard View More:', name); if (onClick) onClick(); }} className="px-4 py-2 text-white rounded-lg hover:opacity-90 active:scale-95 transition-all text-sm md:text-base" style={{ backgroundColor: COLORS.primary }}>View More →</button>
         </div>
       </div>
     </motion.div>
@@ -367,18 +375,19 @@ export const NoticeCard = ({ title, date, category, content, delay }) => {
       transition={{ duration: 0.5, delay }}
       viewport={{ once: true }}
       whileHover={{ x: 10 }}
-      className="bg-white border-l-4 border-blue-600 rounded-lg p-6 shadow-lg hover:shadow-xl transition-all group"
+      className="bg-white rounded-lg p-4 md:p-6 shadow-lg hover:shadow-xl transition-all group"
+      style={{ borderLeft: `4px solid ${COLORS.primary}` }}
     >
-      <div className="flex items-start justify-between mb-3">
-          <h3 className="text-lg font-bold text-gray-900 flex-1 transition-colors duration-300 group-hover:text-blue-600">{translatedTitle}</h3>
-        <span className="text-xs font-semibold text-white px-3 py-1 rounded-full bg-blue-600 whitespace-nowrap ml-2">
+      <div className="flex items-start justify-between mb-3 gap-2">
+          <h3 className="text-base md:text-lg font-bold flex-1 transition-colors duration-300" style={{ color: COLORS.dark }}>{translatedTitle}</h3>
+        <span className="text-xs font-semibold text-white px-2 py-1 md:px-3 md:py-1 rounded-full whitespace-nowrap ml-2" style={{ backgroundColor: COLORS.primary }}>
           {translatedCategory}
         </span>
       </div>
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2 transition-colors duration-300 group-hover:text-gray-700">{translatedContent}</p>
+        <p className="text-sm mb-3 line-clamp-2 transition-colors duration-300" style={{ color: COLORS.slate }}>{translatedContent}</p>
       <div className="flex items-center justify-between">
-        <span className="text-xs text-gray-500">{date}</span>
-        <button className="text-blue-600 font-semibold hover:text-blue-800 transition text-sm">
+        <span className="text-xs" style={{ color: COLORS.slate }}>{date}</span>
+        <button className="font-semibold hover:opacity-80 transition text-sm" style={{ color: COLORS.secondary }}>
           {t('Read More →')}
         </button>
       </div>

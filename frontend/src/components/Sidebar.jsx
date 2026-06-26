@@ -21,6 +21,7 @@ import {
 } from 'react-icons/fa';
 import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
+import { COLORS, SCHOOL_INFO } from '../constants/schoolData';
 
 const ROLE_MENU = {
   admin: [
@@ -114,6 +115,12 @@ const ROLE_MENU = {
   ],
   student: [
     {
+      title: 'Main',
+      items: [
+        { path: '/student/dashboard', label: 'Dashboard', icon: FaTachometerAlt }
+      ]
+    },
+    {
       title: 'Fees',
       items: [
         { path: '/fees/overview', label: 'Fee Overview', icon: FaFileInvoiceDollar },
@@ -123,7 +130,6 @@ const ROLE_MENU = {
     {
       title: 'Student Menu',
       items: [
-        { path: '/student/dashboard', label: 'Dashboard', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z' },
         { path: '/student/attendance', label: 'Attendance', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
         { path: '/student/assignments', label: 'Assignments', icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' },
         { path: '/student/results', label: 'Results', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z' },
@@ -249,36 +255,118 @@ export default function Sidebar({ isOpen, onClose, onLogoutRequest }){
       {/* Mobile full-screen menu (slide-down) - only for small screens */}
       {isOpen && (
         <div className="lg:hidden fixed inset-0 flex" style={{ zIndex: 2147483647, pointerEvents: 'auto' }}>
-          <div className="relative flex min-h-full w-full flex-col bg-[#FAFAFB] text-slate-900 p-4 overflow-y-auto slide-down scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent" style={{ zIndex: 2147483647, boxShadow: '-8px 0 30px rgba(2,6,23,0.06)' }}>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <img src="/logo.png" alt="logo" className="h-10 w-10 rounded-md object-contain bg-white p-1 shadow-sm" />
-                  <div>
-                    <div className="font-extrabold text-lg text-slate-900">Bal Bodh</div>
-                    <div className="text-xs text-slate-500">Admin Panel</div>
+          <div className="relative flex min-h-full w-full flex-col overflow-y-auto slide-down scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent" style={{ 
+            zIndex: 2147483647, 
+            background: `linear-gradient(135deg, ${COLORS.dark} 0%, ${COLORS.primary} 40%, ${COLORS.secondary} 100%)`,
+            boxShadow: '-8px 0 30px rgba(2,6,23,0.06)' 
+          }}>
+              {/* Decorative gradient overlays */}
+              <div className="absolute inset-0 opacity-15 pointer-events-none" style={{ background: `radial-gradient(circle at 10% 20%, ${COLORS.accent} 0%, transparent 40%)` }}></div>
+              <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ background: `radial-gradient(circle at 90% 80%, ${COLORS.accent} 0%, transparent 40%)` }}></div>
+              
+              {/* Premium Header with School Branding */}
+              <div className="relative p-6 pb-8" style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.secondary} 100%)` }}>
+                <div className="absolute inset-0 opacity-20" style={{ background: `radial-gradient(circle at 50% 0%, ${COLORS.accent} 0%, transparent 60%)` }}></div>
+                <div className="relative flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="relative group">
+                      <div className="absolute inset-0 rounded-full blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-300" style={{ backgroundColor: COLORS.accent }}></div>
+                      <div className="relative h-16 w-16 rounded-full flex items-center justify-center shadow-2xl" style={{ background: `linear-gradient(135deg, ${COLORS.white}25, ${COLORS.white}10)`, border: `2px solid ${COLORS.accent}50` }}>
+                        <img 
+                          src="/logo.png" 
+                          alt="Bal Bodh Secondary School Logo" 
+                          className="h-12 w-12 rounded-full object-contain"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <h1 className="text-xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent leading-tight">{SCHOOL_INFO.name}</h1>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <span className="text-xs font-semibold px-2.5 py-1 rounded-full shadow-lg" style={{ 
+                          background: `linear-gradient(135deg, ${COLORS.accent}30, ${COLORS.accent}15)`, 
+                          color: COLORS.accent, 
+                          border: `1px solid ${COLORS.accent}50`,
+                          backdropFilter: 'blur(10px)'
+                        }}>
+                          Est. {SCHOOL_INFO.established}
+                        </span>
+                      </div>
+                    </div>
                   </div>
+                  <button onClick={onClose} className="p-3 rounded-xl relative transition-all duration-300 hover:scale-110 active:scale-95 shadow-xl" style={{ background: `${COLORS.white}20`, border: `1px solid ${COLORS.white}30`, backdropFilter: 'blur(10px)' }}>
+                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
+                  </button>
                 </div>
-                <button onClick={onClose} className="p-2 rounded-md bg-white/80 hover:bg-white">
-                  <svg className="w-5 h-5 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
+                
+                {/* Subtitle */}
+                <p className="relative text-sm text-white/90 font-semibold tracking-wide" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+                  {user ? 'Admin Portal' : 'Main Menu'}
+                </p>
               </div>
 
-            <nav className="flex-1 space-y-3 text-base">
+            <nav className="relative flex-1 px-4 pb-6 space-y-2 text-sm md:text-base">
               { !user ? (
-                // Guest (public website) mobile nav
+                // Guest (public website) mobile nav with premium styling
                 <>
-                  <Link to="/" onClick={onClose} className="block py-3 px-3 rounded-lg bg-white text-slate-800 hover:bg-indigo-50 transition">Home</Link>
-                  <Link to="/about" onClick={onClose} className="block py-3 px-3 rounded-lg bg-white text-slate-800 hover:bg-indigo-50 transition">About</Link>
-                  <Link to="/academics" onClick={onClose} className="block py-3 px-3 rounded-lg bg-white text-slate-800 hover:bg-indigo-50 transition">Academics</Link>
-                  <Link to="/admissions" onClick={onClose} className="block py-3 px-3 rounded-lg bg-white text-slate-800 hover:bg-indigo-50 transition">Admissions</Link>
-                  <Link to="/facilities" onClick={onClose} className="block py-3 px-3 rounded-lg bg-white text-slate-800 hover:bg-indigo-50 transition">Facilities</Link>
-                  <Link to="/student-life" onClick={onClose} className="block py-3 px-3 rounded-lg bg-white text-slate-800 hover:bg-indigo-50 transition">Student Life</Link>
-                  <Link to="/gallery" onClick={onClose} className="block py-3 px-3 rounded-lg bg-white text-slate-800 hover:bg-indigo-50 transition">Gallery</Link>
-                  <Link to="/staff" onClick={onClose} className="block py-3 px-3 rounded-lg bg-white text-slate-800 hover:bg-indigo-50 transition">Staff</Link>
-                  <Link to="/contact" onClick={onClose} className="block py-3 px-3 rounded-lg bg-white text-slate-800 hover:bg-indigo-50 transition">Contact</Link>
+                  <Link to="/" onClick={onClose} className="group block py-4 px-5 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{ background: `linear-gradient(135deg, ${COLORS.white}15, ${COLORS.white}5)`, border: `1px solid ${COLORS.white}25`, backdropFilter: 'blur(10px)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                    <span className="flex items-center gap-3">
+                      <span className="text-lg">🏠</span>
+                      <span>Home</span>
+                    </span>
+                  </Link>
+                  <Link to="/about" onClick={onClose} className="group block py-4 px-5 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{ background: `linear-gradient(135deg, ${COLORS.white}15, ${COLORS.white}5)`, border: `1px solid ${COLORS.white}25`, backdropFilter: 'blur(10px)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                    <span className="flex items-center gap-3">
+                      <span className="text-lg">ℹ️</span>
+                      <span>About</span>
+                    </span>
+                  </Link>
+                  <Link to="/academics" onClick={onClose} className="group block py-4 px-5 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{ background: `linear-gradient(135deg, ${COLORS.white}15, ${COLORS.white}5)`, border: `1px solid ${COLORS.white}25`, backdropFilter: 'blur(10px)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                    <span className="flex items-center gap-3">
+                      <span className="text-lg">📚</span>
+                      <span>Academics</span>
+                    </span>
+                  </Link>
+                  <Link to="/admissions" onClick={onClose} className="group block py-4 px-5 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{ background: `linear-gradient(135deg, ${COLORS.white}15, ${COLORS.white}5)`, border: `1px solid ${COLORS.white}25`, backdropFilter: 'blur(10px)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                    <span className="flex items-center gap-3">
+                      <span className="text-lg">🎓</span>
+                      <span>Admissions</span>
+                    </span>
+                  </Link>
+                  <Link to="/facilities" onClick={onClose} className="group block py-4 px-5 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{ background: `linear-gradient(135deg, ${COLORS.white}15, ${COLORS.white}5)`, border: `1px solid ${COLORS.white}25`, backdropFilter: 'blur(10px)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                    <span className="flex items-center gap-3">
+                      <span className="text-lg">🏢</span>
+                      <span>Facilities</span>
+                    </span>
+                  </Link>
+                  <Link to="/student-life" onClick={onClose} className="group block py-4 px-5 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{ background: `linear-gradient(135deg, ${COLORS.white}15, ${COLORS.white}5)`, border: `1px solid ${COLORS.white}25`, backdropFilter: 'blur(10px)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                    <span className="flex items-center gap-3">
+                      <span className="text-lg">🎯</span>
+                      <span>Student Life</span>
+                    </span>
+                  </Link>
+                  <Link to="/gallery" onClick={onClose} className="group block py-4 px-5 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{ background: `linear-gradient(135deg, ${COLORS.white}15, ${COLORS.white}5)`, border: `1px solid ${COLORS.white}25`, backdropFilter: 'blur(10px)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                    <span className="flex items-center gap-3">
+                      <span className="text-lg">🖼️</span>
+                      <span>Gallery</span>
+                    </span>
+                  </Link>
+                  <Link to="/staff" onClick={onClose} className="group block py-4 px-5 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{ background: `linear-gradient(135deg, ${COLORS.white}15, ${COLORS.white}5)`, border: `1px solid ${COLORS.white}25`, backdropFilter: 'blur(10px)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                    <span className="flex items-center gap-3">
+                      <span className="text-lg">👨‍🏫</span>
+                      <span>Staff</span>
+                    </span>
+                  </Link>
+                  <Link to="/contact" onClick={onClose} className="group block py-4 px-5 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{ background: `linear-gradient(135deg, ${COLORS.white}15, ${COLORS.white}5)`, border: `1px solid ${COLORS.white}25`, backdropFilter: 'blur(10px)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                    <span className="flex items-center gap-3">
+                      <span className="text-lg">📞</span>
+                      <span>Contact</span>
+                    </span>
+                  </Link>
 
-                    <div className="mt-6">
-                    <Link to="/admissions" onClick={onClose} className="inline-block w-full text-center bg-indigo-600 text-white font-semibold px-4 py-3 rounded-lg shadow-sm">Apply Now</Link>
+                    <div className="mt-8">
+                    <Link to="/admissions" onClick={onClose} className="inline-block w-full text-center font-semibold px-6 py-4 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 text-white shadow-2xl" style={{ background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentLight})`, boxShadow: `0 10px 40px ${COLORS.accent}50` }}>
+                      Apply Now
+                    </Link>
                   </div>
                 </>
               ) : (
@@ -287,15 +375,18 @@ export default function Sidebar({ isOpen, onClose, onLogoutRequest }){
                   <div key={group.title} className="mb-3">
                     <button
                       onClick={() => toggleGroup(group.title)}
-                      className="w-full flex items-center justify-between px-3 py-3 rounded-md text-xs font-semibold uppercase tracking-wide text-indigo-700 hover:bg-indigo-50 transition-colors"
+                      className="w-full flex items-center justify-between px-5 py-3.5 rounded-xl text-xs font-semibold uppercase tracking-wide text-white transition-all duration-300 hover:scale-[1.02]" style={{ background: `linear-gradient(135deg, ${COLORS.white}15, ${COLORS.white}5)`, border: `1px solid ${COLORS.white}25`, backdropFilter: 'blur(10px)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
                     >
                       <span className="text-[12px]">{group.title}</span>
-                      <svg className={`w-4 h-4 transition-transform ${openGroups.has(group.title) ? 'rotate-90' : 'rotate-0'}`} viewBox="0 0 20 20" fill="currentColor"><path d="M6 6L14 10L6 14V6Z" /></svg>
+                      <svg className={`w-5 h-5 transition-transform ${openGroups.has(group.title) ? 'rotate-90' : 'rotate-0'}`} viewBox="0 0 20 20" fill="currentColor"><path d="M6 6L14 10L6 14V6Z" /></svg>
                     </button>
                     <ul className={`mt-2 space-y-2 pl-0 transition-all ${openGroups.has(group.title) ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                       {group.items.map((item) => (
                         <li key={item.path}>
-                          <Link to={item.path} onClick={onClose} className="block py-3 px-3 rounded-lg bg-white text-slate-800 hover:bg-indigo-50 text-sm shadow-sm">{item.label}</Link>
+                          <Link to={item.path} onClick={onClose} className="group flex items-center gap-3 py-3.5 px-5 rounded-xl text-white font-medium transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{ background: `linear-gradient(135deg, ${COLORS.white}15, ${COLORS.white}5)`, border: `1px solid ${COLORS.white}25`, backdropFilter: 'blur(10px)', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                            {typeof item.icon === 'function' ? React.createElement(item.icon, { size: 20, className: '', style: { color: COLORS.accent } }) : null}
+                            <span className="truncate">{item.label}</span>
+                          </Link>
                         </li>
                       ))}
                     </ul>
@@ -305,11 +396,12 @@ export default function Sidebar({ isOpen, onClose, onLogoutRequest }){
             </nav>
 
             {user && (
-              <div className="mt-4 pt-4 border-t border-slate-200">
+              <div className="mt-4 px-4 pb-6 pt-4 border-t" style={{ borderColor: `${COLORS.white}20` }}>
                 <button
                   type="button"
                   onClick={() => { onClose(); if (onLogoutRequest) onLogoutRequest(); }}
-                  className="w-full rounded-lg bg-rose-600 px-4 py-3 text-sm font-semibold text-white hover:bg-rose-700"
+                  className="w-full rounded-xl px-6 py-4 text-sm font-semibold text-white transition-all active:scale-95"
+                  style={{ backgroundColor: `${COLORS.error}80`, border: `1px solid ${COLORS.error}40`, backdropFilter: 'blur(10px)' }}
                 >
                   Logout
                 </button>

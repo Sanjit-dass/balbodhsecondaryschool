@@ -33,11 +33,11 @@ export default function Facilities() {
   const selectedFacility = facilities.find((a) => String(a._id || a.id) === String(selected));
 
   return (
-    <section className="py-12 md:py-20 bg-gradient-to-b from-gray-50 to-white">
-      <div className="max-w-[1600px] mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">World-Class Facilities</h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">Equipped with modern infrastructure for holistic development and quality education.</p>
+    <section className="py-12 md:py-16 lg:py-20 bg-gradient-to-b from-gray-50 to-white">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-6">
+        <div className="text-center mb-8 md:mb-12">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 md:mb-4">World-Class Facilities</h2>
+          <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-2">Equipped with modern infrastructure for holistic development and quality education.</p>
         </div>
 
         {loading ? (
@@ -59,10 +59,10 @@ export default function Facilities() {
 
         {/* Explore All Button */}
         {!loading && facilities.length > 0 && (
-          <div className="text-center mt-12">
+          <div className="text-center mt-8 md:mt-12">
             <button
               onClick={() => window.location.href = '/facilities'}
-              className="px-8 py-4 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+              className="px-6 py-3 md:px-8 md:py-4 bg-indigo-600 text-white rounded-full font-semibold text-sm md:text-base hover:bg-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
               Explore All Facilities
             </button>
@@ -189,27 +189,27 @@ function FacilitySlider({ facilities, onSelect }) {
       <button
         onClick={handlePrev}
         disabled={currentIndex === 0}
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 -translate-x-4 p-4 bg-white/95 backdrop-blur-sm rounded-full shadow-2xl hover:bg-white hover:shadow-indigo-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110"
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 -translate-x-2 md:-translate-x-4 p-3 md:p-4 bg-white/95 backdrop-blur-sm rounded-full shadow-2xl hover:bg-white hover:shadow-indigo-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 hidden sm:block"
       >
-        <FaChevronLeft className="text-gray-800 text-xl" />
+        <FaChevronLeft className="text-gray-800 text-lg md:text-xl" />
       </button>
 
       <button
         onClick={handleNext}
         disabled={currentIndex >= maxIndex}
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 translate-x-4 p-4 bg-white/95 backdrop-blur-sm rounded-full shadow-2xl hover:bg-white hover:shadow-indigo-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110"
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 translate-x-2 md:translate-x-4 p-3 md:p-4 bg-white/95 backdrop-blur-sm rounded-full shadow-2xl hover:bg-white hover:shadow-indigo-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 hidden sm:block"
       >
-        <FaChevronRight className="text-gray-800 text-xl" />
+        <FaChevronRight className="text-gray-800 text-lg md:text-xl" />
       </button>
 
       {/* Slider Container */}
       <div
         ref={sliderRef}
-        className="flex gap-8 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing scroll-smooth"
-        style={{ 
+        className="flex gap-4 md:gap-8 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing scroll-smooth"
+        style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
-          padding: '1.5rem 0'
+          padding: '1rem 0'
         }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -222,7 +222,7 @@ function FacilitySlider({ facilities, onSelect }) {
           <div
             key={facility._id}
             className="flex-shrink-0 w-full"
-            style={{ width: `calc(${100 / cardsPerView}% - ${(cardsPerView - 1) * 32 / cardsPerView}px)` }}
+            style={{ width: `calc(${100 / cardsPerView}% - ${(cardsPerView - 1) * (cardsPerView > 2 ? 32 : 16) / cardsPerView}px)` }}
           >
             <FacilityCard facility={facility} onClick={() => onSelect(facility._id)} />
           </div>
@@ -230,7 +230,7 @@ function FacilitySlider({ facilities, onSelect }) {
       </div>
 
       {/* Premium Dots Indicator */}
-      <div className="flex justify-center gap-3 mt-8">
+      <div className="flex justify-center gap-2 md:gap-3 mt-6 md:mt-8">
         {facilities.map((_, idx) => (
           <button
             key={idx}
@@ -240,8 +240,8 @@ function FacilitySlider({ facilities, onSelect }) {
               setTimeout(() => setAutoScroll(true), 5000);
             }}
             className={`h-2 rounded-full transition-all duration-300 ${
-              idx === currentIndex 
-                ? 'w-8 bg-indigo-600 shadow-lg shadow-indigo-200'
+              idx === currentIndex
+                ? 'w-6 md:w-8 bg-indigo-600 shadow-lg shadow-indigo-200'
                       : 'w-2 bg-gray-300 hover:bg-gray-400'
             }`}
           />
@@ -261,11 +261,11 @@ function FacilityCard({ facility, onClick }) {
   return (
     <motion.div
       whileHover={{ y: -6, scale: 1.02 }}
-      className="group relative bg-white rounded-2xl shadow-md hover:shadow-lg overflow-hidden cursor-pointer transition-all duration-300 h-full"
+      className="group relative bg-white rounded-xl md:rounded-2xl shadow-md hover:shadow-lg overflow-hidden cursor-pointer transition-all duration-300 h-full"
       onClick={onClick}
     >
       {/* Cover Photo with Premium Overlay */}
-      <div className="relative h-72 md:h-80 lg:h-96 overflow-hidden">
+      <div className="relative h-48 md:h-64 lg:h-72 xl:h-80 lg:h-96 overflow-hidden">
         {imageUrl ? (
           <>
             <img
@@ -277,21 +277,21 @@ function FacilityCard({ facility, onClick }) {
           </>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center">
-            <span className="text-white text-6xl font-bold tracking-wider">{facility.facilityName?.charAt(0) || 'F'}</span>
+            <span className="text-white text-4xl md:text-5xl lg:text-6xl font-bold tracking-wider">{facility.facilityName?.charAt(0) || 'F'}</span>
           </div>
         )}
-        
+
         {/* Floating Badge */}
-        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg">
-          <span className="text-xs font-semibold text-gray-800">
+        <div className="absolute top-3 right-3 md:top-4 md:right-4 bg-white/90 backdrop-blur-sm px-2 py-1 md:px-3 md:py-1.5 rounded-full shadow-lg">
+          <span className="text-[10px] md:text-xs font-semibold text-gray-800">
             {facility.category || 'Infrastructure'}
           </span>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
+      <div className="p-4 md:p-6">
+        <h3 className="text-base md:text-xl font-bold text-gray-900 mb-2 line-clamp-2">
           {facility.facilityName}
         </h3>
         <p className="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">
@@ -299,7 +299,7 @@ function FacilityCard({ facility, onClick }) {
         </p>
 
         {/* Simplified View More Button */}
-        <button className="w-full py-2 bg-indigo-600 text-white rounded-md font-semibold hover:bg-indigo-700 transition-all duration-200">
+        <button className="w-full py-2 bg-indigo-600 text-white rounded-md font-semibold text-sm hover:bg-indigo-700 transition-all duration-200">
           View Details
         </button>
       </div>

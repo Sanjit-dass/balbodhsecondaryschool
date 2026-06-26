@@ -912,6 +912,11 @@ export default function StudentProfile({ studentId }){
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
+                                const rid = item.receiptId || item.receipt?.receiptId || item.paymentId || item.id || item._id || item.receiptNumber;
+                                if (rid) {
+                                  navigate(`${receiptRouteBase}/${encodeURIComponent(rid)}?print=1`);
+                                  return;
+                                }
                                 const url = item.receiptUrl || item.pdfUrl || item.receipt?.pdfUrl || null;
                                 const base64 = item.pdfBase64 || item.receipt?.pdfBase64 || null;
                                 if (url) {
@@ -927,9 +932,7 @@ export default function StudentProfile({ studentId }){
                                   try { win.focus(); win.print(); } catch (err) { console.error(err); }
                                   return;
                                 }
-                                const rid = item.receiptId || item.receipt?.receiptId || item.paymentId || item.id || item._id || item.receiptNumber;
-                                if (rid) navigate(`${receiptRouteBase}/${encodeURIComponent(rid)}?print=1`);
-                                else alert('Receipt id missing');
+                                alert('Receipt id missing');
                               }}
                               className="rounded-2xl border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
                             >

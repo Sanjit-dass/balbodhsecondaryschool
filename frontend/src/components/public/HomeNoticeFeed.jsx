@@ -55,23 +55,23 @@ const HomeNoticeFeed = () => {
   const visibleNotices = notices.slice(0, 3);
 
   return (
-    <section className="py-20 md:py-28 bg-white">
-      <div className="max-w-7xl mx-auto px-4">
+    <section className="py-12 md:py-16 lg:py-20 xl:py-28 bg-white">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
         <SectionTitle
           title="Latest Notices"
           subtitle="Live school announcements delivered directly from the backend"
         />
 
         {loading ? (
-          <div className="text-center py-16">
-            <p className="text-lg font-semibold text-gray-700">Loading latest notices...</p>
+          <div className="text-center py-12 md:py-16">
+            <p className="text-base md:text-lg font-semibold text-gray-700">Loading latest notices...</p>
           </div>
         ) : error ? (
-          <div className="text-center py-16">
-            <p className="text-lg font-semibold text-rose-600">{error}</p>
+          <div className="text-center py-12 md:py-16">
+            <p className="text-base md:text-lg font-semibold text-rose-600">{error}</p>
           </div>
         ) : visibleNotices.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {visibleNotices.map((notice, index) => (
               <NoticeCard
                 key={notice._id || notice.id || index}
@@ -84,17 +84,17 @@ const HomeNoticeFeed = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-16">
-            <p className="text-lg font-semibold text-gray-600">No live notices are available at the moment.</p>
+          <div className="text-center py-12 md:py-16">
+            <p className="text-base md:text-lg font-semibold text-gray-600">No live notices are available at the moment.</p>
           </div>
         )}
 
-        <div className="mt-10 text-center">
+        <div className="mt-8 md:mt-10 text-center">
           <Link to="/notice-board">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 rounded-full font-bold text-white transition-all inline-flex items-center gap-2 text-lg shadow-xl"
+              className="px-6 py-3 md:px-8 md:py-4 rounded-full font-bold text-white transition-all inline-flex items-center gap-2 text-sm md:text-base lg:text-lg shadow-xl"
               style={{ backgroundColor: COLORS.primary }}
             >
               View All Notices

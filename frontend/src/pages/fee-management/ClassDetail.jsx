@@ -299,21 +299,85 @@ export default function ClassDetail() {
     }
   };
 
-  const viewReceipt = (pdfBase64) => {
-    if (!pdfBase64) return;
-    const url = `data:application/pdf;base64,${pdfBase64}`;
-    const win = window.open(url, '_blank');
-    if (!win) setMessage('Popup blocked. Allow popups to view receipt.');
+  const viewReceipt = (pdfBase64, receipt) => {
+    if (!pdfBase64 && !receipt) return;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const receiptId = receipt?.receiptId || receipt?._id || receipt?.id;
+    
+    // Primary: Navigate to receipt view page (preserves auth)
+    if (receiptId) {
+      navigate(`/fee-management/receipt/${encodeURIComponent(receiptId)}`, {
+        state: { receipt, from: '/fee-management/classes' }
+      });
+      return;
+    }
+    
+    // Fallback: Direct PDF handling
+    if (pdfBase64) {
+      if (isMobile) {
+        // Mobile: Download instead of open
+        const byteChars = atob(pdfBase64);
+        const byteNumbers = new Array(byteChars.length);
+        for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${receipt?.receiptNumber || 'receipt'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } else {
+        // Desktop: Open in new tab
+        const url = `data:application/pdf;base64,${pdfBase64}`;
+        const win = window.open(url, '_blank');
+        if (!win) setMessage('Popup blocked. Allow popups to view receipt.');
+      }
+    }
   };
 
-  const printReceipt = (pdfBase64) => {
-    if (!pdfBase64) return;
-    const url = `data:application/pdf;base64,${pdfBase64}`;
-    const w = window.open(url, '_blank');
-    if (w) {
-      w.addEventListener('load', () => { w.print(); });
-    } else {
-      setMessage('Popup blocked. Allow popups to print receipt.');
+  const printReceipt = (pdfBase64, receipt) => {
+    if (!pdfBase64 && !receipt) return;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const receiptId = receipt?.receiptId || receipt?._id || receipt?.id;
+    
+    // Primary: Navigate to receipt view page with print flag (preserves auth)
+    if (receiptId) {
+      navigate(`/fee-management/receipt/${encodeURIComponent(receiptId)}?print=1`, {
+        state: { receipt, from: '/fee-management/classes' }
+      });
+      return;
+    }
+    
+    // Fallback: Direct PDF handling
+    if (pdfBase64) {
+      if (isMobile) {
+        // Mobile: Download instead of print (system print not reliable)
+        const byteChars = atob(pdfBase64);
+        const byteNumbers = new Array(byteChars.length);
+        for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${receipt?.receiptNumber || 'receipt'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } else {
+        // Desktop: Open for print
+        const url = `data:application/pdf;base64,${pdfBase64}`;
+        const w = window.open(url, '_blank');
+        if (w) {
+          w.addEventListener('load', () => { w.print(); });
+        } else {
+          setMessage('Popup blocked. Allow popups to print receipt.');
+        }
+      }
     }
   };
 

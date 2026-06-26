@@ -41,13 +41,26 @@ const About = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="bg-gradient-to-r from-blue-900 to-blue-700 text-white py-16 md:py-24"
+        className="text-white py-16 md:py-24"
+        style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}
       >
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">About Us</h1>
-          <p className="text-lg text-blue-100">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
+          >
+            About Us
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-lg md:text-xl text-white/90"
+          >
             Discover the story and mission behind Bal Bodh Secondary School
-          </p>
+          </motion.p>
         </div>
       </motion.section>
 
@@ -60,7 +73,7 @@ const About = () => {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="rounded-xl overflow-hidden shadow-xl"
+              className="rounded-2xl overflow-hidden shadow-2xl"
             >
               <img
                 src="/images/schoolphoto.png"
@@ -75,19 +88,20 @@ const About = () => {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: COLORS.dark }}>
                 Our Story
               </h2>
-              <p className="text-gray-600 leading-relaxed mb-4">
+              <div className="w-20 h-1.5 rounded-full mb-6" style={{ background: `linear-gradient(to right, ${COLORS.primary}, ${COLORS.accent})` }}></div>
+              <p className="leading-relaxed mb-4" style={{ color: COLORS.slate }}>
                 <strong>Bal Bodh Secondary School (बाल बोध माध्यमिक विद्यालय) was established in 1998 AD (2055 BS) as a community-based educational institution located in Kanchanpur, Saptari, Nepal. The school was founded with a strong vision to provide quality, accessible, and holistic education to students in the region.</strong>
               </p>
-              <p className="text-gray-600 leading-relaxed mb-4">
+              <p className="leading-relaxed mb-4" style={{ color: COLORS.slate }}>
                 Since its establishment, the school has steadily grown into a respected academic institution committed to excellence in teaching and learning. With the dedication of experienced teachers, continuous support from parents, and active involvement of the community, the school has built a strong foundation for academic and personal development.
               </p>
-              <p className="text-gray-600 leading-relaxed mb-4">
+              <p className="leading-relaxed mb-4" style={{ color: COLORS.slate }}>
                 We believe in blending traditional educational values with modern teaching methodologies to ensure that students are well-prepared for both academic success and real-world challenges.
               </p>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="leading-relaxed" style={{ color: COLORS.slate }}>
                 Over the years, Bal Bodh Secondary School has guided and shaped thousands of students who are now contributing positively to society in various fields such as education, business, technology, and public service.
               </p>
             </motion.div>
@@ -96,7 +110,7 @@ const About = () => {
       </section>
 
       {/* Vision, Mission & Values */}
-      <section className="py-16 md:py-24 bg-gray-50">
+      <section className="py-16 md:py-24" style={{ backgroundColor: COLORS.gray }}>
         <div className="max-w-7xl mx-auto px-4">
           <SectionTitle title="Our Vision, Mission & Values" />
 
@@ -107,11 +121,11 @@ const About = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
-              className="bg-white rounded-xl p-8 shadow-lg border-t-4"
-              style={{ borderTopColor: COLORS.primary }}
+              className="bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300"
+              style={{ borderTop: `4px solid ${COLORS.primary}` }}
             >
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Vision</h3>
-              <p className="text-gray-600 leading-relaxed">
+              <h3 className="text-2xl font-bold mb-4" style={{ color: COLORS.dark }}>Our Vision</h3>
+              <p className="leading-relaxed" style={{ color: COLORS.slate }}>
                 To be a premier educational institution that nurtures responsible, innovative, and compassionate global citizens committed to excellence and societal development.
               </p>
             </motion.div>
@@ -122,11 +136,11 @@ const About = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
               viewport={{ once: true }}
-              className="bg-white rounded-xl p-8 shadow-lg border-t-4"
-              style={{ borderTopColor: COLORS.secondary }}
+              className="bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300"
+              style={{ borderTop: `4px solid ${COLORS.secondary}` }}
             >
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h3>
-              <p className="text-gray-600 leading-relaxed">
+              <h3 className="text-2xl font-bold mb-4" style={{ color: COLORS.dark }}>Our Mission</h3>
+              <p className="leading-relaxed" style={{ color: COLORS.slate }}>
                 To provide comprehensive, quality education that develops academic excellence, critical thinking, and character in an inclusive, nurturing environment that prepares students for success.
               </p>
             </motion.div>
@@ -137,11 +151,11 @@ const About = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
               viewport={{ once: true }}
-              className="bg-white rounded-xl p-8 shadow-lg border-t-4"
-              style={{ borderTopColor: COLORS.accent }}
+              className="bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300"
+              style={{ borderTop: `4px solid ${COLORS.accent}` }}
             >
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Core Values</h3>
-              <ul className="space-y-2 text-gray-600">
+              <h3 className="text-2xl font-bold mb-4" style={{ color: COLORS.dark }}>Core Values</h3>
+              <ul className="space-y-3" style={{ color: COLORS.slate }}>
                 <li className="flex items-center gap-2">
                   <FaCheckCircle style={{ color: COLORS.secondary }} /> Excellence in Education
                 </li>
@@ -185,13 +199,13 @@ const About = () => {
       <AcademicExcellence />
 
       {/* School Objectives */}
-      <section className="py-16 md:py-24 bg-gray-50">
+      <section className="py-16 md:py-24" style={{ backgroundColor: COLORS.gray }}>
         <div className="max-w-7xl mx-auto px-4">
           <SectionTitle
             title="School Objectives"
             subtitle="Goals we strive to achieve for our students"
           />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {[
               'Provide quality education with modern curriculum and teaching methods',
               'Develop critical thinking, creativity, and problem-solving skills',
@@ -206,7 +220,7 @@ const About = () => {
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="flex items-start gap-4 bg-white p-6 rounded-lg shadow"
+                className="flex items-start gap-4 bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center text-white flex-shrink-0 mt-1"
@@ -214,7 +228,7 @@ const About = () => {
                 >
                   ✓
                 </div>
-                <p className="text-gray-600">{objective}</p>
+                <p style={{ color: COLORS.slate }}>{objective}</p>
               </motion.div>
             ))}
           </div>
@@ -224,7 +238,7 @@ const About = () => {
       
 
       {/* Achievements & Recognition */}
-      <section className="py-16 md:py-24 bg-gradient-to-r from-blue-50 to-gray-50">
+      <section className="py-16 md:py-24 bg-gradient-to-br from-blue-50 to-gray-50">
         <div className="max-w-7xl mx-auto px-4">
           <SectionTitle
             title="Achievements & Recognition"
@@ -249,10 +263,10 @@ const About = () => {
                 transition={{ duration: 0.5, delay: index * 0.05 }}
                 viewport={{ once: true }}
                 whileHover={{ y: -5 }}
-                className="bg-white rounded-lg p-6 shadow-lg text-center hover:shadow-xl transition-all"
+                className="bg-white rounded-xl p-6 shadow-lg text-center hover:shadow-xl transition-all duration-300"
               >
                 <div className="text-4xl mb-3">🏆</div>
-                <p className="font-semibold text-gray-900">{award}</p>
+                <p className="font-semibold" style={{ color: COLORS.dark }}>{award}</p>
               </motion.div>
             ))}
           </div>
@@ -299,11 +313,11 @@ const About = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-gradient-to-br from-blue-50 to-gray-50 rounded-lg p-8 border-l-4"
-                style={{ borderLeftColor: COLORS.secondary }}
+                className="rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300"
+                style={{ background: `linear-gradient(135deg, ${COLORS.gray}, white)`, borderLeft: `4px solid ${COLORS.secondary}` }}
               >
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{goal.title}</h3>
-                <p className="text-gray-600">{goal.description}</p>
+                <h3 className="text-xl font-bold mb-3" style={{ color: COLORS.dark }}>{goal.title}</h3>
+                <p style={{ color: COLORS.slate }}>{goal.description}</p>
               </motion.div>
             ))}
           </div>

@@ -39,13 +39,26 @@ const Academics = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="bg-gradient-to-r from-blue-900 to-blue-700 text-white py-16 md:py-24"
+        className="text-white py-16 md:py-24"
+        style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}
       >
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Academics</h1>
-          <p className="text-lg text-blue-100">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
+          >
+            Academics
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-lg md:text-xl text-white/90"
+          >
             Comprehensive curriculum designed for holistic development
-          </p>
+          </motion.p>
         </div>
       </motion.section>
 
@@ -63,7 +76,7 @@ const Academics = () => {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="rounded-xl overflow-hidden shadow-xl"
+              className="rounded-2xl overflow-hidden shadow-2xl"
             >
               <img
                 src="/images/projectclass10.png"
@@ -79,13 +92,13 @@ const Academics = () => {
               viewport={{ once: true }}
             >
              
-              <p className="text-gray-600 leading-relaxed mb-4">
+              <p className="leading-relaxed mb-4" style={{ color: COLORS.slate }}>
                 Our curriculum is carefully designed to balance academic excellence with practical skills development. We incorporate both traditional learning methods and modern educational approaches.
               </p>
-              <p className="text-gray-600 leading-relaxed mb-4">
+              <p className="leading-relaxed mb-4" style={{ color: COLORS.slate }}>
                 Every subject is taught with emphasis on:
               </p>
-              <ul className="space-y-2 mb-6">
+              <ul className="space-y-3 mb-6">
                 {[
                   'Conceptual understanding over memorization',
                   'Real-world applications and problem-solving',
@@ -100,10 +113,11 @@ const Academics = () => {
                     whileInView={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                     viewport={{ once: true }}
-                    className="flex items-center gap-3 text-gray-600"
+                    className="flex items-center gap-3"
+                    style={{ color: COLORS.slate }}
                   >
                     <span
-                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                       style={{ backgroundColor: COLORS.secondary }}
                     ></span>
                     {item}
@@ -116,7 +130,7 @@ const Academics = () => {
       </section>
 
       {/* Academic Programs */}
-      <section className="py-16 md:py-24 bg-gray-50">
+      <section className="py-16 md:py-24" style={{ backgroundColor: COLORS.gray }}>
         <div className="max-w-7xl mx-auto px-4">
           <SectionTitle
             title="Academic Programs"
@@ -132,11 +146,11 @@ const Academics = () => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
                 whileHover={{ y: -10 }}
-                className="bg-white rounded-lg p-6 shadow-lg hover:shadow-xl transition-all text-center border-t-4"
-                style={{ borderTopColor: COLORS.secondary }}
+                className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 text-center"
+                style={{ borderTop: `4px solid ${COLORS.secondary}` }}
               >
-                <h3 className="text-lg font-bold text-gray-900 mb-2">{program.class}</h3>
-                <p className="text-gray-600 text-sm">{program.focus}</p>
+                <h3 className="text-lg font-bold mb-2" style={{ color: COLORS.dark }}>{program.class}</h3>
+                <p className="text-sm" style={{ color: COLORS.slate }}>{program.focus}</p>
               </motion.div>
             ))}
           </div>
@@ -166,7 +180,7 @@ const Academics = () => {
       </section>
 
       {/* Examination System */}
-      <section className="py-16 md:py-24 bg-gray-50">
+      <section className="py-16 md:py-24" style={{ backgroundColor: COLORS.gray }}>
         <div className="max-w-7xl mx-auto px-4">
           <SectionTitle
             title="Examination System"
@@ -200,12 +214,12 @@ const Academics = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-white rounded-lg p-8 shadow-lg"
+                className="bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300"
               >
-                <h3 className="text-2xl font-bold text-gray-900 mb-6">{exam.title}</h3>
+                <h3 className="text-2xl font-bold mb-6" style={{ color: COLORS.dark }}>{exam.title}</h3>
                 <ul className="space-y-3">
                   {exam.items.map((item, itemIndex) => (
-                    <li key={itemIndex} className="flex items-center gap-3 text-gray-600">
+                    <li key={itemIndex} className="flex items-center gap-3" style={{ color: COLORS.slate }}>
                       <span
                         className="w-3 h-3 rounded-full flex-shrink-0"
                         style={{ backgroundColor: COLORS.accent }}
@@ -267,16 +281,17 @@ const Academics = () => {
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
                 viewport={{ once: true }}
-                className="mb-6 pb-6 border-b border-gray-200 last:border-b-0"
+                className="mb-6 pb-6 last:mb-0 last:pb-0"
+                style={{ borderBottom: index < 5 ? `1px solid ${COLORS.lightGray}` : 'none' }}
               >
-                <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-3">
+                <h3 className="text-xl font-bold mb-3 flex items-center gap-3" style={{ color: COLORS.dark }}>
                   <span
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: COLORS.secondary }}
                   ></span>
                   {item.title}
                 </h3>
-                <p className="text-gray-600 leading-relaxed ml-6">{item.description}</p>
+                <p className="leading-relaxed ml-6" style={{ color: COLORS.slate }}>{item.description}</p>
               </motion.div>
             ))}
           </div>
@@ -286,7 +301,7 @@ const Academics = () => {
       
 
       {/* Co-Curricular Activities */}
-      <section className="py-12 md:py-16 bg-white">
+      <section className="py-12 md:py-16" style={{ backgroundColor: COLORS.gray }}>
         <div className="max-w-7xl mx-auto px-4">
           <SectionTitle
             title="Co-Curricular Activities"
@@ -315,10 +330,10 @@ const Academics = () => {
                 transition={{ duration: 0.3, delay: index * 0.05 }}
                 viewport={{ once: true }}
                 whileHover={{ scale: 1.05 }}
-                className="bg-gradient-to-br from-blue-50 to-gray-50 rounded-lg p-6 shadow-lg hover:shadow-xl transition-all text-center border-b-4"
-                style={{ borderBottomColor: COLORS.secondary }}
+                className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 text-center"
+                style={{ borderBottom: `4px solid ${COLORS.secondary}` }}
               >
-                <p className="font-semibold text-gray-900">{activity}</p>
+                <p className="font-semibold" style={{ color: COLORS.dark }}>{activity}</p>
               </motion.div>
             ))}
           </div>

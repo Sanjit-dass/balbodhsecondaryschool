@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaUserGraduate, FaChalkboardTeacher, FaMoneyBillWave, FaClipboardList, FaShieldAlt, FaEnvelope, FaLock } from 'react-icons/fa';
+import { COLORS } from '../constants/schoolData';
 const bgImage = '/images/schoolphoto.png';
 import { AuthContext } from '../contexts/AuthContext';
 
@@ -25,7 +26,10 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [currentRole, setCurrentRole] = useState(null);
   const navigate = useNavigate();
+  const loginFormRef = React.useRef(null);
+  const emailInputRef = React.useRef(null);
 
   const selectedRole = searchParams.get('role');
   const ROLE_NAMES = {
@@ -38,9 +42,61 @@ export default function Login() {
     principal: 'Admin login',
     parent: 'Parent login',
   };
+  
+  const PORTAL_INFO = {
+    student: {
+      title: '🎓 Student Login',
+      description: 'Enter your credentials for student login.',
+      subDescription: 'Only Student accounts are allowed.',
+      badgeIcon: '🎓',
+      badgeText: 'Student Portal',
+      badgeColor: COLORS.accent
+    },
+    teacher: {
+      title: '👨‍🏫 Teacher Login',
+      description: 'Enter your credentials for teacher login.',
+      subDescription: 'Only Faculty accounts are allowed.',
+      badgeIcon: '👨‍🏫',
+      badgeText: 'Faculty Portal',
+      badgeColor: COLORS.secondary
+    },
+    accountant: {
+      title: '💰 Accountant Login',
+      description: 'Enter your credentials for accountant login.',
+      subDescription: 'Only Accountant accounts are allowed.',
+      badgeIcon: '💰',
+      badgeText: 'Accountant Portal',
+      badgeColor: COLORS.success
+    },
+    examcontroller: {
+      title: '📋 Exam Controller Login',
+      description: 'Enter your credentials for exam controller login.',
+      subDescription: 'Only Exam Controller accounts are allowed.',
+      badgeIcon: '📋',
+      badgeText: 'Exam Controller Portal',
+      badgeColor: COLORS.primary
+    },
+    admin: {
+      title: '⚙️ Admin Login',
+      description: 'Enter your credentials for admin login.',
+      subDescription: 'Only Admin accounts are allowed.',
+      badgeIcon: '⚙️',
+      badgeText: 'Administrator Portal',
+      badgeColor: COLORS.error
+    }
+  };
+  
   const validRole = selectedRole && ROLE_NAMES[selectedRole] ? selectedRole : null;
   const roleTitle = validRole ? ROLE_NAMES[validRole] : null;
+  const portalInfo = validRole ? PORTAL_INFO[validRole] : null;
   const roleWarning = selectedRole && !validRole ? 'This login shortcut is not recognized. Use a valid portal shortcut or the generic login page.' : null;
+  
+  // Force re-render when role changes
+  useEffect(() => {
+    if (selectedRole !== currentRole) {
+      setCurrentRole(selectedRole);
+    }
+  }, [selectedRole, currentRole]);
 
   const forceShow = searchParams.get('force') === 'true';
 
@@ -52,6 +108,24 @@ export default function Login() {
       navigate(LOGIN_REDIRECT[user.role] || '/admin/dashboard', { replace: true });
     }
   }, [isAuthenticated, user, navigate, forceShow]);
+
+  // Smooth scroll to login form and auto-focus email when role is selected
+  useEffect(() => {
+    if (validRole && loginFormRef.current) {
+      // Smooth scroll to login form
+      loginFormRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+      
+      // Auto-focus email input after scroll completes
+      setTimeout(() => {
+        if (emailInputRef.current) {
+          emailInputRef.current.focus();
+        }
+      }, 500);
+    }
+  }, [validRole]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -65,6 +139,14 @@ export default function Login() {
     setSubmitting(true);
     try {
       const loggedInUser = await login(email, password, remember, validRole);
+      
+      // Validate that the logged-in user's role matches the selected portal
+      if (validRole && loggedInUser.role !== validRole) {
+        setError('Access Denied. This account does not belong to the selected portal. Please select the correct login portal.');
+        setSubmitting(false);
+        return;
+      }
+      
       navigate(LOGIN_REDIRECT[loggedInUser.role] || '/admin/dashboard', { replace: true });
     } catch (err) {
       setError(err.message || 'Unable to sign in. Please verify your credentials.');
@@ -75,210 +157,572 @@ export default function Login() {
 
   return (
     <div
-      className="relative min-h-screen overflow-hidden text-slate-100"
+      key={selectedRole || 'default'}
+      className="relative min-h-screen text-slate-100"
       style={{ backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
-      {/* Top-left Home link (visible on all viewports) */}
-      <div className="absolute top-4 left-4 z-30 bg-black rounded-3xl px-2 py-1 shadow-md hover:shadow-lg transition">
-        <Link to="/" className="inline-flex items-center justify-center rounded-md  px-3 py-2 text-sm font-semibold text-white hover:bg-white/20 transition">
-          Go to Home
+      {/* Animated gradient overlay */}
+      <motion.div 
+        className="absolute inset-0"
+        animate={{
+          background: [
+            `linear-gradient(135deg, ${COLORS.primary}50, ${COLORS.secondary}40, ${COLORS.dark}60)`,
+            `linear-gradient(225deg, ${COLORS.secondary}50, ${COLORS.accent}40, ${COLORS.dark}60)`,
+            `linear-gradient(315deg, ${COLORS.accent}50, ${COLORS.primary}40, ${COLORS.dark}60)`,
+            `linear-gradient(135deg, ${COLORS.primary}50, ${COLORS.secondary}40, ${COLORS.dark}60)`
+          ]
+        }}
+        transition={{
+          duration: 10,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      ></motion.div>
+      
+      {/* Top-left Home link */}
+      <motion.div 
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+        className="absolute top-4 left-4 z-30 rounded-2xl px-3 py-2 shadow-xl"
+        style={{ backgroundColor: `${COLORS.dark}90`, backdropFilter: 'blur(10px)' }}
+      >
+        <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-white/80 transition-colors">
+          <span>←</span> Back to Home
         </Link>
-      </div>
-      <div className="absolute inset-0 bg-black/50" />
-      <div className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mb-12 text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold text-white">BAL BODH SECONDARY SCHOOL</h1>
-          <p className="mt-2 text-lg font-bold text-indigo-300">Login Portal</p>
-          <h2 className="mt-4 text-4xl font-semibold text-white sm:text-5xl">A smart digital school management system</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-sm text-slate-300 sm:text-lg">
-            Sign in with your school credentials to access your authorized dashboard.
-          </p>
-        </div>
-
+      </motion.div>
+      
+      {/* Decorative floating elements - playful bubbles */}
+      <motion.div 
+        className="absolute top-20 right-10 w-20 h-20 rounded-full"
+        animate={{ 
+          y: [0, -30, 0],
+          scale: [1, 1.2, 1],
+          rotate: [0, 360]
+        }}
+        transition={{ 
+          duration: 4, 
+          repeat: Infinity, 
+          ease: "easeInOut" 
+        }}
+        style={{ backgroundColor: `${COLORS.accent}40`, backdropFilter: 'blur(10px)' }}
+      ></motion.div>
+      <motion.div 
+        className="absolute top-40 right-32 w-14 h-14 rounded-full"
+        animate={{ 
+          y: [0, -40, 0],
+          scale: [1, 0.8, 1],
+          rotate: [360, 0]
+        }}
+        transition={{ 
+          duration: 5, 
+          repeat: Infinity, 
+          ease: "easeInOut",
+          delay: 0.5
+        }}
+        style={{ backgroundColor: `${COLORS.secondary}40`, backdropFilter: 'blur(10px)' }}
+      ></motion.div>
+      <motion.div 
+        className="absolute bottom-32 left-20 w-16 h-16 rounded-full"
+        animate={{ 
+          y: [0, -25, 0],
+          scale: [1, 1.3, 1],
+          rotate: [0, -360]
+        }}
+        transition={{ 
+          duration: 4.5, 
+          repeat: Infinity, 
+          ease: "easeInOut",
+          delay: 1
+        }}
+        style={{ backgroundColor: `${COLORS.primary}40`, backdropFilter: 'blur(10px)' }}
+      ></motion.div>
+      <motion.div 
+        className="absolute bottom-20 left-48 w-12 h-12 rounded-full"
+        animate={{ 
+          y: [0, -35, 0],
+          scale: [1, 1.1, 1],
+          rotate: [180, 540]
+        }}
+        transition={{ 
+          duration: 3.5, 
+          repeat: Infinity, 
+          ease: "easeInOut",
+          delay: 1.5
+        }}
+        style={{ backgroundColor: `${COLORS.success}40`, backdropFilter: 'blur(10px)' }}
+      ></motion.div>
+      <motion.div 
+        className="absolute top-60 left-16 w-10 h-10 rounded-full"
+        animate={{ 
+          y: [0, -20, 0],
+          x: [0, 10, 0],
+          scale: [1, 1.2, 1]
+        }}
+        transition={{ 
+          duration: 3, 
+          repeat: Infinity, 
+          ease: "easeInOut",
+          delay: 2
+        }}
+        style={{ backgroundColor: `${COLORS.error}40`, backdropFilter: 'blur(10px)' }}
+      ></motion.div>
+      
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 min-h-screen flex items-center">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, ease: 'easeOut' }}
-          className="relative overflow-hidden rounded-[20px] z-20"
+          initial={{ opacity: 0, y: 50, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.7, ease: 'easeOut' }}
+          className="relative rounded-[32px] z-20 w-full overflow-hidden"
           style={{
-            backgroundColor: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            backdropFilter: 'blur(12px)',
-            boxShadow: '0 10px 30px rgba(2,6,23,0.6)'
+            background: `linear-gradient(135deg, ${COLORS.dark}95, ${COLORS.dark}85)`,
+            border: `1px solid ${COLORS.white}10`,
+            backdropFilter: 'blur(30px)',
+            boxShadow: `0 30px 60px -15px ${COLORS.dark}80, 0 0 100px -30px ${COLORS.accent}30`
           }}
         >
-          <div className="relative grid gap-6 lg:grid-cols-[420px_auto] p-6 sm:p-8 lg:p-10">
-            <div className="rounded-[2rem] bg-slate-950/90 p-6 ring-1 ring-white/10 shadow-xl shadow-slate-950/30">
-              <div className="mb-6">
-                <p className="text-xs uppercase tracking-[0.35em] text-indigo-300">Unified portal</p>
-                <h2 className="mt-4 text-3xl font-semibold text-white">BAL BODH SECONDARY SCHOOL</h2>
-                <p className="mt-3 text-sm leading-6 text-slate-400">
-                  Secure access for admin, teachers, students, accountants and exam controllers with crisp role isolation.
-                </p>
-              </div>
+          <div className="relative grid gap-0 grid-cols-1 lg:grid-cols-2">
+            {/* Left Panel - Login Shortcuts */}
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="p-8 lg:p-12"
+              style={{ 
+                backgroundColor: `${COLORS.dark}90`,
+                borderRight: `1px solid ${COLORS.white}10`
+              }}
+            >
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.3 }}
+                className="mb-8"
+              >
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ duration: 0.8, delay: 0.4, type: "spring", stiffness: 100 }}
+                  className="mb-6"
+                >
+                  <img src="/logo.png" alt="Balbodh School" className="h-16 w-auto rounded-full shadow-2xl" style={{ boxShadow: `0 0 30px ${COLORS.accent}40` }} />
+                </motion.div>
+                <motion.h1 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.6 }}
+                  className="text-2xl lg:text-3xl font-bold text-white leading-tight"
+                >
+                  BAL BODH SECONDARY SCHOOL
+                </motion.h1>
+                <motion.p 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.7 }}
+                  className="mt-3 text-sm lg:text-base leading-relaxed" 
+                  style={{ color: COLORS.slate }}
+                >
+                  Choose your portal to sign in
+                </motion.p>
+              </motion.div>
 
-              <div className="space-y-4">
-                <div className="rounded-3xl border border-white/10 bg-slate-900/80 p-5">
-                  <p className="text-sm font-semibold text-white">Login shortcuts</p>
-                  <div className="mt-4 grid gap-3">
-                    <Link
-                      to="/login?role=student"
-                      className="flex items-center gap-3 rounded-3xl border border-white/10 bg-slate-900/80 px-4 py-3 text-sm font-medium text-slate-100 hover:bg-slate-800 transition"
+              <div className="space-y-3">
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.5 }}
+                >
+                  <motion.p 
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.6 }}
+                    className="text-xs uppercase tracking-[0.3em] font-semibold mb-4" 
+                    style={{ color: COLORS.accent }}
+                  >
+                    Quick Access
+                  </motion.p>
+                  <div className="grid gap-3">
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 0.7 }}
+                      whileHover={{ 
+                        scale: 1.05, 
+                        x: 10,
+                        rotate: [-2, 2, -2]
+                      }}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      <FaUserGraduate className="h-5 w-5 text-indigo-300" />
-                      Student login
-                    </Link>
-                    <Link
-                      to="/login?role=teacher"
-                      className="flex items-center gap-3 rounded-3xl border border-white/10 bg-slate-900/80 px-4 py-3 text-sm font-medium text-slate-100 hover:bg-slate-800 transition"
+                      <Link
+                        to="/login?role=student"
+                        className="flex items-center gap-4 rounded-xl border px-5 py-4 text-sm font-medium text-white transition-all duration-300 cursor-pointer"
+                        style={{ 
+                          borderColor: `${COLORS.white}15`, 
+                          backgroundColor: `${COLORS.dark}80`,
+                          hoverBackgroundColor: `${COLORS.accent}20`
+                        }}
+                      >
+                        <motion.div 
+                          whileHover={{ rotate: 360 }}
+                          transition={{ duration: 0.5 }}
+                          className="flex items-center justify-center w-10 h-10 rounded-lg" 
+                          style={{ backgroundColor: `${COLORS.accent}25` }}
+                        >
+                          <FaUserGraduate className="h-5 w-5" style={{ color: COLORS.accent }} />
+                        </motion.div>
+                        <span>Student</span>
+                      </Link>
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 0.8 }}
+                      whileHover={{ 
+                        scale: 1.05, 
+                        x: 10,
+                        rotate: [-2, 2, -2]
+                      }}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      <FaChalkboardTeacher className="h-5 w-5 text-violet-300" />
-                      Faculty login
-                    </Link>
-                    <Link
-                      to="/login?role=accountant"
-                      className="flex items-center gap-3 rounded-3xl border border-white/10 bg-slate-900/80 px-4 py-3 text-sm font-medium text-slate-100 hover:bg-slate-800 transition"
+                      <Link
+                        to="/login?role=teacher"
+                        className="flex items-center gap-4 rounded-xl border px-5 py-4 text-sm font-medium text-white transition-all duration-300 cursor-pointer"
+                        style={{ borderColor: `${COLORS.white}15`, backgroundColor: `${COLORS.dark}80` }}
+                      >
+                        <motion.div 
+                          whileHover={{ rotate: 360 }}
+                          transition={{ duration: 0.5 }}
+                          className="flex items-center justify-center w-10 h-10 rounded-lg" 
+                          style={{ backgroundColor: `${COLORS.secondary}25` }}
+                        >
+                          <FaChalkboardTeacher className="h-5 w-5" style={{ color: COLORS.secondary }} />
+                        </motion.div>
+                        <span>Faculty</span>
+                      </Link>
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 0.9 }}
+                      whileHover={{ 
+                        scale: 1.05, 
+                        x: 10,
+                        rotate: [-2, 2, -2]
+                      }}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      <FaMoneyBillWave className="h-5 w-5 text-emerald-300" />
-                      Accountant login
-                    </Link>
-                    <Link
-                      to="/login?role=examcontroller"
-                      className="flex items-center gap-3 rounded-3xl border border-white/10 bg-slate-900/80 px-4 py-3 text-sm font-medium text-slate-100 hover:bg-slate-800 transition"
+                      <Link
+                        to="/login?role=accountant"
+                        className="flex items-center gap-4 rounded-xl border px-5 py-4 text-sm font-medium text-white transition-all duration-300 cursor-pointer"
+                        style={{ borderColor: `${COLORS.white}15`, backgroundColor: `${COLORS.dark}80` }}
+                      >
+                        <motion.div 
+                          whileHover={{ rotate: 360 }}
+                          transition={{ duration: 0.5 }}
+                          className="flex items-center justify-center w-10 h-10 rounded-lg" 
+                          style={{ backgroundColor: `${COLORS.success}25` }}
+                        >
+                          <FaMoneyBillWave className="h-5 w-5" style={{ color: COLORS.success }} />
+                        </motion.div>
+                        <span>Accountant</span>
+                      </Link>
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 1.0 }}
+                      whileHover={{ 
+                        scale: 1.05, 
+                        x: 10,
+                        rotate: [-2, 2, -2]
+                      }}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      <FaClipboardList className="h-5 w-5 text-cyan-300" />
-                      Exam controller login
-                    </Link>
-                    <Link
-                      to="/login?role=admin"
-                      className="flex items-center gap-3 rounded-3xl border border-white/10 bg-slate-900/80 px-4 py-3 text-sm font-medium text-slate-100 hover:bg-slate-800 transition"
+                      <Link
+                        to="/login?role=examcontroller"
+                        className="flex items-center gap-4 rounded-xl border px-5 py-4 text-sm font-medium text-white transition-all duration-300 cursor-pointer"
+                        style={{ borderColor: `${COLORS.white}15`, backgroundColor: `${COLORS.dark}80` }}
+                      >
+                        <motion.div 
+                          whileHover={{ rotate: 360 }}
+                          transition={{ duration: 0.5 }}
+                          className="flex items-center justify-center w-10 h-10 rounded-lg" 
+                          style={{ backgroundColor: `${COLORS.primary}25` }}
+                        >
+                          <FaClipboardList className="h-5 w-5" style={{ color: COLORS.primary }} />
+                        </motion.div>
+                        <span>Exam Controller</span>
+                      </Link>
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 1.1 }}
+                      whileHover={{ 
+                        scale: 1.05, 
+                        x: 10,
+                        rotate: [-2, 2, -2]
+                      }}
+                      whileTap={{ scale: 0.95 }}
                     >
-                      <FaShieldAlt className="h-5 w-5 text-rose-300" />
-                      Admin login
-                    </Link>
+                      <Link
+                        to="/login?role=admin"
+                        className="flex items-center gap-4 rounded-xl border px-5 py-4 text-sm font-medium text-white transition-all duration-300 cursor-pointer"
+                        style={{ borderColor: `${COLORS.white}15`, backgroundColor: `${COLORS.dark}80` }}
+                      >
+                        <motion.div 
+                          whileHover={{ rotate: 360 }}
+                          transition={{ duration: 0.5 }}
+                          className="flex items-center justify-center w-10 h-10 rounded-lg" 
+                          style={{ backgroundColor: `${COLORS.error}25` }}
+                        >
+                          <FaShieldAlt className="h-5 w-5" style={{ color: COLORS.error }} />
+                        </motion.div>
+                        <span>Admin</span>
+                      </Link>
+                    </motion.div>
                   </div>
-                </div>
-                <div className="rounded-3xl border border-white/10 bg-slate-900/80 p-5">
-                  <p className="text-sm font-semibold text-white">Why this login is better</p>
-                  <ul className="mt-4 space-y-3 text-sm text-slate-400">
-                    <li>• Single entry page. No role selector.</li>
-                    <li>• Auto redirect after authentication.</li>
-                    <li>• JWT stores role and protects every route.</li>
-                    <li>• Clean, modern and mobile-friendly layout.</li>
-                  </ul>
-                </div>
-                <div className="mt-6 rounded-3xl border border-white/10 bg-slate-900/80 p-5">
-                  <p className="text-sm font-semibold text-white">Fast access</p>
-                  <div className="mt-4 grid gap-3 text-sm text-slate-300">
-                    <span className="inline-flex items-center gap-2 rounded-2xl bg-slate-900/80 px-3 py-2">Admin dashboard</span>
-                    <span className="inline-flex items-center gap-2 rounded-2xl bg-slate-900/80 px-3 py-2">Student portal</span>
-                    <span className="inline-flex items-center gap-2 rounded-2xl bg-slate-900/80 px-3 py-2">Teacher tools</span>
-                    <span className="inline-flex items-center gap-2 rounded-2xl bg-slate-900/80 px-3 py-2">Finance workspace</span>
-                  </div>
-                </div>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="rounded-[16px] bg-white/6 p-6 ring-1 ring-white/10 shadow-2xl shadow-black/40 transform transition hover:-translate-y-1">
-              <div className="mb-8 text-center">
-                <img src="/logo.png" alt="Balbodh School" className="mx-auto h-20 w-auto rounded-full mb-4" />
-                <span className="text-xs uppercase tracking-[0.35em] text-indigo-300">Secure sign in</span>
-                <h2 className="mt-4 text-3xl font-semibold text-white">
-                  {roleTitle || 'Email and password only'}
-                </h2>
-                <p className="mt-3 text-sm text-slate-400">
-                  {roleTitle
-                    ? `Enter your credentials for ${roleTitle.toLowerCase()}. The system still redirects by your authenticated role.`
-                    : 'Enter your credentials once. The system will detect your role and redirect you to the correct dashboard.'}
-                </p>
-                {roleWarning && (
-                  <div className="mt-3 rounded-3xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-900">
-                    {roleWarning}
-                  </div>
+            {/* Right Panel - Login Form */}
+            <motion.div 
+              ref={loginFormRef}
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="p-8 lg:p-12"
+              style={{ 
+                backgroundColor: `${COLORS.dark}85`
+              }}
+            >
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.4 }}
+                className="mb-8"
+              >
+                <motion.p 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                  className="text-xs uppercase tracking-[0.2em] font-semibold mb-4" 
+                  style={{ color: COLORS.slate }}
+                >
+                  Secure sign in
+                </motion.p>
+                {portalInfo && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8, y: -20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.6, type: "spring", stiffness: 150 }}
+                    className="mb-6 inline-flex items-center gap-3 px-5 py-3 rounded-2xl"
+                    style={{ 
+                      backgroundColor: `${portalInfo.badgeColor}20`,
+                      border: `2px solid ${portalInfo.badgeColor}40`
+                    }}
+                  >
+                    <span className="text-2xl">{portalInfo.badgeIcon}</span>
+                    <span className="text-sm font-bold" style={{ color: portalInfo.badgeColor }}>
+                      {portalInfo.badgeText}
+                    </span>
+                  </motion.div>
                 )}
-              </div>
+                <motion.h2 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: portalInfo ? 0.7 : 0.6, type: "spring", stiffness: 120 }}
+                  className="text-2xl lg:text-3xl font-bold text-white leading-tight"
+                >
+                  {portalInfo?.title || 'Sign In'}
+                </motion.h2>
+                <motion.p 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: portalInfo ? 0.8 : 0.7 }}
+                  className="mt-3 text-sm lg:text-base" 
+                  style={{ color: COLORS.slate }}
+                >
+                  {portalInfo?.description || 'Enter your credentials to access your dashboard'}
+                </motion.p>
+                {portalInfo?.subDescription && (
+                  <motion.p 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: 0.9 }}
+                    className="mt-2 text-xs lg:text-sm italic" 
+                    style={{ color: COLORS.slate }}
+                  >
+                    {portalInfo.subDescription}
+                  </motion.p>
+                )}
+              </motion.div>
 
               {error && (
-                <div className="mb-6 rounded-3xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-100">
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="mb-6 rounded-xl border p-4 text-sm" 
+                  style={{ borderColor: `${COLORS.error}30`, backgroundColor: `${COLORS.error}15`, color: COLORS.white }}
+                >
                   {error}
-                </div>
+                </motion.div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300">Email address</label>
-                  <div className="relative mt-3">
-                    <span className="absolute inset-y-0 left-3 flex items-center text-slate-400">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: 0.5 }}
+                >
+                  <label className="block text-sm font-semibold mb-2" style={{ color: COLORS.slate }}>Email</label>
+                  <div className="relative">
+                    <motion.span 
+                      className="absolute inset-y-0 left-4 flex items-center" 
+                      style={{ color: COLORS.slate }}
+                      animate={{ rotate: [0, 10, -10, 0] }}
+                      transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                    >
                       <FaEnvelope />
-                    </span>
-                    <input
+                    </motion.span>
+                    <motion.input
+                      ref={emailInputRef}
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@balbodhschool.com"
-                      className="mt-0 w-full rounded-3xl border border-white/10 bg-slate-900/90 pl-12 pr-4 py-3 text-slate-100 outline-none transition focus:ring-2 focus:ring-indigo-400/30"
+                      placeholder="Enter your email"
+                      className="w-full rounded-xl border pl-12 pr-4 py-3.5 text-white outline-none transition-all duration-300 focus:ring-2 disabled:cursor-not-allowed"
+                      style={{ 
+                        borderColor: `${COLORS.white}15`, 
+                        backgroundColor: `${COLORS.dark}70`,
+                        focusRingColor: COLORS.accent
+                      }}
+                      whileFocus={{ scale: 1.02 }}
                       disabled={submitting}
                     />
                   </div>
-                </div>
+                </motion.div>
 
-                <div>
-                  <div className="flex items-center justify-between text-sm font-medium text-slate-300">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: 0.6 }}
+                >
+                  <div className="flex items-center justify-between text-sm font-semibold mb-2" style={{ color: COLORS.slate }}>
                     <label>Password</label>
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.1, rotate: 10 }}
+                      whileTap={{ scale: 0.9, rotate: -10 }}
                       type="button"
-                      className="text-indigo-300 hover:text-white"
+                      className="hover:text-white transition-colors duration-200"
+                      style={{ color: COLORS.accent }}
                       onClick={() => setShowPassword((prev) => !prev)}
                     >
                       {showPassword ? 'Hide' : 'Show'}
-                    </button>
+                    </motion.button>
                   </div>
-                  <div className="relative mt-3">
-                    <span className="absolute inset-y-0 left-3 flex items-center text-slate-400">
+                  <div className="relative">
+                    <motion.span 
+                      className="absolute inset-y-0 left-4 flex items-center" 
+                      style={{ color: COLORS.slate }}
+                      animate={{ rotate: [0, -10, 10, 0] }}
+                      transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                    >
                       <FaLock />
-                    </span>
-                    <input
+                    </motion.span>
+                    <motion.input
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter your password"
-                      className="mt-0 w-full rounded-3xl border border-white/10 bg-slate-900/90 pl-12 pr-4 py-3 text-slate-100 outline-none transition focus:ring-2 focus:ring-indigo-400/30"
+                      className="w-full rounded-xl border pl-12 pr-4 py-3.5 text-white outline-none transition-all duration-300 focus:ring-2 disabled:cursor-not-allowed"
+                      style={{ 
+                        borderColor: `${COLORS.white}15`, 
+                        backgroundColor: `${COLORS.dark}70`,
+                        focusRingColor: COLORS.accent
+                      }}
+                      whileFocus={{ scale: 1.02 }}
                       disabled={submitting}
                     />
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-slate-400">
-                  <label className="inline-flex items-center gap-2">
-                    <input
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.7 }}
+                  className="flex items-center justify-between text-sm" 
+                  style={{ color: COLORS.slate }}
+                >
+                  <label className="inline-flex items-center gap-2 cursor-pointer">
+                    <motion.input
                       type="checkbox"
                       checked={remember}
                       onChange={(e) => setRemember(e.target.checked)}
-                      className="h-4 w-4 rounded border-white/20 bg-slate-900 text-indigo-500 focus:ring-indigo-400"
+                      className="h-4 w-4 rounded border-2 focus:ring-2 focus:ring-offset-0 disabled:cursor-not-allowed transition-all duration-200"
+                      style={{ 
+                        borderColor: `${COLORS.white}20`, 
+                        backgroundColor: COLORS.dark, 
+                        focusRingColor: COLORS.accent,
+                        accentColor: COLORS.accent
+                      }}
+                      whileTap={{ scale: 1.2 }}
                     />
-                    Remember me
+                    <span className="font-medium">Remember me</span>
                   </label>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-slate-500 text-sm">Contact your administrator to create a new account.</span>
-                    <Link
-                      to={`/forgot-password${selectedRole ? `?role=${selectedRole}` : ''}`}
-                      className="text-indigo-300 hover:text-white font-semibold text-sm">
-                      Forgot password?
-                    </Link>
-                  </div>
-                </div>
+                  <Link
+                    to={`/forgot-password${selectedRole ? `?role=${selectedRole}` : ''}`}
+                    className="font-semibold hover:text-white transition-colors duration-200"
+                    style={{ color: COLORS.accent }}
+                  >
+                    Forgot password?
+                  </Link>
+                </motion.div>
 
-                <button
+                <motion.button
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.8, type: "spring", stiffness: 100 }}
+                  whileHover={{ 
+                    scale: 1.05, 
+                    boxShadow: `0 15px 40px ${COLORS.accent}50`,
+                    rotate: [-1, 1, -1]
+                  }}
+                  whileTap={{ scale: 0.95 }}
                   type="submit"
                   disabled={submitting}
-                  className="w-full rounded-3xl bg-gradient-to-r from-[#2563EB] to-[#7C3AED] px-5 py-3 text-sm font-semibold text-white shadow-xl transition transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="w-full rounded-xl px-6 py-4 text-base font-bold text-white shadow-xl transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})`,
+                    boxShadow: `0 10px 30px ${COLORS.accent}30`
+                  }}
                 >
-                  {submitting ? 'Signing in…' : 'Sign in'}
-                </button>
+                  {submitting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Signing in…
+                    </span>
+                  ) : (
+                    validRole ? `Sign In as ${portalInfo?.badgeText || roleTitle}` : 'Sign In'
+                  )}
+                </motion.button>
               </form>
 
-             
-            </div>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4, delay: 0.9 }}
+                className="mt-6 text-center text-sm"
+                style={{ color: COLORS.slate }}
+              >
+                Contact your administrator to create a new account
+              </motion.p>
+            </motion.div>
           </div>
         </motion.div>
       </div>

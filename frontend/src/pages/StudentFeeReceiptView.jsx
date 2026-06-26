@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../contexts/AuthContext';
 
@@ -7,16 +7,22 @@ const formatMoney = (value) => `Rs ${Number(value || 0).toLocaleString()}`;
 const getReceiptAmount = (receipt) => Number(receipt?.amountPaid ?? receipt?.amount ?? receipt?.paid ?? 0);
 const getReceiptDate = (receipt) => receipt?.createdAt || receipt?.date || receipt?.timestamp;
 
-function openReceiptRoute(receipt, role, print = false) {
+function openReceiptRoute(receipt, role, print = false, navigate) {
   const receiptId = receipt?.receiptId || receipt?.id || receipt?._id || receipt?.paymentId || receipt?.receiptNumber;
-  if (!receiptId) return;
+  if (!receiptId) return false;
   const basePath = role === 'parent' ? '/parent/receipt' : role === 'student' ? '/student/receipt' : '/fee-management/receipt';
-  window.open(`${basePath}/${encodeURIComponent(receiptId)}${print ? '?print=1' : ''}`, '_blank', 'noopener,noreferrer');
+  navigate(`${basePath}/${encodeURIComponent(receiptId)}${print ? '?print=1' : ''}`);
+  return true;
 }
 
 function openPdf(receipt, print = false) {
+  const receiptId = receipt?.receiptId || receipt?.id || receipt?._id || receipt?.paymentId || receipt?.receiptNumber;
   const url = receipt?.receiptUrl || receipt?.pdfUrl || receipt?.receipt?.pdfUrl;
   const base64 = receipt?.pdfBase64 || receipt?.receipt?.pdfBase64;
+
+  if (receiptId) {
+    return false;
+  }
 
   if (url) {
     const win = window.open(url, '_blank', 'noopener,noreferrer');
@@ -68,6 +74,7 @@ function downloadReceipt(receipt) {
 
 export default function StudentFeeReceiptView() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const [studentId, setStudentId] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -185,45 +192,99 @@ export default function StudentFeeReceiptView() {
 
       <div className="rounded-xl bg-white p-6 shadow">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-semibold">Payment History</h3>
+          <h3 className="font-semibold">Payment Timeline</h3>
           <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{receipts.length} receipts</span>
         </div>
-        <div className="space-y-3">
-          {receipts.length === 0 ? (
-            <div className="text-sm text-slate-500">No receipts found.</div>
-          ) : receipts.map((receipt, index) => (
-            <div key={receipt._id || receipt.id || receipt.receiptNumber || index} className="rounded border bg-white p-3">
-              <div className="flex justify-between text-sm text-slate-700">
-                <div>{receipt.receiptNumber || receipt.paymentMethod || receipt.method || 'Payment'}</div>
-                <div className="font-semibold">{formatMoney(getReceiptAmount(receipt))}</div>
-              </div>
-              <div className="mt-1 text-xs text-slate-500">
-                {getReceiptDate(receipt) ? new Date(getReceiptDate(receipt)).toLocaleString() : 'Date unavailable'}
-              </div>
-              {receipt.receiptId || receipt._id ? <div className="mt-1 text-xs text-slate-500">Receipt: {receipt.receiptId || receipt._id}</div> : null}
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!openPdf(receipt)) openReceiptRoute(receipt, role);
-                  }}
-                  className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
-                >
-                  View
-                </button>
-                {/* Download removed to avoid blank/new-tab failures; use View or Print instead */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!openPdf(receipt, true)) openReceiptRoute(receipt, role, true);
-                  }}
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                >
-                  Print
-                </button>
-              </div>
-            </div>
-          ))}
+        
+        <div className="mb-6">
+          <p className="text-sm text-slate-600 mb-4">Visual timeline of your payment activity and transactions.</p>
+          <div className="space-y-4">
+            {receipts.length === 0 ? (
+              <div className="text-sm text-slate-500">No receipts found.</div>
+            ) : receipts.map((receipt, index) => {
+              const receiptDate = getReceiptDate(receipt);
+              const formattedDate = receiptDate ? new Date(receiptDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Date unavailable';
+              const receiptNumber = receipt.receiptNumber || receipt.receiptId || receipt._id || 'N/A';
+              const amount = formatMoney(getReceiptAmount(receipt));
+              
+              return (
+                <div key={receipt._id || receipt.id || receipt.receiptNumber || index} className="relative pl-8 pb-4 border-l-2 border-slate-200 last:border-0">
+                  <div className="absolute left-0 top-0 w-4 h-4 rounded-full bg-green-500 border-2 border-white -translate-x-1/2"></div>
+                  <div className="mb-1 text-xs text-slate-500">{formattedDate}</div>
+                  <div className="text-sm text-slate-700 mb-1">({receiptNumber})</div>
+                  <div className="text-sm font-semibold text-slate-900">Fee Payment Received</div>
+                  <div className="text-lg font-bold text-green-600">{amount}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="border-t pt-6">
+          <h4 className="font-semibold mb-4">Receipt Center</h4>
+          <p className="text-sm text-slate-600 mb-4">Access all available receipts. Download, print, or view detailed receipt information.</p>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-2 px-3 font-semibold text-slate-700">Receipt No</th>
+                  <th className="text-left py-2 px-3 font-semibold text-slate-700">Date</th>
+                  <th className="text-left py-2 px-3 font-semibold text-slate-700">Amount</th>
+                  <th className="text-left py-2 px-3 font-semibold text-slate-700">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {receipts.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="py-4 text-center text-slate-500">No receipts found.</td>
+                  </tr>
+                ) : receipts.map((receipt, index) => {
+                  const receiptDate = getReceiptDate(receipt);
+                  const formattedDate = receiptDate ? new Date(receiptDate).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }) : 'N/A';
+                  const receiptNumber = receipt.receiptNumber || receipt.receiptId || receipt._id || 'N/A';
+                  const amount = formatMoney(getReceiptAmount(receipt));
+                  
+                  return (
+                    <tr key={receipt._id || receipt.id || receipt.receiptNumber || index} className="border-b">
+                      <td className="py-3 px-3 text-slate-700">{receiptNumber}</td>
+                      <td className="py-3 px-3 text-slate-700">{formattedDate}</td>
+                      <td className="py-3 px-3 font-semibold text-slate-900">{amount}</td>
+                      <td className="py-3 px-3">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!openPdf(receipt)) openReceiptRoute(receipt, role, false, navigate);
+                            }}
+                            className="rounded bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700"
+                          >
+                            View
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => downloadReceipt(receipt)}
+                            className="rounded border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                          >
+                            Download
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!openPdf(receipt, true)) openReceiptRoute(receipt, role, true, navigate);
+                            }}
+                            className="rounded border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                          >
+                            Print
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

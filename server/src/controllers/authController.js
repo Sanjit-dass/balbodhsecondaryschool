@@ -17,6 +17,10 @@ function signRefreshToken() {
   return crypto.randomBytes(40).toString('hex');
 }
 
+function hashToken(token) {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
 async function saveRefreshToken({ user, token, ipAddress, device }) {
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   await RefreshToken.create({ user, token, expiresAt, ipAddress, device });
@@ -226,14 +230,22 @@ async function forgotPassword(req, res) {
   try {
     const normalizedEmail = String(email || '').trim().toLowerCase();
     const user = await User.findOne({ email: normalizedEmail });
+    const genericResponse = { message: 'If the email exists, password reset instructions will be sent.' };
+
     if (!user) {
-      return res.json({ message: 'If the email exists, password reset instructions will be sent.' });
+      return res.json(genericResponse);
     }
-    const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 60);
-    await ResetToken.create({ user: user._id, token, expiresAt });
-    const resetLink = `${process.env.FRONTEND_URL || req.protocol + '://' + req.get('host')}/reset-password/${token}`;
-    let response = { message: 'If the email exists, password reset instructions will be sent.' };
+
+    const plainToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = hashToken(plainToken);
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    await ResetToken.deleteMany({ user: user._id });
+    await ResetToken.create({ user: user._id, token: hashedToken, expiresAt });
+
+    const frontendBase = (process.env.FRONTEND_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+    const resetLink = `${frontendBase}/reset-password/${plainToken}`;
+    let response = genericResponse;
 
     if (process.env.EMAIL_SERVICE_HOST && process.env.EMAIL_SERVICE_USER && process.env.EMAIL_SERVICE_PASS) {
       try {
@@ -243,12 +255,13 @@ async function forgotPassword(req, res) {
           secure: process.env.EMAIL_SERVICE_SECURE === 'true',
           auth: { user: process.env.EMAIL_SERVICE_USER, pass: process.env.EMAIL_SERVICE_PASS }
         });
+
         await transporter.sendMail({
           from: `"Bal Bodh Sec School" <${process.env.EMAIL_SERVICE_USER}>`,
           to: user.email,
           subject: 'Bal Bodh Sec School Password Recovery',
-          text: `Dear ${user.name || 'Student'},\n\nYou have requested a password reset for your Bal Bodh Sec School account. Please use the link below to set a new password:\n\n${resetLink}\n\nIf you did not request this password reset, please ignore this email or contact the school administrator immediately.\n\nThank you,\nBal Bodh Sec School Support Team`,
-          html: `<p>Dear ${user.name || 'Student'},</p><p>You have requested a password reset for your <strong>Bal Bodh Sec School</strong> account. Please use the link below to set a new password:</p><p><a href="${resetLink}">${resetLink}</a></p><p>If you did not request this password reset, please ignore this email or contact the school administrator immediately.</p><p>Thank you,<br/>Bal Bodh Sec School Support Team</p>`
+          text: `Dear ${user.name || 'Student'},\n\nYou have requested a password reset for your Bal Bodh Sec School account. Please use the link below to set a new password:\n\n${resetLink}\n\nThis link is valid for 15 minutes. If you did not request this password reset, please ignore this email or contact the school administrator immediately.\n\nThank you,\nBal Bodh Sec School Support Team`,
+          html: `<p>Dear ${user.name || 'Student'},</p><p>You have requested a password reset for your <strong>Bal Bodh Sec School</strong> account. Please use the link below to set a new password:</p><p><a href="${resetLink}">${resetLink}</a></p><p>This link is valid for 15 minutes. If you did not request this password reset, please ignore this email or contact the school administrator immediately.</p><p>Thank you,<br/>Bal Bodh Sec School Support Team</p>`
         });
       } catch (sendError) {
         console.error('Failed to send password reset email', sendError);
@@ -269,10 +282,25 @@ async function forgotPassword(req, res) {
       }
     }
 
-    res.json(response);
+    return res.json(response);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error' });
+  }
+}
+
+async function validateResetToken(req, res) {
+  try {
+    const { token } = req.params;
+    const hashedToken = hashToken(String(token || ''));
+    const rt = await ResetToken.findOne({ token: hashedToken });
+    if (!rt || rt.expiresAt < new Date()) {
+      return res.status(400).json({ message: 'Invalid or expired password reset token' });
+    }
+    return res.json({ valid: true, message: 'Password reset token is valid. You may choose a new password.' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
   }
 }
 
@@ -280,18 +308,27 @@ async function resetPassword(req, res) {
   try {
     const { token } = req.params;
     const { password } = req.body;
-    const rt = await ResetToken.findOne({ token });
-    if (!rt || rt.expiresAt < new Date()) return res.status(400).json({ message: 'Invalid or expired token' });
+    const hashedToken = hashToken(String(token || ''));
+
+    const rt = await ResetToken.findOne({ token: hashedToken });
+    if (!rt || rt.expiresAt < new Date()) {
+      return res.status(400).json({ message: 'Invalid or expired password reset token' });
+    }
+
     const user = await User.findById(rt.user).select('+password');
-    if (!user) return res.status(400).json({ message: 'Invalid token' });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired password reset token' });
+    }
+
     user.password = await bcrypt.hash(password, 10);
     await user.save();
     await ResetToken.deleteMany({ user: user._id });
-    res.json({ message: 'Password has been reset' });
+
+    return res.json({ message: 'Your password has been reset successfully. Please log in with your new password.' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error' });
   }
 }
 
-module.exports = { register, createUser, login, updateProfile, refresh, logout, me, forgotPassword, resetPassword };
+module.exports = { register, createUser, login, updateProfile, refresh, logout, me, forgotPassword, validateResetToken, resetPassword };

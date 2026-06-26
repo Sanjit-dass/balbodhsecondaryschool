@@ -69,7 +69,7 @@ import PublicHome from './pages/public/Home';
 import PublicAbout from './pages/public/About';
 import PublicAcademics from './pages/public/Academics';
 import PublicAdmissions from './pages/public/Admissions';
-import PublicFacilities from './pages/public/Facilities';
+import FacilitiesPage from './pages/public/FacilitiesPage';
 import PublicFacilityDetails from './pages/public/FacilityDetails';
 import PublicStudentLife from './pages/public/StudentLife';
 import PublicGallery from './pages/public/Gallery';
@@ -100,7 +100,7 @@ export default function App(){
         <Route path="/academics" element={<PublicLayout><PublicAcademics /></PublicLayout>} />
         <Route path="/academic-excellence" element={<PublicLayout><AcademicExcellence /></PublicLayout>} />
         <Route path="/admissions" element={<PublicLayout><PublicAdmissions /></PublicLayout>} />
-        <Route path="/facilities" element={<PublicLayout><PublicFacilities /></PublicLayout>} />
+        <Route path="/facilities" element={<PublicLayout><FacilitiesPage /></PublicLayout>} />
         <Route path="/facilities/:id" element={<PublicLayout><PublicFacilityDetails /></PublicLayout>} />
         <Route path="/principal-message" element={<PublicLayout><PrincipalMessage /></PublicLayout>} />
         <Route path="/student-achievements" element={<PublicLayout><StudentAchievements /></PublicLayout>} />

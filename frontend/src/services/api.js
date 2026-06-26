@@ -61,7 +61,13 @@ api.interceptors.request.use((config) => {
 
   if (!config.headers?.Authorization) {
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      let token = null;
+      if (typeof window !== 'undefined') {
+        try { token = localStorage.getItem('token'); } catch (e) { token = null; }
+        if (!token) {
+          try { token = sessionStorage.getItem('token'); } catch (e) { token = null; }
+        }
+      }
       if (token) {
         try { console.debug('[Auth][api] attaching token to request (masked): %s', `${token.slice(0,8)}...`); } catch(e){}
         config.headers = {
@@ -70,7 +76,6 @@ api.interceptors.request.use((config) => {
         };
       }
     } catch (e) {
-      // Accessing storage may fail in some environments (incognito, restricted mobile browsers)
       console.warn('[Auth][api] failed to read token from storage during request build', e && e.message);
     }
   }

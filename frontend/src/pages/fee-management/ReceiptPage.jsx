@@ -179,6 +179,38 @@ export default function ReceiptPage(){
   }, [pdf.base64, pdf.url, receipt?.receiptNumber]);
 
   const handlePrint = useCallback(() => {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // Mobile: Use native print dialog or PDF download
+    if (isMobile) {
+      if (pdf.base64 || pdf.url) {
+        // Try native print first if we have PDF content
+        try {
+          const printContent = receiptRef.current?.innerHTML;
+          if (printContent) {
+            // Use system print dialog for rendering
+            window.print();
+            return;
+          }
+        } catch (err) {
+          console.error('Print failed:', err);
+        }
+        // Fallback: Download PDF
+        handleDownloadPdf();
+        return;
+      }
+      
+      // If HTML content available, use native print
+      if (receiptRef.current) {
+        window.print();
+        return;
+      }
+      
+      alert('Receipt is not ready to print.');
+      return;
+    }
+
+    // Desktop: Original logic with window.open() for better control
     if (pdf.base64 && !receiptRef.current) {
       const src = `data:application/pdf;base64,${pdf.base64}`;
       const win = window.open(src, '_blank');
@@ -235,7 +267,7 @@ export default function ReceiptPage(){
     printWindow.onload = () => {
       try { printWindow.print(); } catch (err) { console.error(err); }
     };
-  }, [pdf.base64, pdf.url]);
+  }, [pdf.base64, pdf.url, handleDownloadPdf]);
 
   // auto-print when requested
   useEffect(() => {
@@ -300,8 +332,8 @@ export default function ReceiptPage(){
   if (!receipt) return <div className="p-6 text-center text-slate-500">Receipt preview is not available.</div>;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="no-print flex flex-wrap items-center justify-end gap-3 mb-4">
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto">
+      <div className="no-print flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 mb-4">
         <button
           onClick={() => {
             if (backPath) {
@@ -310,12 +342,16 @@ export default function ReceiptPage(){
             }
             return navigate(-1);
           }}
-          className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-slate-700 font-semibold hover:bg-slate-50 transition"
+          className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm sm:text-base text-slate-700 font-semibold hover:bg-slate-50 transition"
         >
           Back
         </button>
-        <button onClick={handlePrint} className="rounded-2xl bg-indigo-600 px-4 py-2 text-white font-semibold">Print Receipt</button>
-        <button onClick={handleDownloadPdf} className="no-print rounded-2xl border border-slate-200 bg-white px-4 py-2 text-slate-700 font-semibold">Download PDF</button>
+        <button onClick={handlePrint} className="rounded-2xl bg-indigo-600 px-4 py-2 text-sm sm:text-base text-white font-semibold hover:bg-indigo-700 transition">
+          Print Receipt
+        </button>
+        <button onClick={handleDownloadPdf} className="no-print rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm sm:text-base text-slate-700 font-semibold hover:bg-slate-50 transition">
+          Download PDF
+        </button>
       </div>
 
       {pdf.base64 ? (

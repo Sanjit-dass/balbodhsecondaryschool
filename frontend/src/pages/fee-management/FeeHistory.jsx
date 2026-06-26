@@ -66,6 +66,21 @@ export default function FeeHistory() {
     }
   };
 
+  const viewReceipt = (payment) => {
+    const receiptId = payment.receiptId || payment.paymentId || payment.id || payment._id || payment.receiptNumber;
+    if (!receiptId) {
+      return alert('Receipt id missing');
+    }
+    // Navigate to receipt page with state - this preserves auth
+    navigate(`/fee-management/receipt/${encodeURIComponent(receiptId)}`, {
+      state: {
+        receipt: payment.receipt || payment,
+        payment,
+        from: '/fee-management/history'
+      }
+    });
+  };
+
   const viewStudentReceipts = (student) => {
     const studentId = student?.studentId || student?._id;
     if (!studentId) return alert('Student id missing');
@@ -79,23 +94,67 @@ export default function FeeHistory() {
   };
 
   const printReceipt = (payment) => {
-    const url = payment.receiptUrl || payment.pdfUrl;
-    if (url) {
-      const win = window.open(url, '_blank');
-      if (!win) return alert('Allow popups to print the receipt.');
-      return;
-    }
+    const receiptId = payment.receiptId || payment.paymentId || payment.id || payment._id || payment.receiptNumber;
+    
+    // Try to use pdfBase64 or receiptUrl first
     if (payment.pdfBase64) {
-      const src = `data:application/pdf;base64,${payment.pdfBase64}`;
-      const win = window.open(src, '_blank');
-      if (!win) return alert('Allow popups to print the receipt.');
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // Mobile: Download directly to avoid session loss
+        const byteChars = atob(payment.pdfBase64);
+        const byteNumbers = new Array(byteChars.length);
+        for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${payment.receiptNumber || 'receipt'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return;
+      } else {
+        // Desktop: Open in new tab
+        const src = `data:application/pdf;base64,${payment.pdfBase64}`;
+        const win = window.open(src, '_blank');
+        if (!win) return alert('Allow popups to print the receipt.');
+        return;
+      }
+    }
+    
+    if (payment.receiptUrl) {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile) {
+        // Mobile: Download instead of open in new tab
+        const a = document.createElement('a');
+        a.href = payment.receiptUrl;
+        a.download = `${payment.receiptNumber || 'receipt'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        return;
+      } else {
+        const win = window.open(payment.receiptUrl, '_blank');
+        if (!win) return alert('Allow popups to print the receipt.');
+        return;
+      }
+    }
+    
+    // Fallback: Navigate to receipt view page (preserves auth)
+    if (receiptId) {
+      navigate(`/fee-management/receipt/${encodeURIComponent(receiptId)}`, {
+        state: {
+          receipt: payment.receipt || payment,
+          payment,
+          print: true
+        }
+      });
       return;
     }
-    const id = payment.receiptId || payment.paymentId || payment.id || payment._id || payment.receiptNumber;
-    if (id) {
-      navigate(`/fee-management/receipt/${encodeURIComponent(id)}`);
-      return;
-    }
+    
     alert('Receipt preview is not available for this payment.');
   };
 

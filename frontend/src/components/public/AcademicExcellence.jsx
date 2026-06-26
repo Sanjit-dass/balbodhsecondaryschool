@@ -37,11 +37,11 @@ export default function AcademicExcellence() {
   const selectedAchievement = achievements.find((a) => String(a._id || a.id) === String(selected));
 
   return (
-    <section className="py-12 md:py-20 bg-white">
-      <div className="max-w-[1600px] mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Academic Excellence</h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">Celebrating outstanding achievements and consistent performance</p>
+    <section className="py-12 md:py-16 lg:py-20 bg-white">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-6">
+        <div className="text-center mb-8 md:mb-12">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 md:mb-4">Academic Excellence</h2>
+          <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-2">Celebrating outstanding achievements and consistent performance</p>
         </div>
 
         {loading ? (
@@ -194,27 +194,27 @@ function AchievementSlider({ achievements, onSelect }) {
       <button
         onClick={handlePrev}
         disabled={currentIndex === 0}
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 -translate-x-4 p-4 bg-white/95 backdrop-blur-sm rounded-full shadow-2xl hover:bg-white hover:shadow-indigo-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110"
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 -translate-x-2 md:-translate-x-4 p-3 md:p-4 bg-white/95 backdrop-blur-sm rounded-full shadow-2xl hover:bg-white hover:shadow-indigo-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 hidden sm:block"
       >
-        <FaChevronLeft className="text-gray-800 text-xl" />
+        <FaChevronLeft className="text-gray-800 text-lg md:text-xl" />
       </button>
 
       <button
         onClick={handleNext}
         disabled={currentIndex >= maxIndex}
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 translate-x-4 p-4 bg-white/95 backdrop-blur-sm rounded-full shadow-2xl hover:bg-white hover:shadow-indigo-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110"
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 translate-x-2 md:translate-x-4 p-3 md:p-4 bg-white/95 backdrop-blur-sm rounded-full shadow-2xl hover:bg-white hover:shadow-indigo-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 hover:scale-110 hidden sm:block"
       >
-        <FaChevronRight className="text-gray-800 text-xl" />
+        <FaChevronRight className="text-gray-800 text-lg md:text-xl" />
       </button>
 
       {/* Slider Container */}
       <div
         ref={sliderRef}
-        className="flex gap-8 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing scroll-smooth"
-        style={{ 
+        className="flex gap-4 md:gap-8 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing scroll-smooth"
+        style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
-          padding: '1.5rem 0'
+          padding: '1rem 0'
         }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -229,7 +229,7 @@ function AchievementSlider({ achievements, onSelect }) {
             className="flex-shrink-0"
             style={{ flex: `0 0 ${100 / cardsPerView}%` }}
           >
-            <div style={{ paddingRight: 8 }}>
+            <div style={{ paddingRight: 4 }}>
               <AchievementCard achievement={achievement} onClick={() => onSelect(achievement._id)} />
             </div>
           </div>
@@ -237,7 +237,7 @@ function AchievementSlider({ achievements, onSelect }) {
       </div>
 
       {/* Premium Dots Indicator */}
-      <div className="flex justify-center gap-3 mt-8">
+      <div className="flex justify-center gap-2 md:gap-3 mt-6 md:mt-8">
         {achievements.map((_, idx) => (
           <button
             key={idx}
@@ -247,8 +247,8 @@ function AchievementSlider({ achievements, onSelect }) {
               setTimeout(() => setAutoScroll(true), 5000);
             }}
             className={`h-2 rounded-full transition-all duration-300 ${
-              idx === currentIndex 
-                ? 'w-8 bg-indigo-600 shadow-lg shadow-indigo-200' 
+              idx === currentIndex
+                ? 'w-6 md:w-8 bg-indigo-600 shadow-lg shadow-indigo-200'
                 : 'w-2 bg-gray-300 hover:bg-gray-400'
             }`}
           />
@@ -268,11 +268,11 @@ function AchievementCard({ achievement, onClick }) {
   return (
     <motion.div
       whileHover={{ y: -12, scale: 1.03 }}
-      className="group relative bg-white rounded-3xl shadow-xl hover:shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 h-full"
+      className="group relative bg-white rounded-2xl md:rounded-3xl shadow-xl hover:shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 h-full"
       onClick={onClick}
     >
       {/* Cover Photo with Premium Overlay */}
-          <div className="relative h-72 md:h-80 lg:h-96 overflow-hidden">
+          <div className="relative h-48 md:h-64 lg:h-72 xl:h-80 lg:h-96 overflow-hidden">
         {imageUrl ? (
           <>
             <img
@@ -287,24 +287,24 @@ function AchievementCard({ achievement, onClick }) {
           </>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center">
-            <span className="text-white text-6xl font-bold tracking-wider">{achievement.title?.charAt(0) || 'A'}</span>
+            <span className="text-white text-4xl md:text-5xl lg:text-6xl font-bold tracking-wider">{achievement.title?.charAt(0) || 'A'}</span>
           </div>
         )}
-        
+
         {/* Floating Badge */}
-        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg">
-          <span className="text-xs font-semibold text-gray-800">
+        <div className="absolute top-3 right-3 md:top-4 md:right-4 bg-white/90 backdrop-blur-sm px-2 py-1 md:px-3 md:py-1.5 rounded-full shadow-lg">
+          <span className="text-[10px] md:text-xs font-semibold text-gray-800">
             {achievement.category || 'Academic'}
           </span>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-8">
-        <h3 className="text-2xl font-bold text-gray-900 mb-4 line-clamp-2 group-hover:text-blue-600 transition-colors">
+      <div className="p-4 md:p-6 lg:p-8">
+        <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 mb-2 md:mb-4 line-clamp-2 group-hover:text-blue-600 transition-colors">
           {achievement.title}
         </h3>
-        <p className="text-gray-600 text-base mb-6 line-clamp-3 leading-relaxed">
+        <p className="text-gray-600 text-sm md:text-base mb-4 md:mb-6 line-clamp-3 leading-relaxed">
           {achievement.description}
         </p>
 
@@ -388,21 +388,21 @@ function AchievementModal({ achievement, onClose }) {
   const currentPhoto = photos[currentPhotoIndex];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-4">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[90vh]"
+        className="relative w-full max-w-6xl bg-white rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden max-h-[95vh] md:max-h-[90vh]"
       >
         {/* Premium Header */}
-        <div className="flex items-center justify-between p-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-indigo-100">
-          <div>
-            <h3 className="text-2xl font-bold text-gray-900">{achievement.title}</h3>
-            <p className="text-sm text-gray-600 mt-1 flex items-center gap-2">
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
+        <div className="flex items-center justify-between p-4 md:p-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-indigo-100">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg md:text-2xl font-bold text-gray-900 truncate">{achievement.title}</h3>
+            <p className="text-xs md:text-sm text-gray-600 mt-1 flex items-center gap-2">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-[10px] md:text-xs font-semibold">
                 {achievement.category || 'Academic'}
               </span>
               <span>•</span>
@@ -411,15 +411,15 @@ function AchievementModal({ achievement, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="p-3 hover:bg-white/80 rounded-full transition-all duration-300 hover:rotate-90"
+            className="p-2 md:p-3 hover:bg-white/80 rounded-full transition-all duration-300 hover:rotate-90 flex-shrink-0 ml-2"
           >
-            <FaTimes className="text-gray-600 text-xl" />
+            <FaTimes className="text-gray-600 text-lg md:text-xl" />
           </button>
         </div>
 
-        <div className="flex flex-col lg:flex-row max-h-[calc(90vh-100px)]">
+        <div className="flex flex-col lg:flex-row max-h-[calc(95vh-80px)] md:max-h-[calc(90vh-100px)]">
           {/* Premium Photo Gallery */}
-          <div className="lg:w-2/3 bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-6">
+          <div className="lg:w-2/3 bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4 md:p-6">
             {photos.length > 0 ? (
               <div className="relative w-full h-full flex items-center justify-center">
                 <div className="relative">
@@ -429,12 +429,12 @@ function AchievementModal({ achievement, onClose }) {
                     loading="lazy"
                     decoding="async"
                     style={{ willChange: 'transform', transform: 'translateZ(0)' }}
-                    className="max-w-full max-h-[60vh] object-contain object-center rounded-xl shadow-2xl"
+                    className="max-w-full max-h-[50vh] md:max-h-[60vh] object-contain object-center rounded-xl shadow-2xl"
                   />
                   {/* Photo Caption */}
                   {currentPhoto?.caption && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 rounded-b-xl">
-                      <p className="text-white text-sm">{currentPhoto.caption}</p>
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 md:p-4 rounded-b-xl">
+                      <p className="text-white text-xs md:text-sm">{currentPhoto.caption}</p>
                     </div>
                   )}
                 </div>
@@ -444,15 +444,15 @@ function AchievementModal({ achievement, onClose }) {
                   <>
                     <button
                       onClick={handlePrev}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 p-4 bg-white/95 hover:bg-white rounded-full shadow-xl transition-all duration-300 hover:scale-110"
+                      className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-2 md:p-4 bg-white/95 hover:bg-white rounded-full shadow-xl transition-all duration-300 hover:scale-110"
                     >
-                      <FaChevronLeft className="text-gray-800 text-xl" />
+                      <FaChevronLeft className="text-gray-800 text-lg md:text-xl" />
                     </button>
                     <button
                       onClick={handleNext}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-white/95 hover:bg-white rounded-full shadow-xl transition-all duration-300 hover:scale-110"
+                      className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-2 md:p-4 bg-white/95 hover:bg-white rounded-full shadow-xl transition-all duration-300 hover:scale-110"
                     >
-                      <FaChevronRight className="text-gray-800 text-xl" />
+                      <FaChevronRight className="text-gray-800 text-lg md:text-xl" />
                     </button>
                   </>
                 )}
@@ -461,56 +461,56 @@ function AchievementModal({ achievement, onClose }) {
                 {photos.length > 1 && (
                   <button
                     onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-                    className={`absolute bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full shadow-xl text-sm font-semibold transition-all duration-300 ${
-                      isAutoPlaying 
-                        ? 'bg-indigo-600 text-white hover:bg-indigo-700' 
+                    className={`absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 md:px-6 md:py-3 rounded-full shadow-xl text-xs md:text-sm font-semibold transition-all duration-300 ${
+                      isAutoPlaying
+                        ? 'bg-indigo-600 text-white hover:bg-indigo-700'
                         : 'bg-white text-gray-800 hover:bg-gray-100'
                     }`}
                   >
-                    {isAutoPlaying ? '⏸ Pause Slideshow' : '▶ Start Slideshow'}
+                    {isAutoPlaying ? '⏸ Pause' : '▶ Play'}
                   </button>
                 )}
               </div>
             ) : (
               <div className="text-gray-400 text-center">
-                <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gray-700 flex items-center justify-center">
-                  <span className="text-4xl">📷</span>
+                <div className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-3 md:mb-4 rounded-full bg-gray-700 flex items-center justify-center">
+                  <span className="text-2xl md:text-4xl">📷</span>
                 </div>
-                <p className="text-lg">No photos available</p>
+                <p className="text-sm md:text-lg">No photos available</p>
               </div>
             )}
           </div>
 
           {/* Premium Details Panel */}
-          <div className="lg:w-1/3 p-6 overflow-y-auto bg-white">
+          <div className="lg:w-1/3 p-4 md:p-6 overflow-y-auto bg-white max-h-[40vh] lg:max-h-none">
             {/* About Section */}
-            <div className="mb-6">
-              <h4 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <span className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                  <span className="text-indigo-600">ℹ</span>
+            <div className="mb-4 md:mb-6">
+              <h4 className="text-base md:text-lg font-bold text-gray-900 mb-2 md:mb-3 flex items-center gap-2">
+                <span className="w-6 h-6 md:w-8 md:h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                  <span className="text-indigo-600 text-sm md:text-base">ℹ</span>
                 </span>
                 About
               </h4>
-              <p className="text-gray-600 leading-relaxed">{achievement.description}</p>
+              <p className="text-sm md:text-base text-gray-600 leading-relaxed">{achievement.description}</p>
             </div>
 
             {/* Statistics Section */}
             {achievement.statistics && achievement.statistics.length > 0 && (
-              <div className="mb-6">
-                <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                    <span className="text-indigo-600">📊</span>
+              <div className="mb-4 md:mb-6">
+                <h4 className="text-base md:text-lg font-bold text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
+                  <span className="w-6 h-6 md:w-8 md:h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <span className="text-indigo-600 text-sm md:text-base">📊</span>
                   </span>
                   Statistics
                 </h4>
-                <div className="space-y-3">
+                <div className="space-y-2 md:space-y-3">
                   {achievement.statistics.map((stat, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100 hover:shadow-md transition-all duration-300"
+                      className="flex items-center justify-between p-3 md:p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100 hover:shadow-md transition-all duration-300"
                     >
-                      <span className="text-sm font-medium text-gray-700">{stat.label}</span>
-                      <span className="text-lg font-bold text-indigo-600">{stat.value}</span>
+                      <span className="text-xs md:text-sm font-medium text-gray-700">{stat.label}</span>
+                      <span className="text-sm md:text-lg font-bold text-indigo-600">{stat.value}</span>
                     </div>
                   ))}
                 </div>
@@ -520,20 +520,20 @@ function AchievementModal({ achievement, onClose }) {
             {/* Premium Thumbnail Strip */}
             {photos.length > 1 && (
               <div>
-                <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                    <span className="text-indigo-600">🖼</span>
+                <h4 className="text-base md:text-lg font-bold text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
+                  <span className="w-6 h-6 md:w-8 md:h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <span className="text-indigo-600 text-sm md:text-base">🖼</span>
                   </span>
                   All Photos
                 </h4>
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-4 gap-2 md:gap-3">
                   {photos.map((photo, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCurrentPhotoIndex(idx)}
-                      className={`aspect-square rounded-xl overflow-hidden border-2 transition-all duration-300 hover:scale-105 ${
+                      className={`aspect-square rounded-lg md:rounded-xl overflow-hidden border-2 transition-all duration-300 hover:scale-105 ${
                         idx === currentPhotoIndex
-                          ? 'border-indigo-500 ring-4 ring-indigo-200 shadow-lg'
+                          ? 'border-indigo-500 ring-2 md:ring-4 ring-indigo-200 shadow-lg'
                           : 'border-gray-200 hover:border-indigo-300'
                       }`}
                     >

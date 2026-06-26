@@ -59,18 +59,33 @@ const Staff = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="bg-gradient-to-r from-blue-900 to-blue-700 text-white py-16 md:py-24"
+        className="text-white py-16 md:py-24"
+        style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}
       >
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">{t('staffTitle')}</h1>
-          <p className="text-lg text-white/90">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-white"
+          >
+            {t('staffTitle')}
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-lg md:text-xl text-white/90"
+          >
             {t('staffSubtitle')}
-          </p>
+          </motion.p>
         </div>
       </motion.section>
 
       {/* Staff Stats - attractive design with white text */}
-      <section className="py-6 md:py-8 bg-gradient-to-r from-blue-800 to-blue-700 text-white">
+      <section className="py-6 md:py-8 text-white"
+        style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}
+      >
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center max-w-3xl mx-auto">
             {[
@@ -83,10 +98,13 @@ const Staff = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, delay: index * 0.06 }}
                 viewport={{ once: true }}
-                className="flex items-center gap-4 bg-white/06 backdrop-blur-sm rounded-xl p-5 md:p-6 shadow-md border border-white/10"
+                className="flex items-center gap-4 rounded-xl p-5 md:p-6 shadow-xl"
+                style={{ backgroundColor: `${COLORS.white}10`, backdropFilter: 'blur(10px)', border: `1px solid ${COLORS.white}20` }}
               >
                 <div className="flex-none">
-                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-lg bg-white/10 flex items-center justify-center">
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: `${COLORS.white}20` }}
+                  >
                     <p className="text-2xl md:text-3xl font-extrabold text-white">{stat.value}</p>
                   </div>
                 </div>
@@ -101,7 +119,7 @@ const Staff = () => {
       </section>
 
       {/* Faculty Members (moved up immediately after stats) */}
-      <section className="py-6 md:py-8 bg-gray-50">
+      <section className="py-6 md:py-8" style={{ backgroundColor: COLORS.gray }}>
         <div className="max-w-7xl mx-auto px-4">
           <SectionTitle
             title="Faculty Members"
@@ -111,13 +129,14 @@ const Staff = () => {
           {/* Search bar placed at top of Faculty Members */}
           <div className="max-w-3xl mx-auto mb-6">
             <div className="relative">
-              <FaSearch className="absolute left-4 top-3.5 text-gray-400" />
+              <FaSearch className="absolute left-4 top-3.5" style={{ color: COLORS.slate }} />
               <input
                 type="text"
                 placeholder={t('search')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+                className="w-full pl-12 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 bg-white shadow-sm transition-all duration-300"
+                style={{ borderColor: COLORS.lightGray, '--tw-ring-color': COLORS.secondary }}
               />
             </div>
           </div>
@@ -140,7 +159,7 @@ const Staff = () => {
             </div>
           ) : (
             <div className="text-center">
-              <p className="text-xl text-gray-600">No staff members found matching your search.</p>
+              <p className="text-xl" style={{ color: COLORS.slate }}>No staff members found matching your search.</p>
             </div>
           )}
         </div>
@@ -156,7 +175,9 @@ const Staff = () => {
       ) : null}
 
       {/* Contact Staff CTA */}
-      <section className="py-16 md:py-24 bg-gradient-to-r from-blue-900 to-blue-700 text-white">
+      <section className="py-16 md:py-24 text-white"
+        style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}
+      >
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -164,16 +185,28 @@ const Staff = () => {
           viewport={{ once: true }}
           className="max-w-7xl mx-auto px-4 text-center"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            viewport={{ once: true }}
+            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
+          >
             Want to Reach Out?
-          </h2>
-          <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            viewport={{ once: true }}
+            className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto"
+          >
             Contact us for any inquiries or to schedule a meeting with our staff
-          </p>
+          </motion.p>
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-8 py-4 rounded-lg font-bold text-white transition-all text-lg"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="px-8 py-4 rounded-xl font-bold transition-all text-lg shadow-xl hover:shadow-2xl"
             style={{ backgroundColor: COLORS.accent, color: '#000' }}
             onClick={() => { navigate('/contact?focus=phone'); }}
             aria-label="Open contact form"

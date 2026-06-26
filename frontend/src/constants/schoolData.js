@@ -18,13 +18,32 @@ export const SCHOOL_INFO = {
 };
 
 export const COLORS = {
-  primary: '#0F4C81',
-  secondary: '#1E88E5',
-  accent: '#FFC107',
+  // Premium Navy Blue - Primary brand color for trust and professionalism
+  primary: '#1E3A8A',
+  // Royal Blue - Secondary for accents and highlights
+  secondary: '#3B82F6',
+  // Premium Gold - Accent for CTAs and highlights
+  accent: '#D4AF37',
+  // Light Gold - Secondary accent
+  accentLight: '#F59E0B',
+  // White - Clean backgrounds
   white: '#FFFFFF',
-  dark: '#1A1A1A',
-  gray: '#F5F5F5',
-  lightGray: '#E0E0E0',
+  // Slate Dark - Text and UI elements
+  dark: '#1E293B',
+  // Slate - Secondary text
+  slate: '#64748B',
+  // Light Gray - Backgrounds
+  gray: '#F8FAFC',
+  // Light Gray - Borders
+  lightGray: '#E2E8F0',
+  // Success Green
+  success: '#10B981',
+  // Warning Orange
+  warning: '#F97316',
+  // Error Red
+  error: '#EF4444',
+  // Info Blue
+  info: '#0EA5E9',
 };
 
 export const STATISTICS = [

@@ -48,31 +48,31 @@ export default function AssignmentForm({ existing, onSaved }){
   };
 
   return (
-    <form onSubmit={submit} className="bg-white p-4 shadow rounded mb-4">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <input placeholder="Title" value={form.title} onChange={e=>setForm({...form,title:e.target.value})} className="p-2 border" />
-        <input placeholder="Class" value={form.class} onChange={e=>setForm({...form,class:e.target.value})} className="p-2 border" />
-        <input type="date" value={form.dueDate} onChange={e=>setForm({...form,dueDate:e.target.value})} className="p-2 border" />
-        <textarea placeholder="Description" value={form.description} onChange={e=>setForm({...form,description:e.target.value})} className="p-2 border" rows="3" />
-        <input placeholder="Total Marks" type="number" value={form.totalMarks} onChange={e=>setForm({...form,totalMarks:e.target.value})} className="p-2 border" />
+    <form onSubmit={submit} className="bg-white p-4 md:p-5 lg:p-6 shadow rounded-xl md:rounded-2xl mb-4 md:mb-6">
+      <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2">
+        <input placeholder="Title" value={form.title} onChange={e=>setForm({...form,title:e.target.value})} className="p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
+        <input placeholder="Class" value={form.class} onChange={e=>setForm({...form,class:e.target.value})} className="p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
+        <input type="date" value={form.dueDate} onChange={e=>setForm({...form,dueDate:e.target.value})} className="p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
+        <textarea placeholder="Description" value={form.description} onChange={e=>setForm({...form,description:e.target.value})} className="p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" rows="3" />
+        <input placeholder="Total Marks" type="number" value={form.totalMarks} onChange={e=>setForm({...form,totalMarks:e.target.value})} className="p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
       </div>
-      <div className="mt-3">
-        <label className="block text-sm text-slate-600 mb-2">Attachments</label>
+      <div className="mt-4 md:mt-5">
+        <label className="block text-xs md:text-sm text-slate-600 font-medium mb-2">Attachments</label>
         <FileUploader folder="assignments" accept="image/*,application/pdf,.doc,.docx" onUploaded={(data)=>{ setAttachments(a=>[...a, { fileUrl: data.fileUrl || data.url || data.fileUrl, publicId: data.publicId, fileName: data.originalName || data.fileName }]); }} />
-        <div className="mt-2 space-y-2">
+        <div className="mt-2 md:mt-3 space-y-2">
           {attachments.map((a,i)=>(
             <div key={i}>
-              <div className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                  <a href={getInlineViewUrl(a.fileUrl || a.url)} target="_blank" rel="noreferrer" className="text-sm text-blue-600">{a.fileName || a.fileUrl?.split('/').pop() || a.url?.split('/').pop() || a.publicId}</a>
-                <button type="button" onClick={()=>setAttachments(at=>at.filter((_,idx)=>idx!==i))} className="text-sm text-red-600">Remove</button>
+              <div className="flex items-center justify-between bg-gray-50 p-2 md:p-3 rounded-lg">
+                  <a href={getInlineViewUrl(a.fileUrl || a.url)} target="_blank" rel="noreferrer" className="text-xs md:text-sm text-blue-600 truncate">{a.fileName || a.fileUrl?.split('/').pop() || a.url?.split('/').pop() || a.publicId}</a>
+                <button type="button" onClick={()=>setAttachments(at=>at.filter((_,idx)=>idx!==i))} className="text-xs md:text-sm text-red-600 font-medium">Remove</button>
               </div>
               <PDFViewer fileUrl={a.fileUrl || a.url} fileName={a.fileName} />
             </div>
           ))}
         </div>
-        <div className="mt-3">
-          <button type="submit" disabled={saving} className="p-2 bg-green-600 text-white rounded disabled:opacity-50">{saving ? 'Saving...' : 'Save Assignment'}</button>
-          {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
+        <div className="mt-3 md:mt-4">
+          <button type="submit" disabled={saving} className="w-full px-4 md:px-6 py-2.5 md:py-3 bg-green-600 hover:bg-green-700 text-white text-xs md:text-sm font-medium rounded-lg disabled:opacity-50 transition">{saving ? 'Saving...' : 'Save Assignment'}</button>
+          {error && <div className="mt-2 text-xs md:text-sm text-red-600">{error}</div>}
         </div>
       </div>
     </form>

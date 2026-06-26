@@ -15,10 +15,9 @@ export const LanguageProvider = ({ children }) => {
 
   const [isMobile, setIsMobile] = useState(initialIsMobile);
   const [language, setLanguage] = useState(() => {
-    // On initial load, prefer saved setting but ensure mobile always starts in English
+    // On initial load, prefer saved setting
     if (!isBrowser) return 'en';
     const saved = localStorage.getItem('appLanguage');
-    if (initialIsMobile) return 'en';
     return (saved === 'ne' || saved === 'en') ? saved : 'en';
   });
 
@@ -28,10 +27,6 @@ export const LanguageProvider = ({ children }) => {
     const onResize = () => {
       const mobile = window.innerWidth <= 768 || /Mobi|Android|iPhone|iPad|Phone/i.test(navigator.userAgent);
       setIsMobile(mobile);
-      // If device became mobile, force English
-      if (mobile && language !== 'en') {
-        setLanguage('en');
-      }
     };
     window.addEventListener('resize', onResize);
     window.addEventListener('orientationchange', onResize);
@@ -42,13 +37,9 @@ export const LanguageProvider = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Change language and persist to localStorage. On mobile, Nepali is disabled.
+  // Change language and persist to localStorage
   const changeLanguage = (lang) => {
     if (!['en', 'ne'].includes(lang)) return;
-    if (isMobile && lang === 'ne') {
-      // Do not allow Nepali on mobile devices
-      return;
-    }
     setLanguage(lang);
     try { localStorage.setItem('appLanguage', lang); } catch (e) {}
   };

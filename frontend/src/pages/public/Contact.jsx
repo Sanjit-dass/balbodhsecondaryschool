@@ -222,13 +222,26 @@ const Contact = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="bg-gradient-to-r from-blue-900 to-blue-700 text-white py-16 md:py-24"
+        className="text-white py-16 md:py-24"
+        style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}
       >
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Contact Us</h1>
-          <p className="text-lg text-blue-100">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
+          >
+            Contact Us
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-lg md:text-xl text-white/90"
+          >
             We'd love to hear from you. Get in touch with us today
-          </p>
+          </motion.p>
         </div>
       </motion.section>
 
@@ -251,19 +264,20 @@ const Contact = () => {
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
                   whileHover={{ y: -10 }}
-                  className="bg-gradient-to-br from-blue-50 to-gray-50 rounded-lg p-8 shadow-lg hover:shadow-xl transition-all text-center"
+                  className="rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all text-center"
+                  style={{ background: `linear-gradient(135deg, ${COLORS.gray}, white)` }}
                 >
                   <div className="flex justify-center mb-4">
                     <div
-                      className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl"
+                      className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl shadow-lg hover:shadow-xl transition-all duration-300"
                       style={{ backgroundColor: COLORS.secondary }}
                     >
                       <Icon />
                     </div>
                   </div>
-                  <h3 className="font-bold text-gray-900 mb-2">{method.title}</h3>
-                  <p className="text-gray-600 font-semibold mb-1">{method.value}</p>
-                  <p className="text-gray-500 text-sm">{method.subtext}</p>
+                  <h3 className="font-bold mb-2" style={{ color: COLORS.dark }}>{method.title}</h3>
+                  <p className="font-semibold mb-1" style={{ color: COLORS.dark }}>{method.value}</p>
+                  <p className="text-sm" style={{ color: COLORS.slate }}>{method.subtext}</p>
                 </motion.div>
               );
             })}
@@ -272,7 +286,7 @@ const Contact = () => {
       </section>
 
       {/* Contact Form & Map */}
-      <section className="py-16 md:py-24 bg-gray-50">
+      <section className="py-16 md:py-24" style={{ backgroundColor: COLORS.gray }}>
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Contact Form */}
@@ -282,7 +296,7 @@ const Contact = () => {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl font-bold text-gray-900 mb-8">Send us a Message</h2>
+              <h2 className="text-3xl font-bold mb-8" style={{ color: COLORS.dark }}>Send us a Message</h2>
 
               <form id="contact-form" onSubmit={handleSubmit} className="space-y-6">
                 {/* Name */}
@@ -292,7 +306,7 @@ const Contact = () => {
                   transition={{ duration: 0.4 }}
                   viewport={{ once: true }}
                 >
-                  <label className="block text-gray-700 font-semibold mb-2">
+                  <label className="block font-semibold mb-2" style={{ color: COLORS.dark }}>
                     Full Name *
                   </label>
                   <input
@@ -301,8 +315,8 @@ const Contact = () => {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
-                    style={{ '--tw-ring-color': COLORS.secondary }}
+                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-300"
+                    style={{ borderColor: COLORS.lightGray, '--tw-ring-color': COLORS.secondary }}
                   />
                 </motion.div>
 
@@ -314,7 +328,7 @@ const Contact = () => {
                     transition={{ duration: 0.4, delay: 0.1 }}
                     viewport={{ once: true }}
                   >
-                    <label className="block text-gray-700 font-semibold mb-2">
+                    <label className="block font-semibold mb-2" style={{ color: COLORS.dark }}>
                       Email *
                     </label>
                     <input
@@ -323,8 +337,8 @@ const Contact = () => {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
-                      style={{ '--tw-ring-color': COLORS.secondary }}
+                      className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-300"
+                      style={{ borderColor: COLORS.lightGray, '--tw-ring-color': COLORS.secondary }}
                     />
                   </motion.div>
 
@@ -334,7 +348,7 @@ const Contact = () => {
                     transition={{ duration: 0.4, delay: 0.2 }}
                     viewport={{ once: true }}
                   >
-                    <label className="block text-gray-700 font-semibold mb-2">
+                    <label className="block font-semibold mb-2" style={{ color: COLORS.dark }}>
                       Phone
                     </label>
                     <input
@@ -342,8 +356,8 @@ const Contact = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
-                      style={{ '--tw-ring-color': COLORS.secondary }}
+                      className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-300"
+                      style={{ borderColor: COLORS.lightGray, '--tw-ring-color': COLORS.secondary }}
                     />
                   </motion.div>
                 </div>
@@ -355,7 +369,7 @@ const Contact = () => {
                   transition={{ duration: 0.4, delay: 0.3 }}
                   viewport={{ once: true }}
                 >
-                  <label className="block text-gray-700 font-semibold mb-2">
+                  <label className="block font-semibold mb-2" style={{ color: COLORS.dark }}>
                     Subject *
                   </label>
                   <select
@@ -363,8 +377,8 @@ const Contact = () => {
                     value={formData.subject}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2"
-                    style={{ '--tw-ring-color': COLORS.secondary }}
+                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all duration-300"
+                    style={{ borderColor: COLORS.lightGray, '--tw-ring-color': COLORS.secondary }}
                   >
                     <option value="">Select a subject</option>
                     <option value="admission">Admission Inquiry</option>
@@ -382,7 +396,7 @@ const Contact = () => {
                   transition={{ duration: 0.4, delay: 0.4 }}
                   viewport={{ once: true }}
                 >
-                  <label className="block text-gray-700 font-semibold mb-2">
+                  <label className="block font-semibold mb-2" style={{ color: COLORS.dark }}>
                     Message *
                   </label>
                   <textarea
@@ -391,14 +405,20 @@ const Contact = () => {
                     onChange={handleChange}
                     required
                     rows="5"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 resize-none"
-                    style={{ '--tw-ring-color': COLORS.secondary }}
+                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 resize-none transition-all duration-300"
+                    style={{ borderColor: COLORS.lightGray, '--tw-ring-color': COLORS.secondary }}
                   ></textarea>
                 </motion.div>
 
                 {/* Submit Button */}
                 {submissionStatus ? (
-                  <div className={`rounded-lg p-4 text-sm font-semibold ${submissionStatus.type === 'success' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                  <div className="rounded-xl p-4 text-sm font-semibold shadow-lg"
+                    style={{ 
+                      backgroundColor: submissionStatus.type === 'success' ? `${COLORS.success}10` : `${COLORS.error}10`,
+                      color: submissionStatus.type === 'success' ? COLORS.success : COLORS.error,
+                      border: `1px solid ${submissionStatus.type === 'success' ? COLORS.success : COLORS.error}`
+                    }}
+                  >
                     {submissionStatus.message}
                   </div>
                 ) : null}
@@ -419,16 +439,16 @@ const Contact = () => {
                   </div>
                 ) : null}
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-3 rounded-lg font-bold text-white transition-all text-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full py-3.5 rounded-xl font-bold text-white transition-all text-lg disabled:opacity-60 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                   style={{ backgroundColor: COLORS.secondary }}
                 >
                   {submitting ? 'Sending...' : 'Send Message'}
                 </motion.button>
-                <button type="button" onClick={runDiagnostics} className="mt-3 w-full py-2 rounded-lg bg-white text-sm font-semibold text-slate-800">Test API connectivity</button>
+                
               </form>
             </motion.div>
 
@@ -441,11 +461,11 @@ const Contact = () => {
               className="space-y-8"
             >
               {/* Map Embed */}
-              <div className="rounded-lg overflow-hidden shadow-lg bg-white w-full">
+              <div className="rounded-2xl overflow-hidden shadow-2xl bg-white w-full">
                 {/* Map header */}
-                <div className="p-6 border-b bg-gradient-to-r from-blue-50 to-white">
-                  <h3 className="text-2xl font-bold text-gray-900">Our Location</h3>
-                  <p className="text-sm text-gray-600">Bal Bodh Secondary School<br/>Kanchanpur, Saptari, Nepal</p>
+                <div className="p-6 border-b" style={{ background: `linear-gradient(to right, ${COLORS.gray}, white)`, borderColor: COLORS.lightGray }}>
+                  <h3 className="text-2xl font-bold" style={{ color: COLORS.dark }}>Our Location</h3>
+                  <p className="text-sm" style={{ color: COLORS.slate }}>Bal Bodh Secondary School<br/>Kanchanpur, Saptari, Nepal</p>
                 </div>
 
                 {/* Map iframe and actions */}
@@ -473,13 +493,13 @@ const Contact = () => {
 
                           <div className="p-4 bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                           <div>
-                            <p className="font-semibold text-gray-900">Bal Bodh Secondary School</p>
-                            <p className="text-sm text-gray-600">Kanchanpur, Saptari, Nepal</p>
+                            <p className="font-semibold" style={{ color: COLORS.dark }}>Bal Bodh Secondary School</p>
+                            <p className="text-sm" style={{ color: COLORS.slate }}>Kanchanpur, Saptari, Nepal</p>
                           </div>
 
                           <div className="flex gap-3">
-                            <button onClick={scrollToForm} className="px-4 py-2 bg-green-600 text-white rounded-lg shadow">Schedule a School Visit</button>
-                            <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="px-4 py-2 border border-gray-200 rounded-lg">Get Directions</a>
+                            <button onClick={scrollToForm} className="px-4 py-2 text-white rounded-lg shadow-lg hover:shadow-xl transition-all" style={{ backgroundColor: COLORS.success }}>Schedule a School Visit</button>
+                            <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all" style={{ border: `1px solid ${COLORS.lightGray}`, color: COLORS.dark }}>Get Directions</a>
                           </div>
                         </div>
                       </div>
@@ -490,7 +510,7 @@ const Contact = () => {
 
               {/* Social Media */}
               <div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-6">Connect With Us</h3>
+                <h3 className="text-2xl font-bold mb-6" style={{ color: COLORS.dark }}>Connect With Us</h3>
                 <div className="grid grid-cols-2 gap-4">
                   {[
                     SCHOOL_INFO.facebook ? { icon: FaFacebook, name: 'Facebook', url: SCHOOL_INFO.facebook, color: '#1877F2' } : null,
@@ -505,12 +525,12 @@ const Contact = () => {
                         href={social.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="flex items-center justify-center gap-3 p-4 rounded-lg bg-white shadow-lg hover:shadow-xl transition-all"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="flex items-center justify-center gap-3 p-4 rounded-xl bg-white shadow-lg hover:shadow-xl transition-all duration-300"
                       >
                         <Icon size={24} style={{ color: social.color }} />
-                        <span className="font-semibold text-gray-700">
+                        <span className="font-semibold" style={{ color: COLORS.dark }}>
                           {social.name}
                         </span>
                       </motion.a>
@@ -556,10 +576,11 @@ const Contact = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-gradient-to-br from-blue-50 to-gray-50 rounded-lg p-6 shadow-lg"
+                className="rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300"
+                style={{ background: `linear-gradient(135deg, ${COLORS.gray}, white)` }}
               >
-                <h3 className="font-bold text-gray-900 mb-3">{item.q}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{item.a}</p>
+                <h3 className="font-bold mb-3" style={{ color: COLORS.dark }}>{item.q}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: COLORS.slate }}>{item.a}</p>
               </motion.div>
             ))}
           </div>
@@ -567,36 +588,36 @@ const Contact = () => {
       </section>
 
       {/* Location Card */}
-      <section className="py-16 md:py-24 bg-gray-50">
+      <section className="py-16 md:py-24" style={{ backgroundColor: COLORS.gray }}>
         <div className="max-w-7xl mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="bg-white rounded-lg shadow-xl p-8 md:p-12 text-center"
+            className="bg-white rounded-2xl shadow-2xl p-8 md:p-12 text-center"
           >
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6" style={{ color: COLORS.dark }}>
               Visit Our School
             </h2>
-            <p className="text-gray-600 text-lg mb-8 max-w-2xl mx-auto">
+            <p className="text-lg mb-8 max-w-2xl mx-auto" style={{ color: COLORS.slate }}>
               We invite you to visit our state-of-the-art school and experience the Balbodh difference. Our team will be happy to show you around and answer any questions you may have.
             </p>
             <div className="flex flex-col md:flex-row gap-4 justify-center">
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-8 py-3 rounded-lg font-bold text-white transition-all"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-8 py-3.5 rounded-xl font-bold text-white transition-all shadow-xl hover:shadow-2xl"
                 style={{ backgroundColor: COLORS.secondary }}
                 onClick={scrollToForm}
               >
                 Schedule a School Visit
               </motion.button>
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-8 py-3 rounded-lg font-bold border-2 transition-all"
-                style={{ borderColor: COLORS.secondary, color: COLORS.secondary }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-8 py-3.5 rounded-xl font-bold border-2 transition-all shadow-lg hover:shadow-xl"
+                style={{ borderColor: COLORS.secondary, color: COLORS.secondary, backgroundColor: 'transparent' }}
                 onClick={() => window.open(DIRECTIONS_URL, '_blank', 'noopener')}
               >
                 Get Directions

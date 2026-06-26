@@ -180,9 +180,54 @@ export default function FeePayment() {
   const handleViewReceipt = () => {
     if (!receiptResult?.receipt) { notify('Receipt is not available.', 'error'); return; }
     const r = receiptResult.receipt;
-    if (r.pdfUrl) { window.open(r.pdfUrl, '_blank', 'noopener'); return; }
-    if (r.pdfBase64) { const blob = new Blob([Uint8Array.from(atob(r.pdfBase64), c => c.charCodeAt(0))], { type: 'application/pdf' }); window.open(URL.createObjectURL(blob), '_blank', 'noopener'); return; }
-    if (r.receiptId || r._id) { window.open(`/fee-management/receipt/${encodeURIComponent(r.receiptId || r._id)}`, '_blank', 'noopener'); return; }
+    const receiptId = r.receiptId || r._id;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // Primary: Navigate to receipt view (preserves auth context)
+    if (receiptId) {
+      navigate(`/fee-management/receipt/${encodeURIComponent(receiptId)}`);
+      return;
+    }
+    
+    // Fallback to direct PDF view
+    if (r.pdfUrl) { 
+      if (isMobile) {
+        // Mobile: Download instead of open to preserve auth
+        const a = document.createElement('a');
+        a.href = r.pdfUrl;
+        a.download = `${r.receiptNumber || 'receipt'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        window.open(r.pdfUrl, '_blank', 'noopener');
+      }
+      return;
+    }
+    
+    if (r.pdfBase64) { 
+      const byteChars = atob(r.pdfBase64);
+      const byteNumbers = new Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'application/pdf' });
+      
+      if (isMobile) {
+        // Mobile: Download instead of open to preserve auth
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${r.receiptNumber || 'receipt'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } else {
+        window.open(URL.createObjectURL(blob), '_blank', 'noopener');
+      }
+      return;
+    }
+    
     notify('Receipt cannot be opened.', 'error');
   };
 

@@ -249,13 +249,13 @@ export default function AttendanceForm({ existing, onSaved }) {
   }, [form.records, search]);
 
   return (
-    <form onSubmit={submit} className="bg-white p-6 rounded-3xl shadow-xl border border-slate-200">
-      <div className="grid gap-4 sm:grid-cols-5">
+    <form onSubmit={submit} className="bg-white p-4 md:p-5 lg:p-6 rounded-2xl md:rounded-3xl shadow-xl border border-slate-200">
+      <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-5">
         <div>
-          <label className="block text-sm font-semibold text-slate-700">Attendance Date</label>
+          <label className="block text-xs md:text-sm font-semibold text-slate-700">Attendance Date</label>
           <input
             type="date"
-            className="mt-1 w-full rounded-3xl border border-slate-300 px-4 py-4 min-h-[54px]"
+            className="mt-1 w-full rounded-2xl md:rounded-3xl border border-slate-300 px-3 md:px-4 py-3 md:py-4 min-h-[48px] md:min-h-[54px] text-sm md:text-base"
             value={form.date}
             disabled={isLocked}
             onChange={e => { setForm({ ...form, date: e.target.value, records: [] }); setAttendanceId(null); setExistingMatch(false); }}
@@ -263,9 +263,9 @@ export default function AttendanceForm({ existing, onSaved }) {
         </div>
 
         <div className="sm:col-span-2">
-          <label className="block text-sm font-semibold text-slate-700">Class</label>
+          <label className="block text-xs md:text-sm font-semibold text-slate-700">Class</label>
           <select
-            className="mt-1 w-full rounded-3xl border border-slate-300 px-4 py-3"
+            className="mt-1 w-full rounded-2xl md:rounded-3xl border border-slate-300 px-3 md:px-4 py-3 text-sm md:text-base"
             value={form.class}
             disabled={isLocked}
             onChange={e => { setForm({ ...form, class: e.target.value, records: [] }); setAttendanceId(null); setExistingMatch(false); }}
@@ -278,22 +278,22 @@ export default function AttendanceForm({ existing, onSaved }) {
         </div>
 
         <div className="sm:col-span-2 relative">
-          <label className="block text-sm font-semibold text-slate-700">Select Period(s)</label>
+          <label className="block text-xs md:text-sm font-semibold text-slate-700">Select Period(s)</label>
           <button
             type="button"
             disabled={isLocked}
             onClick={() => setPeriodMenuOpen(prev => !prev)}
-            className="mt-2 w-full justify-between rounded-3xl border border-slate-300 bg-white px-4 py-4 text-left text-sm text-slate-700 shadow-sm hover:border-slate-400 transition"
+            className="mt-2 w-full justify-between rounded-2xl md:rounded-3xl border border-slate-300 bg-white px-3 md:px-4 py-3 md:py-4 text-left text-xs md:text-sm text-slate-700 shadow-sm hover:border-slate-400 transition"
           >
             <span>{form.selectedPeriods.length ? form.selectedPeriods.join(', ') : 'Select period(s)'} </span>
             <span className="text-slate-400">▾</span>
           </button>
 
           {periodMenuOpen && (
-            <div className="absolute z-20 mt-2 w-full rounded-3xl border border-slate-200 bg-white p-4 shadow-xl">
+            <div className="absolute z-20 mt-2 w-full rounded-2xl md:rounded-3xl border border-slate-200 bg-white p-3 md:p-4 shadow-xl">
               <div className="grid gap-2">
                 {PERIOD_OPTIONS.map(period => (
-                  <label key={period} className="inline-flex items-center justify-between gap-3 rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm cursor-pointer">
+                  <label key={period} className="inline-flex items-center justify-between gap-2 md:gap-3 rounded-2xl md:rounded-3xl border border-slate-200 bg-slate-50 px-3 md:px-4 py-2 md:py-3 text-xs md:text-sm cursor-pointer">
                     <span>{period}</span>
                     <input
                       type="checkbox"
@@ -307,21 +307,21 @@ export default function AttendanceForm({ existing, onSaved }) {
                         setAttendanceId(null);
                         setExistingMatch(false);
                       }}
-                      className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      className="h-4 w-4 md:h-5 md:w-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                     />
                   </label>
                 ))}
               </div>
             </div>
           )}
-          <p className="mt-2 text-xs text-slate-500">Select one or more periods to submit attendance once for multiple periods.</p>
+          <p className="mt-2 text-[10px] md:text-xs text-slate-500">Select one or more periods to submit attendance once for multiple periods.</p>
         </div>
 
         <div className="sm:col-span-2">
-          <label className="block text-sm font-semibold text-slate-700">Subject</label>
+          <label className="block text-xs md:text-sm font-semibold text-slate-700">Subject</label>
           <input
             list="subject-options"
-            className="mt-1 w-full rounded-3xl border border-slate-300 bg-slate-50 px-4 py-4 min-h-[54px] shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+            className="mt-1 w-full rounded-2xl md:rounded-3xl border border-slate-300 bg-slate-50 px-3 md:px-4 py-3 md:py-4 min-h-[48px] md:min-h-[54px] shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 text-sm md:text-base"
             placeholder="Enter subject"
             value={form.subject}
             disabled={isLocked}
@@ -336,11 +336,11 @@ export default function AttendanceForm({ existing, onSaved }) {
         <div className="hidden sm:block sm:col-span-3" />
       </div>
 
-      <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-col sm:flex-row gap-3">
+      <div className="mt-4 md:mt-5 flex flex-col gap-3 md:gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
           <button
             type="button"
-            className="rounded-3xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-200 hover:bg-indigo-500 transition"
+            className="rounded-2xl md:rounded-3xl bg-indigo-600 px-4 md:px-5 py-2.5 md:py-3 text-xs md:text-sm font-semibold text-white shadow-lg shadow-indigo-200 hover:bg-indigo-500 transition"
             disabled={!form.class || isLocked}
             onClick={loadStudents}
           >
@@ -348,7 +348,7 @@ export default function AttendanceForm({ existing, onSaved }) {
           </button>
           <button
             type="button"
-            className="rounded-3xl bg-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-300 transition"
+            className="rounded-2xl md:rounded-3xl bg-slate-200 px-4 md:px-5 py-2.5 md:py-3 text-xs md:text-sm font-semibold text-slate-700 hover:bg-slate-300 transition"
             onClick={() => {
               setForm(initialFormState);
               setAttendanceId(null);
@@ -359,56 +359,56 @@ export default function AttendanceForm({ existing, onSaved }) {
             Reset Form
           </button>
         </div>
-        <p className="text-sm text-slate-500">{attendanceId ? 'Editing existing attendance record.' : 'New attendance will be recorded for the selected class/date.'}</p>
+        <p className="text-xs md:text-sm text-slate-500">{attendanceId ? 'Editing existing attendance record.' : 'New attendance will be recorded for the selected class/date.'}</p>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-          <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Students</div>
-          <div className="mt-2 text-2xl font-semibold text-slate-900">{attendanceTotals.total}</div>
+      <div className="mt-4 md:mt-6 grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-3">
+        <div className="rounded-2xl md:rounded-3xl border border-slate-200 bg-slate-50 p-3 md:p-4">
+          <div className="text-[10px] md:text-xs uppercase tracking-[0.24em] text-slate-400">Students</div>
+          <div className="mt-2 text-xl md:text-2xl font-semibold text-slate-900">{attendanceTotals.total}</div>
         </div>
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-          <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Present</div>
-          <div className="mt-2 text-2xl font-semibold text-emerald-600">{attendanceTotals.present}</div>
+        <div className="rounded-2xl md:rounded-3xl border border-slate-200 bg-slate-50 p-3 md:p-4">
+          <div className="text-[10px] md:text-xs uppercase tracking-[0.24em] text-slate-400">Present</div>
+          <div className="mt-2 text-xl md:text-2xl font-semibold text-emerald-600">{attendanceTotals.present}</div>
         </div>
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-          <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Absent</div>
-          <div className="mt-2 text-2xl font-semibold text-rose-600">{attendanceTotals.absent}</div>
+        <div className="rounded-2xl md:rounded-3xl border border-slate-200 bg-slate-50 p-3 md:p-4">
+          <div className="text-[10px] md:text-xs uppercase tracking-[0.24em] text-slate-400">Absent</div>
+          <div className="mt-2 text-xl md:text-2xl font-semibold text-rose-600">{attendanceTotals.absent}</div>
         </div>
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-sm">
-        <div className="p-4">
+      <div className="mt-4 md:mt-6 overflow-x-auto rounded-2xl md:rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div className="p-3 md:p-4">
           <input
             type="search"
-            className="w-full rounded-3xl border border-slate-300 px-4 py-3 text-sm"
+            className="w-full rounded-2xl md:rounded-3xl border border-slate-300 px-3 md:px-4 py-2.5 md:py-3 text-xs md:text-sm"
             placeholder="Search students by name or roll number"
             value={search}
             disabled={!loaded}
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <table className="min-w-full text-sm text-slate-700">
+        <table className="min-w-full text-xs md:text-sm text-slate-700">
           <thead className="bg-slate-100 text-slate-600">
             <tr>
-              <th className="px-4 py-3 text-left">#</th>
-              <th className="px-4 py-3 text-left">Roll No</th>
-              <th className="px-4 py-3 text-left">Student Name</th>
-              <th className="px-4 py-3 text-left">Attendance</th>
+              <th className="px-3 md:px-4 py-2 md:py-3 text-left">#</th>
+              <th className="px-3 md:px-4 py-2 md:py-3 text-left">Roll No</th>
+              <th className="px-3 md:px-4 py-2 md:py-3 text-left">Student Name</th>
+              <th className="px-3 md:px-4 py-2 md:py-3 text-left">Attendance</th>
             </tr>
           </thead>
           <tbody>
             {filteredStudents.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-10 text-center text-slate-500">No students loaded yet. Use the class selector and Load Students button.</td>
+                <td colSpan={4} className="px-3 md:px-4 py-8 md:py-10 text-center text-slate-500 text-xs md:text-sm">No students loaded yet. Use the class selector and Load Students button.</td>
               </tr>
             ) : filteredStudents.map((student, index) => (
               <tr key={student.person || index} className={index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
-                <td className="px-4 py-3 border-t border-slate-200">{index + 1}</td>
-                <td className="px-4 py-3 border-t border-slate-200">{student.rollNumber}</td>
-                <td className="px-4 py-3 border-t border-slate-200">{student.name}</td>
-                <td className="px-4 py-3 border-t border-slate-200">
-                  <div className="flex flex-wrap gap-4">
+                <td className="px-3 md:px-4 py-2 md:py-3 border-t border-slate-200">{index + 1}</td>
+                <td className="px-3 md:px-4 py-2 md:py-3 border-t border-slate-200">{student.rollNumber}</td>
+                <td className="px-3 md:px-4 py-2 md:py-3 border-t border-slate-200">{student.name}</td>
+                <td className="px-3 md:px-4 py-2 md:py-3 border-t border-slate-200">
+                  <div className="flex flex-wrap gap-2 md:gap-4">
                     <label className="inline-flex items-center gap-2">
                       <input
                         type="radio"
@@ -416,9 +416,9 @@ export default function AttendanceForm({ existing, onSaved }) {
                         disabled={!loaded || isLocked}
                         checked={student.status === 'present'}
                         onChange={() => handleStatusChange(student.person, 'present')}
-                        className="text-emerald-600"
+                        className="text-emerald-600 w-4 h-4 md:w-5 md:h-5"
                       />
-                      Present
+                      <span className="text-xs md:text-sm">Present</span>
                     </label>
                     <label className="inline-flex items-center gap-2">
                       <input
@@ -427,9 +427,9 @@ export default function AttendanceForm({ existing, onSaved }) {
                         disabled={!loaded || isLocked}
                         checked={student.status === 'absent'}
                         onChange={() => handleStatusChange(student.person, 'absent')}
-                        className="text-rose-600"
+                        className="text-rose-600 w-4 h-4 md:w-5 md:h-5"
                       />
-                      Absent
+                      <span className="text-xs md:text-sm">Absent</span>
                     </label>
                   </div>
                 </td>
@@ -439,11 +439,11 @@ export default function AttendanceForm({ existing, onSaved }) {
         </table>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="mt-4 md:mt-6 grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2">
         <div>
-          <label className="block text-sm font-semibold text-slate-700">Topic Taught Today</label>
+          <label className="block text-xs md:text-sm font-semibold text-slate-700">Topic Taught Today</label>
           <textarea
-            className="mt-1 w-full min-h-[120px] rounded-3xl border border-slate-300 px-4 py-3"
+            className="mt-1 w-full min-h-[100px] md:min-h-[120px] rounded-2xl md:rounded-3xl border border-slate-300 px-3 md:px-4 py-3 text-sm md:text-base"
             value={form.topic}
             disabled={isLocked}
             onChange={e => setForm({ ...form, topic: e.target.value })}
@@ -451,9 +451,9 @@ export default function AttendanceForm({ existing, onSaved }) {
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-slate-700">Remarks</label>
+          <label className="block text-xs md:text-sm font-semibold text-slate-700">Remarks</label>
           <textarea
-            className="mt-1 w-full min-h-[120px] rounded-3xl border border-slate-300 px-4 py-3"
+            className="mt-1 w-full min-h-[100px] md:min-h-[120px] rounded-2xl md:rounded-3xl border border-slate-300 px-3 md:px-4 py-3 text-sm md:text-base"
             value={form.notes}
             disabled={isLocked}
             onChange={e => setForm({ ...form, notes: e.target.value })}
@@ -462,16 +462,16 @@ export default function AttendanceForm({ existing, onSaved }) {
         </div>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-4 md:mt-6">
         <button
           type="submit"
           disabled={isLocked}
-          className="w-full rounded-3xl bg-indigo-700 px-6 py-4 text-lg font-semibold text-white shadow-xl shadow-indigo-200 hover:bg-indigo-600 transition"
+          className="w-full rounded-2xl md:rounded-3xl bg-indigo-700 px-4 md:px-6 py-3 md:py-4 text-base md:text-lg font-semibold text-white shadow-xl shadow-indigo-200 hover:bg-indigo-600 transition"
         >
           Submit Attendance
         </button>
         {isLocked && (
-          <p className="mt-3 text-sm text-rose-600">Attendance is locked. Teachers may edit same-day records only.</p>
+          <p className="mt-3 text-xs md:text-sm text-rose-600">Attendance is locked. Teachers may edit same-day records only.</p>
         )}
       </div>
     </form>

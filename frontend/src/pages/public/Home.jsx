@@ -228,9 +228,9 @@ import api from '../../services/api';
       <HeroSlider />
 
       {/* School Introduction Section */}
-      <section id="about" className="py-20 md:py-28 bg-white">
-        <div className="max-w-[1600px] mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <section id="about" className="py-12 md:py-16 lg:py-20 xl:py-28 bg-white">
+        <div className="max-w-[1600px] mx-auto px-4 md:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center">
             {/* Image */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
@@ -243,7 +243,7 @@ import api from '../../services/api';
                 <img
                   src="/images/schoolphoto.png"
                   alt="School Campus"
-                  className="w-full h-[500px] object-cover"
+                  className="w-full h-[300px] md:h-[400px] lg:h-[500px] object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
               </div>
@@ -253,10 +253,10 @@ import api from '../../services/api';
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
                 viewport={{ once: true }}
-                className="absolute -bottom-6 right-0 sm:-right-6 bg-white rounded-xl shadow-xl p-6"
+                className="absolute -bottom-4 md:-bottom-6 right-0 sm:-right-6 bg-white rounded-xl shadow-xl p-4 md:p-6"
               >
-                <div className="text-3xl font-bold text-blue-600">{SCHOOL_INFO.established}</div>
-                <div className="text-sm text-gray-600">Years of Excellence</div>
+                <div className="text-2xl md:text-3xl font-bold text-blue-600">{SCHOOL_INFO.established}</div>
+                <div className="text-xs md:text-sm text-gray-600">Years of Excellence</div>
               </motion.div>
             </motion.div>
 
@@ -267,20 +267,20 @@ import api from '../../services/api';
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
                 {t('Welcome to Bal Bodh Secondary School')}
               </h2>
-              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+              <p className="text-base md:text-lg text-gray-600 mb-4 md:mb-6 leading-relaxed">
                 {t('Founded in 2055, Bal Bodh Secondary School has been a beacon of excellence in education. We are committed to nurturing young minds, fostering intellectual growth, and developing well-rounded individuals who can contribute positively to society.')}
               </p>
-              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+              <p className="text-base md:text-lg text-gray-600 mb-6 md:mb-8 leading-relaxed">
                 {t('Our state-of-the-art facilities, experienced faculty, and comprehensive curriculum ensure that every student receives the best possible education in a supportive and inclusive environment.')}
               </p>
               <Link to="/about">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 rounded-full font-bold text-white transition-all flex items-center gap-2 text-lg shadow-xl"
+                  className="px-6 py-3 md:px-8 md:py-4 rounded-full font-bold text-white transition-all flex items-center gap-2 text-base md:text-lg shadow-xl"
                   style={{ backgroundColor: COLORS.primary }}
                 >
                   {t('Read More About Us')} <FaArrowRight />
@@ -292,9 +292,9 @@ import api from '../../services/api';
       </section>
 
       {/* Principal's Message Section */}
-      <section className="py-20 md:py-28 bg-gradient-to-br from-blue-50 via-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <section className="py-12 md:py-16 lg:py-20 xl:py-28 bg-gradient-to-br from-blue-50 via-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center">
             {/* Principal Image */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -307,11 +307,11 @@ import api from '../../services/api';
                 <img
                   src="/images/principal.png"
                   alt="Founder"
-                  className="w-full h-[500px] object-cover"
+                  className="w-full h-[300px] md:h-[400px] lg:h-[500px] object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-6 left-6 text-white">
-                  <p className="text-xl font-semibold">Sanjay Khadga</p>
+                <div className="absolute bottom-4 md:bottom-6 left-4 md:left-6 text-white">
+                  <p className="text-lg md:text-xl font-semibold">Sanjay Khadga</p>
                 </div>
               </div>
             </motion.div>
@@ -324,21 +324,21 @@ import api from '../../services/api';
               viewport={{ once: true }}
               className="order-2 lg:order-2"
             >
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-4 md:mb-6">
                 {t('principalMessage')}
               </h2>
-              <div className="w-20 h-1.5 bg-gradient-to-r from-blue-600 to-yellow-400 rounded-full mb-8" />
-              <p className="text-xl text-gray-700 leading-relaxed mb-6 italic border-l-4 border-blue-600 pl-6">
+              <div className="w-16 md:w-20 h-1.5 bg-gradient-to-r from-blue-600 to-yellow-400 rounded-full mb-6 md:mb-8" />
+              <p className="text-base md:text-lg lg:text-xl text-gray-700 leading-relaxed mb-4 md:mb-6 italic border-l-4 border-blue-600 pl-4 md:pl-6">
                 {t('"Education is the most powerful weapon which you can use to change the world. At Bal Bodh Secondary School, we believe in empowering our students with knowledge, values, and skills to excel in life."')}
               </p>
-              <p className="text-lg text-gray-600 leading-relaxed mb-8">
+              <p className="text-base md:text-lg text-gray-600 leading-relaxed mb-6 md:mb-8">
                 {t('Our vision is to create a generation of thoughtful, innovative, and compassionate leaders. We provide a nurturing environment where every student can discover their potential and achieve their dreams. We are proud of our achievements and remain committed to continuous improvement.')}
               </p>
           <Link to="/principal-message">
   <motion.button
     whileHover={{ scale: 1.05 }}
     whileTap={{ scale: 0.95 }}
-    className="px-8 py-4 rounded-full font-bold text-white transition-all text-lg shadow-xl"
+    className="px-6 py-3 md:px-8 md:py-4 rounded-full font-bold text-white transition-all text-base md:text-lg shadow-xl"
     style={{ backgroundColor: COLORS.accent, color: '#000' }}
   >
     {t('View Full Message')}
@@ -376,14 +376,14 @@ import api from '../../services/api';
       <StatisticsCounter statistics={STATISTICS} />
 
       {/* Why Choose Bal Bodh Section */}
-      <section className="py-20 md:py-28 bg-white">
-      <div className="max-w-7xl mx-auto px-4">
+      <section className="py-12 md:py-16 lg:py-20 xl:py-28 bg-white">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
   <SectionTitle
     title="Why Choose Bal Bodh School?"
     subtitle="We offer comprehensive education with modern facilities and dedicated faculty"
   />
 
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
     {WHY_CHOOSE.map((feature, index) => {
       const IconComponent = featureIconMap[feature.icon];
 
@@ -419,8 +419,8 @@ import api from '../../services/api';
       <HomeNoticeFeed />
 
       {/* Upcoming Events Section */}
-      <section className="py-20 md:py-28 bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="py-12 md:py-16 lg:py-20 xl:py-28 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
           <SectionTitle
             title="Upcoming Events"
             subtitle="Exciting activities and celebrations planned for our students"
@@ -432,19 +432,19 @@ import api from '../../services/api';
       </section>
 
       {/* School Leadership Section - dynamic from API */}
-      <section id="staff" className="py-20 md:py-28 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
+      <section id="staff" className="py-12 md:py-16 lg:py-20 xl:py-28 bg-white">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
           <SectionTitle
             title="School Leadership"
             subtitle="Meet the talented faculty and school leaders shaping student success"
           />
           <StaffHighlights />
-          <div className="mt-10 text-center">
+          <div className="mt-8 md:mt-10 text-center">
             <Link to="/staff">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 rounded-full font-bold text-white transition-all inline-flex items-center gap-2 text-lg shadow-xl"
+                className="px-6 py-3 md:px-8 md:py-4 rounded-full font-bold text-white transition-all inline-flex items-center gap-2 text-base md:text-lg shadow-xl"
                 style={{ backgroundColor: COLORS.secondary }}
               >
                 View Full Staff <FaArrowRight />
@@ -464,13 +464,13 @@ import api from '../../services/api';
       {/* Achievements are displayed via the AcademicExcellence component (DB-driven) */}
 
       {/* Testimonials Section */}
-      <section className="py-20 md:py-28 bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="py-12 md:py-16 lg:py-20 xl:py-28 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
           <SectionTitle
             title="Student Testimonials"
             subtitle="Hear directly from our students and alumni about their learning experience, achievements, and growth at Bal Bodh Secondary School."
           />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {TESTIMONIALS.slice(0,3).map((testimonial, index) => (
               <TestimonialCard
                 key={index}
@@ -486,8 +486,8 @@ import api from '../../services/api';
       </section>
 
       {/* Gallery Preview Section */}
-      <section id="gallery" className="py-20 md:py-28 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
+      <section id="gallery" className="py-12 md:py-16 lg:py-20 xl:py-28 bg-white">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
           <SectionTitle
             title="Photo Gallery"
             subtitle="Glimpses of vibrant school life and activities"
@@ -499,7 +499,7 @@ import api from '../../services/api';
             <Swiper
               className="home-swiper no-nav"
               modules={[Autoplay, Pagination]}
-              spaceBetween={24}
+              spaceBetween={16}
               grabCursor={true}
               freeMode={false}
               slidesPerView={1}
@@ -512,14 +512,17 @@ import api from '../../services/api';
               allowTouchMove={true}
               breakpoints={{
                 320: { slidesPerView: 1 },
-                768: { slidesPerView: 2 },
-                1024: { slidesPerView: 4 },
+                480: { slidesPerView: 1.5 },
+                640: { slidesPerView: 2 },
+                768: { slidesPerView: 2.5 },
+                1024: { slidesPerView: 3.5 },
+                1280: { slidesPerView: 4 },
               }}
               style={{ paddingBottom: 28 }}
             >
               {filteredGallery.map((image, index) => (
                 <SwiperSlide key={image.id || image._id || index}>
-                    <div className="p-3">
+                    <div className="p-2 md:p-3">
                     <GalleryImage
                       size="large"
                       image={image.url || image}
@@ -532,15 +535,15 @@ import api from '../../services/api';
                 </SwiperSlide>
               ))}
             </Swiper>
-            
+
           </div>
 
-          <div className="mt-12 text-center">
+          <div className="mt-8 md:mt-12 text-center">
             <Link to="/gallery">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 rounded-full font-bold text-white transition-all inline-flex items-center gap-2 text-lg shadow-xl"
+                className="px-6 py-3 md:px-8 md:py-4 rounded-full font-bold text-white transition-all inline-flex items-center gap-2 text-base md:text-lg shadow-xl"
                 style={{ backgroundColor: COLORS.secondary }}
               >
                 View Full Gallery <FaArrowRight />

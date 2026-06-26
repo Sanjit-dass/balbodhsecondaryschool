@@ -105,17 +105,23 @@ export default function AdmitCardView() {
       try {
         const element = document.getElementById('admit-card-view');
         if (!element) return;
-        const rect = element.getBoundingClientRect();
-
+        
         // temporarily increase bottom padding so signatures and bottom border are included
         const origPaddingBottom = element.style.paddingBottom;
         const origOverflow = element.style.overflow;
+        const origWidth = element.style.width;
+        const origMaxWidth = element.style.maxWidth;
+        const origMinWidth = element.style.minWidth;
+        
         try {
           element.style.paddingBottom = '64px';
           element.style.overflow = 'visible';
+          element.style.width = '800px';
+          element.style.minWidth = '800px';
+          element.style.maxWidth = 'none';
           element.scrollIntoView({ behavior: 'auto', block: 'end' });
 
-          const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: Math.ceil(rect.width), height: Math.ceil(rect.height) + 64, scrollY: -window.scrollY });
+          const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollY: -window.scrollY });
           const imgData = canvas.toDataURL('image/png', 1.0);
 
           const pdf = new jsPDF('p', 'mm', 'a4');
@@ -139,6 +145,9 @@ export default function AdmitCardView() {
         } finally {
           element.style.paddingBottom = origPaddingBottom;
           element.style.overflow = origOverflow;
+          element.style.width = origWidth;
+          element.style.maxWidth = origMaxWidth;
+          element.style.minWidth = origMinWidth;
         }
       } catch (err) {
         console.error(err);
@@ -262,8 +271,8 @@ export default function AdmitCardView() {
             <p className="mt-1 text-[14px] font-bold uppercase tracking-[0.08em] text-[#7C3AED]">EXAMINATION ADMIT CARD</p>
           </div>
 
-          <div className={"mt-8 grid gap-4" + (hasPhoto ? ' sm:grid-cols-[1fr_auto]' : '')}>
-            <div className="rounded-3xl bg-slate-50 p-5 shadow-sm">
+          <div className={"mt-8 flex gap-4" + (hasPhoto ? ' flex-row' : ' flex-col')}>
+            <div className="flex-1 rounded-3xl bg-slate-50 p-5 shadow-sm">
               <dl className="space-y-3 text-sm text-slate-800">
                 <div className="grid grid-cols-[auto_1fr] items-center gap-2">
                   <dt className="font-semibold text-slate-600">Name :</dt>
@@ -281,7 +290,7 @@ export default function AdmitCardView() {
             </div>
 
             {hasPhoto && (
-              <div className="flex justify-end">
+              <div className="flex-shrink-0">
                 <div className="h-[120px] w-[100px] overflow-hidden rounded-xl border border-slate-300 shadow-sm bg-slate-100">
                   <img
                     src={studentPhoto}

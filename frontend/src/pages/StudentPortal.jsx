@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import api from '../services/api';
 import ExportActions from '../components/ExportActions';
+import { COLORS } from '../constants/schoolData';
 
 export default function StudentPortal(){
   const { user } = useContext(AuthContext);
@@ -52,9 +53,11 @@ export default function StudentPortal(){
   }, [attendance, user]);
 
   const feeSummary = useMemo(() => {
-    const paid = fees.filter(item => item.paid).reduce((sum, item) => sum + Number(item.amount || 0), 0);
-    const due = fees.filter(item => !item.paid).reduce((sum, item) => sum + Number(item.amount || 0), 0);
-    return { total: fees.length, paid, due };
+    const totalAmount = fees.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const paidAmount = fees.filter(item => item.paid).reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const dueAmount = totalAmount - paidAmount;
+    const paymentPercentage = totalAmount > 0 ? Math.round((paidAmount / totalAmount) * 100) : 0;
+    return { total: fees.length, paid: paidAmount, due: dueAmount, totalAmount, paymentPercentage };
   }, [fees]);
 
   const latestResult = results[0];
@@ -71,9 +74,6 @@ export default function StudentPortal(){
   const attendancePercentage = attendanceSummary.total > 0 
     ? Math.round((attendanceSummary.present / attendanceSummary.total) * 100) 
     : 0;
-  const feePaymentPercentage = feeSummary.total > 0
-    ? Math.round(((feeSummary.total - (feeSummary.due > 0 ? 1 : 0)) / feeSummary.total) * 100)
-    : 0;
 
   const fetchResults = async () => {
     try {
@@ -85,105 +85,126 @@ export default function StudentPortal(){
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 min-h-screen pb-8">
+    <div className="min-h-screen pb-6 md:pb-8"
+      style={{ background: `linear-gradient(135deg, ${COLORS.gray}, white)` }}
+    >
       {/* WELCOME HEADER CARD */}
-      <div className="mb-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-8 shadow-2xl">
+      <div className="mb-6 md:mb-8">
+        <div className="relative overflow-hidden rounded-2xl md:rounded-3xl p-5 md:p-6 lg:p-8 shadow-xl md:shadow-2xl text-white"
+          style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}
+        >
           {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-48 -mt-48"></div>
-          <div className="absolute bottom-0 left-0 w-72 h-72 bg-white/5 rounded-full -ml-36 -mb-36"></div>
-          
+          <div className="absolute top-0 right-0 w-64 h-64 md:w-96 md:h-96 rounded-full -mr-32 -mt-32 md:-mr-48 md:-mt-48" style={{ backgroundColor: `${COLORS.white}05` }}></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 md:w-72 md:h-72 rounded-full -ml-24 -mb-24 md:-ml-36 md:-mb-36" style={{ backgroundColor: `${COLORS.white}05` }}></div>
+
           <div className="relative flex items-center justify-between">
             <div className="flex-1">
-              <h1 className="text-4xl font-bold text-white mb-2">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-3">
                 👋 Welcome back, {(user?.name || user?.fullName || 'Student').split(' ')[0]}!
               </h1>
-              <div className="flex flex-wrap gap-4 text-white/90 text-sm font-medium">
+              <div className="flex flex-wrap gap-2 md:gap-4 text-white/90 text-xs md:text-sm font-medium">
                 <span className="flex items-center gap-1">📚 {user?.class?.name || user?.className || user?.class || 'Class'}</span>
                 <span className="flex items-center gap-1">🎯 Roll No: {user?.admissionNumber || user?.rollNumber || '—'}</span>
                 <span className="flex items-center gap-1">📅 2026-2027</span>
               </div>
             </div>
-            
+
             {/* Avatar Circle */}
-            <div className="hidden sm:flex items-center justify-center w-24 h-24 rounded-full bg-white/20 backdrop-blur-md border-2 border-white/30">
-              <span className="text-5xl font-bold text-white">{getInitials()}</span>
+            <div className="hidden sm:flex items-center justify-center w-16 h-16 md:w-24 md:h-24 rounded-full backdrop-blur-md border-2"
+              style={{ backgroundColor: `${COLORS.white}20`, borderColor: `${COLORS.white}30` }}
+            >
+              <span className="text-3xl md:text-5xl font-bold text-white">{getInitials()}</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* ACTION BUTTONS */}
-      <div className="mb-8 flex flex-wrap gap-3">
+      <div className="mb-6 md:mb-8 flex flex-wrap gap-2 md:gap-3">
         <ExportActions resource="attendance" filenamePrefix="attendance-summary" />
-        <button 
-          onClick={()=>window.print()} 
-          className="px-6 py-3 rounded-2xl bg-gradient-to-r from-slate-800 to-slate-900 text-white font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-2"
+        <button
+          onClick={()=>window.print()}
+          className="px-4 md:px-6 py-2.5 md:py-3 rounded-xl md:rounded-2xl text-white font-semibold text-xs md:text-sm hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-2"
+          style={{ background: `linear-gradient(135deg, ${COLORS.dark}, ${COLORS.primary})` }}
         >
           🖨️ Print Page
         </button>
       </div>
 
       {/* QUICK STATS CARDS */}
-      <div className="grid gap-6 lg:grid-cols-4 mb-8">
+      <div className="grid gap-4 md:gap-6 grid-cols-2 lg:grid-cols-4 mb-6 md:mb-8">
         {/* Attendance Card */}
-        {attendanceSummary.total > 0 && <Link to="/student/attendance" className="group relative overflow-hidden rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 text-white hover:scale-105">
-          <div className="absolute right-0 top-0 opacity-10 text-8xl group-hover:scale-110 transition-transform">✓</div>
+        {attendanceSummary.total > 0 && <Link to="/student/attendance" className="group relative overflow-hidden rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl hover:shadow-2xl transition-all duration-300 text-white hover:scale-105"
+          style={{ background: `linear-gradient(135deg, ${COLORS.success}, ${COLORS.primary})` }}
+        >
+          <div className="absolute right-0 top-0 opacity-10 text-5xl md:text-8xl group-hover:scale-110 transition-transform">✓</div>
           <div className="relative z-10">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-xs font-semibold uppercase tracking-wider opacity-80">Attendance</div>
-              <div className="text-3xl">✓</div>
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <div className="text-[10px] md:text-xs font-semibold uppercase tracking-wider opacity-80">Attendance</div>
+              <div className="text-2xl md:text-3xl">✓</div>
             </div>
             <div className="mb-2">
-              <div className="text-3xl font-bold">{attendanceSummary.present}/{attendanceSummary.total}</div>
-              <div className="text-sm opacity-90">Present / Total Days</div>
+              <div className="text-2xl md:text-3xl font-bold">{attendanceSummary.present}/{attendanceSummary.total}</div>
+              <div className="text-xs md:text-sm opacity-90">Present / Total Days</div>
             </div>
             {attendanceSummary.total > 0 && (
-              <div className="w-full bg-white/20 rounded-full h-2">
-                <div 
-                  className="bg-white h-2 rounded-full transition-all duration-500" 
-                  style={{ width: `${attendancePercentage}%` }}
+              <div className="w-full rounded-full h-1.5 md:h-2" style={{ backgroundColor: `${COLORS.white}20` }}>
+                <div
+                  className="h-1.5 md:h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${attendancePercentage}%`, backgroundColor: COLORS.white }}
                 ></div>
               </div>
             )}
             {attendanceSummary.total > 0 && (
-              <div className="text-xs mt-2 opacity-80">{attendancePercentage}% Attendance</div>
+              <div className="text-[10px] md:text-xs mt-1.5 md:mt-2 opacity-80">{attendancePercentage}% Attendance</div>
             )}
           </div>
         </Link>}
 
         {/* Fee Status Card */}
-        {feeSummary.total > 0 && <Link to="/student/fees" className="group relative overflow-hidden rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-orange-500 via-amber-500 to-rose-500 text-white hover:scale-105">
-          <div className="absolute right-0 top-0 opacity-10 text-8xl group-hover:scale-110 transition-transform">₹</div>
+        {feeSummary.total > 0 && <Link to="/student/fees" className="group relative overflow-hidden rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl hover:shadow-2xl transition-all duration-300 text-white hover:scale-105"
+          style={{ background: `linear-gradient(135deg, ${COLORS.warning}, ${COLORS.accent})` }}
+        >
+          <div className="absolute right-0 top-0 opacity-10 text-5xl md:text-8xl group-hover:scale-110 transition-transform">💰</div>
           <div className="relative z-10">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-xs font-semibold uppercase tracking-wider opacity-80">Fee Status</div>
-              <div className="text-3xl">💰</div>
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <div className="text-[10px] md:text-xs font-semibold uppercase tracking-wider opacity-80">Payment Status</div>
+              <div className="text-2xl md:text-3xl">💰</div>
             </div>
             <div className="mb-2">
-              <div className="text-3xl font-bold">₹{feeSummary.due.toLocaleString()}</div>
-              <div className="text-sm opacity-90">Outstanding Balance</div>
+              <div className="text-2xl md:text-3xl font-bold">{feeSummary.paymentPercentage}%</div>
+              <div className="text-xs md:text-sm opacity-90">Payment Progress</div>
             </div>
-            <div className="text-xs mt-2 opacity-80">
-              ₹{feeSummary.paid.toLocaleString()} Paid
+            {feeSummary.totalAmount > 0 && (
+              <div className="w-full rounded-full h-1.5 md:h-2" style={{ backgroundColor: `${COLORS.white}20` }}>
+                <div
+                  className="h-1.5 md:h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${feeSummary.paymentPercentage}%`, backgroundColor: COLORS.white }}
+                ></div>
+              </div>
+            )}
+            <div className="text-[10px] md:text-xs mt-1.5 md:mt-2 opacity-80">
+              ₹{feeSummary.paid.toLocaleString()} Paid • ₹{feeSummary.due.toLocaleString()} Due
             </div>
           </div>
         </Link>}
 
         {/* Results Card */}
-        {results.length > 0 && <Link to="/student/results" className="group relative overflow-hidden rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-violet-600 via-fuchsia-600 to-pink-600 text-white hover:scale-105">
-          <div className="absolute right-0 top-0 opacity-10 text-8xl group-hover:scale-110 transition-transform">★</div>
+        {results.length > 0 && <Link to="/student/results" className="group relative overflow-hidden rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl hover:shadow-2xl transition-all duration-300 text-white hover:scale-105"
+          style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}
+        >
+          <div className="absolute right-0 top-0 opacity-10 text-5xl md:text-8xl group-hover:scale-110 transition-transform">★</div>
           <div className="relative z-10">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-xs font-semibold uppercase tracking-wider opacity-80">Results</div>
-              <div className="text-3xl">🏆</div>
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <div className="text-[10px] md:text-xs font-semibold uppercase tracking-wider opacity-80">Results</div>
+              <div className="text-2xl md:text-3xl">🏆</div>
             </div>
             <div className="mb-2">
-              <div className="text-3xl font-bold">{results.length}</div>
-              <div className="text-sm opacity-90">Scorecards Published</div>
+              <div className="text-2xl md:text-3xl font-bold">{results.length}</div>
+              <div className="text-xs md:text-sm opacity-90">Scorecards Published</div>
             </div>
             {latestResult && (
-              <div className="text-xs mt-2 opacity-80">
+              <div className="text-[10px] md:text-xs mt-1.5 md:mt-2 opacity-80">
                 Latest: {latestResult.exam?.title || 'Exam'}
               </div>
             )}
@@ -191,150 +212,152 @@ export default function StudentPortal(){
         </Link>}
 
         {/* Assignments Card */}
-        {assignments.length > 0 && <Link to="/student/assignments" className="group relative overflow-hidden rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-600 text-white hover:scale-105">
-          <div className="absolute right-0 top-0 opacity-10 text-8xl group-hover:scale-110 transition-transform">📚</div>
+        {assignments.length > 0 && <Link to="/student/assignments" className="group relative overflow-hidden rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-xl hover:shadow-2xl transition-all duration-300 text-white hover:scale-105"
+          style={{ background: `linear-gradient(135deg, ${COLORS.secondary}, ${COLORS.primary})` }}
+        >
+          <div className="absolute right-0 top-0 opacity-10 text-5xl md:text-8xl group-hover:scale-110 transition-transform">📚</div>
           <div className="relative z-10">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-xs font-semibold uppercase tracking-wider opacity-80">Assignments</div>
-              <div className="text-3xl">📝</div>
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <div className="text-[10px] md:text-xs font-semibold uppercase tracking-wider opacity-80">Assignments</div>
+              <div className="text-2xl md:text-3xl">📝</div>
             </div>
-            <div className="mb-4">
-              <div className="text-3xl font-bold">{assignments.length}</div>
-              <div className="text-sm opacity-90">Pending Tasks</div>
+            <div className="mb-3 md:mb-4">
+              <div className="text-2xl md:text-3xl font-bold">{assignments.length}</div>
+              <div className="text-xs md:text-sm opacity-90">Pending Tasks</div>
             </div>
           </div>
         </Link>}
       </div>
 
       {/* QUICK ACCESS SECTION */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-slate-900 mb-4">Quick Access</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Link to="/student/attendance" className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+      <div className="mb-6 md:mb-8">
+        <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4" style={{ color: COLORS.dark }}>Quick Access</h2>
+        <div className="grid gap-3 md:gap-4 grid-cols-2 md:grid-cols-3">
+          <Link to="/student/attendance" className="group relative overflow-hidden rounded-xl md:rounded-2xl bg-white p-4 md:p-6 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `linear-gradient(135deg, ${COLORS.success}10, transparent)` }}></div>
             <div className="relative z-10">
-              <div className="text-4xl mb-3">📅</div>
-              <h3 className="text-lg font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">Attendance</h3>
-              <p className="text-sm text-slate-600 mt-2">View daily attendance records</p>
+              <div className="text-3xl md:text-4xl mb-2 md:mb-3">📅</div>
+              <h3 className="text-sm md:text-lg font-bold group-hover:transition-colors" style={{ color: COLORS.dark }}>Attendance</h3>
+              <p className="text-xs md:text-sm mt-1 md:mt-2" style={{ color: COLORS.slate }}>View daily attendance records</p>
             </div>
           </Link>
 
-          <Link to="/student/fees" className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <Link to="/student/fees" className="group relative overflow-hidden rounded-xl md:rounded-2xl bg-white p-4 md:p-6 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `linear-gradient(135deg, ${COLORS.warning}10, transparent)` }}></div>
             <div className="relative z-10">
-              <div className="text-4xl mb-3">💰</div>
-              <h3 className="text-lg font-bold text-slate-900 group-hover:text-orange-600 transition-colors">Fees & Payments</h3>
-              <p className="text-sm text-slate-600 mt-2">Check fee status and history</p>
+              <div className="text-3xl md:text-4xl mb-2 md:mb-3">💰</div>
+              <h3 className="text-sm md:text-lg font-bold group-hover:transition-colors" style={{ color: COLORS.dark }}>Fees & Payments</h3>
+              <p className="text-xs md:text-sm mt-1 md:mt-2" style={{ color: COLORS.slate }}>Check fee status and history</p>
             </div>
           </Link>
 
-          <Link to="/student/results" className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <Link to="/student/results" className="group relative overflow-hidden rounded-xl md:rounded-2xl bg-white p-4 md:p-6 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `linear-gradient(135deg, ${COLORS.primary}10, transparent)` }}></div>
             <div className="relative z-10">
-              <div className="text-4xl mb-3">🏆</div>
-              <h3 className="text-lg font-bold text-slate-900 group-hover:text-purple-600 transition-colors">Results</h3>
-              <p className="text-sm text-slate-600 mt-2">View exam scorecards</p>
+              <div className="text-3xl md:text-4xl mb-2 md:mb-3">🏆</div>
+              <h3 className="text-sm md:text-lg font-bold group-hover:transition-colors" style={{ color: COLORS.dark }}>Results</h3>
+              <p className="text-xs md:text-sm mt-1 md:mt-2" style={{ color: COLORS.slate }}>View exam scorecards</p>
             </div>
           </Link>
 
-          <Link to="/student/assignments" className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <Link to="/student/assignments" className="group relative overflow-hidden rounded-xl md:rounded-2xl bg-white p-4 md:p-6 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `linear-gradient(135deg, ${COLORS.secondary}10, transparent)` }}></div>
             <div className="relative z-10">
-              <div className="text-4xl mb-3">📝</div>
-              <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Assignments</h3>
-              <p className="text-sm text-slate-600 mt-2">Submit and view work</p>
+              <div className="text-3xl md:text-4xl mb-2 md:mb-3">📝</div>
+              <h3 className="text-sm md:text-lg font-bold group-hover:transition-colors" style={{ color: COLORS.dark }}>Assignments</h3>
+              <p className="text-xs md:text-sm mt-1 md:mt-2" style={{ color: COLORS.slate }}>Submit and view work</p>
             </div>
           </Link>
 
-          <Link to="/student/dashboard" className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <Link to="/student/dashboard" className="group relative overflow-hidden rounded-xl md:rounded-2xl bg-white p-4 md:p-6 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `linear-gradient(135deg, ${COLORS.error}10, transparent)` }}></div>
             <div className="relative z-10">
-              <div className="text-4xl mb-3">📅</div>
-              <h3 className="text-lg font-bold text-slate-900 group-hover:text-red-600 transition-colors">Timetable</h3>
-              <p className="text-sm text-slate-600 mt-2">Class schedule and periods</p>
+              <div className="text-3xl md:text-4xl mb-2 md:mb-3">📅</div>
+              <h3 className="text-sm md:text-lg font-bold group-hover:transition-colors" style={{ color: COLORS.dark }}>Timetable</h3>
+              <p className="text-xs md:text-sm mt-1 md:mt-2" style={{ color: COLORS.slate }}>Class schedule and periods</p>
             </div>
           </Link>
 
-          <Link to="/student/admit-card" className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <Link to="/student/admit-card" className="group relative overflow-hidden rounded-xl md:rounded-2xl bg-white p-4 md:p-6 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `linear-gradient(135deg, ${COLORS.primary}10, transparent)` }}></div>
             <div className="relative z-10">
-              <div className="text-4xl mb-3">🎫</div>
-              <h3 className="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">Admit Card</h3>
-              <p className="text-sm text-slate-600 mt-2">Generate exam admit cards</p>
+              <div className="text-3xl md:text-4xl mb-2 md:mb-3">🎫</div>
+              <h3 className="text-sm md:text-lg font-bold group-hover:transition-colors" style={{ color: COLORS.dark }}>Admit Card</h3>
+              <p className="text-xs md:text-sm mt-1 md:mt-2" style={{ color: COLORS.slate }}>Generate exam admit cards</p>
             </div>
           </Link>
         </div>
       </div>
 
       {/* PROGRESS SECTION */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-slate-900 mb-4">Your Progress</h2>
-        <div className="grid gap-6 lg:grid-cols-2">
+      <div className="mb-6 md:mb-8">
+        <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4" style={{ color: COLORS.dark }}>Your Progress</h2>
+        <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
           {/* Attendance Progress */}
-          <div className="bg-white rounded-2xl p-6 shadow-md">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-md">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Attendance Progress</h3>
-                <p className="text-sm text-slate-600">Days present vs total</p>
+                <h3 className="text-base md:text-lg font-bold" style={{ color: COLORS.dark }}>Attendance Progress</h3>
+                <p className="text-xs md:text-sm" style={{ color: COLORS.slate }}>Days present vs total</p>
               </div>
-              <div className="text-4xl">✓</div>
+              <div className="text-3xl md:text-4xl">✓</div>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2 md:space-y-3">
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-semibold text-slate-700">Overall</span>
-                  <span className="text-sm font-bold text-emerald-600">{attendancePercentage}%</span>
+                <div className="flex items-center justify-between mb-1.5 md:mb-2">
+                  <span className="text-xs md:text-sm font-semibold" style={{ color: COLORS.dark }}>Overall</span>
+                  <span className="text-xs md:text-sm font-bold" style={{ color: COLORS.success }}>{attendancePercentage}%</span>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-3">
-                  <div 
-                    className="bg-gradient-to-r from-emerald-500 to-teal-600 h-3 rounded-full transition-all duration-500" 
-                    style={{ width: `${attendancePercentage}%` }}
+                <div className="w-full rounded-full h-2 md:h-3" style={{ backgroundColor: COLORS.gray }}>
+                  <div
+                    className="h-2 md:h-3 rounded-full transition-all duration-500"
+                    style={{ width: `${attendancePercentage}%`, background: `linear-gradient(135deg, ${COLORS.success}, ${COLORS.primary})` }}
                   ></div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                <div className="bg-emerald-50 rounded-xl p-3">
-                  <div className="text-2xl font-bold text-emerald-600">{attendanceSummary.present}</div>
-                  <div className="text-xs text-slate-600">Days Present</div>
+              <div className="grid grid-cols-2 gap-3 md:gap-4 mt-3 md:mt-4">
+                <div className="rounded-lg md:rounded-xl p-2.5 md:p-3" style={{ backgroundColor: `${COLORS.success}10` }}>
+                  <div className="text-xl md:text-2xl font-bold" style={{ color: COLORS.success }}>{attendanceSummary.present}</div>
+                  <div className="text-[10px] md:text-xs" style={{ color: COLORS.slate }}>Days Present</div>
                 </div>
-                <div className="bg-rose-50 rounded-xl p-3">
-                  <div className="text-2xl font-bold text-rose-600">{attendanceSummary.absent}</div>
-                  <div className="text-xs text-slate-600">Days Absent</div>
+                <div className="rounded-lg md:rounded-xl p-2.5 md:p-3" style={{ backgroundColor: `${COLORS.error}10` }}>
+                  <div className="text-xl md:text-2xl font-bold" style={{ color: COLORS.error }}>{attendanceSummary.absent}</div>
+                  <div className="text-[10px] md:text-xs" style={{ color: COLORS.slate }}>Days Absent</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Fee Payment Progress */}
-          <div className="bg-white rounded-2xl p-6 shadow-md">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-md">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Fee Payment Progress</h3>
-                <p className="text-sm text-slate-600">Dues and payments</p>
+                <h3 className="text-base md:text-lg font-bold" style={{ color: COLORS.dark }}>Fee Payment Progress</h3>
+                <p className="text-xs md:text-sm" style={{ color: COLORS.slate }}>Dues and payments</p>
               </div>
-              <div className="text-4xl">💰</div>
+              <div className="text-3xl md:text-4xl">💰</div>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2 md:space-y-3">
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-semibold text-slate-700">Payment Status</span>
-                  <span className="text-sm font-bold text-orange-600">{Math.round((feeSummary.paid / (feeSummary.paid + feeSummary.due || 1)) * 100)}%</span>
+                <div className="flex items-center justify-between mb-1.5 md:mb-2">
+                  <span className="text-xs md:text-sm font-semibold" style={{ color: COLORS.dark }}>Payment Status</span>
+                  <span className="text-xs md:text-sm font-bold" style={{ color: COLORS.warning }}>{Math.round((feeSummary.paid / (feeSummary.paid + feeSummary.due || 1)) * 100)}%</span>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-3">
-                  <div 
-                    className="bg-gradient-to-r from-orange-500 to-amber-600 h-3 rounded-full transition-all duration-500" 
-                    style={{ width: `${Math.round((feeSummary.paid / (feeSummary.paid + feeSummary.due || 1)) * 100)}%` }}
+                <div className="w-full rounded-full h-2 md:h-3" style={{ backgroundColor: COLORS.gray }}>
+                  <div
+                    className="h-2 md:h-3 rounded-full transition-all duration-500"
+                    style={{ width: `${Math.round((feeSummary.paid / (feeSummary.paid + feeSummary.due || 1)) * 100)}%`, background: `linear-gradient(135deg, ${COLORS.warning}, ${COLORS.accent})` }}
                   ></div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                <div className="bg-green-50 rounded-xl p-3">
-                  <div className="text-lg font-bold text-green-600">₹{feeSummary.paid.toLocaleString()}</div>
-                  <div className="text-xs text-slate-600">Amount Paid</div>
+              <div className="grid grid-cols-2 gap-3 md:gap-4 mt-3 md:mt-4">
+                <div className="rounded-lg md:rounded-xl p-2.5 md:p-3" style={{ backgroundColor: `${COLORS.success}10` }}>
+                  <div className="base md:text-lg font-bold" style={{ color: COLORS.success }}>₹{feeSummary.paid.toLocaleString()}</div>
+                  <div className="text-[10px] md:text-xs" style={{ color: COLORS.slate }}>Amount Paid</div>
                 </div>
-                <div className="bg-orange-50 rounded-xl p-3">
-                  <div className="text-lg font-bold text-orange-600">₹{feeSummary.due.toLocaleString()}</div>
-                  <div className="text-xs text-slate-600">Amount Due</div>
+                <div className="rounded-lg md:rounded-xl p-2.5 md:p-3" style={{ backgroundColor: `${COLORS.warning}10` }}>
+                  <div className="base md:text-lg font-bold" style={{ color: COLORS.warning }}>₹{feeSummary.due.toLocaleString()}</div>
+                  <div className="text-[10px] md:text-xs" style={{ color: COLORS.slate }}>Amount Due</div>
                 </div>
               </div>
             </div>
@@ -343,123 +366,125 @@ export default function StudentPortal(){
       </div>
 
       {/* RECENT ACTIVITY */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-slate-900 mb-4">Recent Activity</h2>
-        <div className="bg-white rounded-2xl p-6 shadow-md">
-          <div className="space-y-2">
+      <div className="mb-6 md:mb-8">
+        <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4" style={{ color: COLORS.dark }}>Recent Activity</h2>
+        <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 shadow-md">
+          <div className="space-y-1.5 md:space-y-2">
             {attendanceSummary.total > 0 && (
-              <Link to="/student/attendance" className="group flex items-start gap-4 p-4 rounded-xl hover:bg-emerald-50 transition-colors cursor-pointer border border-transparent hover:border-emerald-200">
+              <Link to="/student/attendance" className="group flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-lg md:rounded-xl transition-colors cursor-pointer border border-transparent"
+                style={{ ':hover': { backgroundColor: `${COLORS.success}10`, borderColor: `${COLORS.success}30` } }}
+              >
                 <div className="flex-shrink-0">
-                  <div className="flex items-center justify-center h-10 w-10 rounded-full bg-emerald-100 group-hover:bg-emerald-200 transition-colors">
-                    <span className="text-lg">✓</span>
+                  <div className="flex items-center justify-center h-8 w-8 md:h-10 md:w-10 rounded-full transition-colors" style={{ backgroundColor: `${COLORS.success}20` }}>
+                    <span className="text-base md:text-lg">✓</span>
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-900 group-hover:text-emerald-700">Attendance Marked</p>
-                  <p className="text-sm text-slate-600 group-hover:text-slate-700">Today's attendance has been recorded</p>
-                  <p className="text-xs text-slate-500 mt-1">Just now</p>
+                  <p className="text-xs md:text-sm font-semibold group-hover:transition-colors" style={{ color: COLORS.dark }}>Attendance Marked</p>
+                  <p className="text-xs md:text-sm mt-1" style={{ color: COLORS.slate }}>Today's attendance has been recorded</p>
+                  <p className="text-[10px] md:text-xs mt-1" style={{ color: COLORS.gray }}>Just now</p>
                 </div>
-                <div className="text-xl group-hover:translate-x-1 transition-transform">→</div>
+                <div className="text-lg md:text-xl group-hover:translate-x-1 transition-transform">→</div>
               </Link>
             )}
-            
+
             {feeSummary.paid > 0 && (
-              <Link to="/student/fees" className="group flex items-start gap-4 p-4 rounded-xl hover:bg-green-50 transition-colors cursor-pointer border border-transparent hover:border-green-200">
+              <Link to="/student/fees" className="group flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-lg md:rounded-xl hover:bg-green-50 transition-colors cursor-pointer border border-transparent hover:border-green-200">
                 <div className="flex-shrink-0">
-                  <div className="flex items-center justify-center h-10 w-10 rounded-full bg-green-100 group-hover:bg-green-200 transition-colors">
-                    <span className="text-lg">✓</span>
+                  <div className="flex items-center justify-center h-8 w-8 md:h-10 md:w-10 rounded-full bg-green-100 group-hover:bg-green-200 transition-colors">
+                    <span className="text-base md:text-lg">✓</span>
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-900 group-hover:text-green-700">Fee Payment Completed</p>
-                  <p className="text-sm text-slate-600 group-hover:text-slate-700">₹{feeSummary.paid.toLocaleString()} paid successfully</p>
-                  <p className="text-xs text-slate-500 mt-1">2 days ago</p>
+                  <p className="text-xs md:text-sm font-semibold text-slate-900 group-hover:text-green-700">Fee Payment Completed</p>
+                  <p className="text-xs md:text-sm text-slate-600 group-hover:text-slate-700">₹{feeSummary.paid.toLocaleString()} paid successfully</p>
+                  <p className="text-[10px] md:text-xs text-slate-500 mt-1">2 days ago</p>
                 </div>
-                <div className="text-xl group-hover:translate-x-1 transition-transform">→</div>
+                <div className="text-lg md:text-xl group-hover:translate-x-1 transition-transform">→</div>
               </Link>
             )}
-            
+
             {results.length > 0 && (
-              <Link to="/student/results" className="group flex items-start gap-4 p-4 rounded-xl hover:bg-purple-50 transition-colors cursor-pointer border border-transparent hover:border-purple-200">
+              <Link to="/student/results" className="group flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-lg md:rounded-xl hover:bg-purple-50 transition-colors cursor-pointer border border-transparent hover:border-purple-200">
                 <div className="flex-shrink-0">
-                  <div className="flex items-center justify-center h-10 w-10 rounded-full bg-purple-100 group-hover:bg-purple-200 transition-colors">
-                    <span className="text-lg">★</span>
+                  <div className="flex items-center justify-center h-8 w-8 md:h-10 md:w-10 rounded-full bg-purple-100 group-hover:bg-purple-200 transition-colors">
+                    <span className="text-base md:text-lg">★</span>
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-900 group-hover:text-purple-700">Result Published</p>
-                  <p className="text-sm text-slate-600 group-hover:text-slate-700">{latestResult?.exam?.title || 'Exam'} results are now available</p>
-                  <p className="text-xs text-slate-500 mt-1">1 week ago</p>
+                  <p className="text-xs md:text-sm font-semibold text-slate-900 group-hover:text-purple-700">Result Published</p>
+                  <p className="text-xs md:text-sm text-slate-600 group-hover:text-slate-700">{latestResult?.exam?.title || 'Exam'} results are now available</p>
+                  <p className="text-[10px] md:text-xs text-slate-500 mt-1">1 week ago</p>
                 </div>
-                <div className="text-xl group-hover:translate-x-1 transition-transform">→</div>
+                <div className="text-lg md:text-xl group-hover:translate-x-1 transition-transform">→</div>
               </Link>
             )}
-            
+
             {assignments.length > 0 && (
-              <Link to="/student/assignments" className="group flex items-start gap-4 p-4 rounded-xl hover:bg-blue-50 transition-colors cursor-pointer border border-transparent hover:border-blue-200">
+              <Link to="/student/assignments" className="group flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-lg md:rounded-xl hover:bg-blue-50 transition-colors cursor-pointer border border-transparent hover:border-blue-200">
                 <div className="flex-shrink-0">
-                  <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 group-hover:bg-blue-200 transition-colors">
-                    <span className="text-lg">📝</span>
+                  <div className="flex items-center justify-center h-8 w-8 md:h-10 md:w-10 rounded-full bg-blue-100 group-hover:bg-blue-200 transition-colors">
+                    <span className="text-base md:text-lg">📝</span>
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-700">New Assignment</p>
-                  <p className="text-sm text-slate-600 group-hover:text-slate-700">You have {assignments.length} pending assignment{assignments.length > 1 ? 's' : ''}</p>
-                  <p className="text-xs text-slate-500 mt-1">3 days ago</p>
+                  <p className="text-xs md:text-sm font-semibold text-slate-900 group-hover:text-blue-700">New Assignment</p>
+                  <p className="text-xs md:text-sm text-slate-600 group-hover:text-slate-700">You have {assignments.length} pending assignment{assignments.length > 1 ? 's' : ''}</p>
+                  <p className="text-[10px] md:text-xs text-slate-500 mt-1">3 days ago</p>
                 </div>
-                <div className="text-xl group-hover:translate-x-1 transition-transform">→</div>
+                <div className="text-lg md:text-xl group-hover:translate-x-1 transition-transform">→</div>
               </Link>
             )}
-            
+
             {!attendanceSummary.total && !feeSummary.paid && !results.length && !assignments.length && (
-              <p className="text-sm text-slate-500 text-center py-8">No recent activity yet</p>
+              <p className="text-xs md:text-sm py-6 md:py-8" style={{ color: COLORS.slate }}>No recent activity yet</p>
             )}
           </div>
         </div>
       </div>
 
       {/* NOTICES AND RESULTS */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="bg-white p-6 rounded-2xl shadow-md">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-slate-900">📢 Latest Notices</h2>
-            <Link to="/student/dashboard" className="text-blue-600 hover:text-blue-700 text-sm font-semibold">View all →</Link>
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
+        <section className="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-md">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <h2 className="text-base md:text-lg font-bold" style={{ color: COLORS.dark }}>📢 Latest Notices</h2>
+            <Link to="/student/dashboard" className="text-xs md:text-sm font-semibold" style={{ color: COLORS.secondary }}>View all →</Link>
           </div>
           {recentNotices.length === 0 ? (
-            <p className="text-sm text-slate-500 py-4">No notices published yet.</p>
+            <p className="text-xs md:text-sm py-3 md:py-4" style={{ color: COLORS.slate }}>No notices published yet.</p>
           ) : (
-            <ul className="space-y-3">
+            <ul className="space-y-2 md:space-y-3">
               {recentNotices.map(n => (
-                <li key={n._id} className="rounded-xl border border-slate-200 p-4 hover:border-blue-300 hover:bg-blue-50 transition-all cursor-pointer">
-                  <div className="font-semibold text-slate-900">{n.title}</div>
-                  <div className="text-xs text-slate-600 mt-1">{n.audience || 'All students'}</div>
+                <li key={n._id} className="rounded-lg md:rounded-xl border p-3 md:p-4 transition-all cursor-pointer" style={{ borderColor: COLORS.lightGray }}>
+                  <div className="text-xs md:text-sm font-semibold" style={{ color: COLORS.dark }}>{n.title}</div>
+                  <div className="text-[10px] md:text-xs mt-1" style={{ color: COLORS.slate }}>{n.audience || 'All students'}</div>
                 </li>
               ))}
             </ul>
           )}
         </section>
 
-        <section className="bg-white p-6 rounded-2xl shadow-md">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-slate-900">🏆 Latest Result</h2>
-            <Link to="/student/results" className="text-blue-600 hover:text-blue-700 text-sm font-semibold">View all →</Link>
+        <section className="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-md">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <h2 className="text-base md:text-lg font-bold" style={{ color: COLORS.dark }}>🏆 Latest Result</h2>
+            <Link to="/student/results" className="text-xs md:text-sm font-semibold" style={{ color: COLORS.secondary }}>View all →</Link>
           </div>
           {latestResult ? (
-            <div className="rounded-xl border border-slate-200 p-4 bg-gradient-to-br from-purple-50 to-pink-50">
-              <div className="text-lg font-bold text-slate-900">{latestResult.exam?.title || 'Exam'}</div>
-              <div className="mt-3 grid grid-cols-2 gap-4">
+            <div className="rounded-lg md:rounded-xl border p-3 md:p-4" style={{ borderColor: COLORS.lightGray, background: `linear-gradient(135deg, ${COLORS.primary}10, ${COLORS.secondary}10)` }}>
+              <div className="text-sm md:text-lg font-bold" style={{ color: COLORS.dark }}>{latestResult.exam?.title || 'Exam'}</div>
+              <div className="mt-2 md:mt-3 grid grid-cols-2 gap-3 md:gap-4">
                 <div>
-                  <div className="text-2xl font-bold text-purple-600">{latestResult.grade || 'N/A'}</div>
-                  <div className="text-xs text-slate-600">Grade</div>
+                  <div className="text-xl md:text-2xl font-bold" style={{ color: COLORS.primary }}>{latestResult.grade || 'N/A'}</div>
+                  <div className="text-[10px] md:text-xs" style={{ color: COLORS.slate }}>Grade</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-purple-600">{latestResult.gpa || 'N/A'}</div>
-                  <div className="text-xs text-slate-600">GPA</div>
+                  <div className="text-xl md:text-2xl font-bold" style={{ color: COLORS.primary }}>{latestResult.gpa || 'N/A'}</div>
+                  <div className="text-[10px] md:text-xs" style={{ color: COLORS.slate }}>GPA</div>
                 </div>
               </div>
             </div>
           ) : (
-            <p className="text-sm text-slate-500 py-4">No published results available yet.</p>
+            <p className="text-xs md:text-sm py-3 md:py-4" style={{ color: COLORS.slate }}>No published results available yet.</p>
           )}
         </section>
       </div>
