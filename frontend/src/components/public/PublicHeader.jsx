@@ -201,37 +201,44 @@ const PublicHeader = () => {
                       <span className="text-xs text-white/80">Est. {SCHOOL_INFO.established}</span>
                     </div>
                   </Link>
-                  { !user ? (
-                    <Link
-                      to="/login?force=true"
-                      onClick={(e) => { setIsOpen(false); }}
-                      className="ml-auto px-4 py-2 rounded-md text-sm font-semibold text-white shadow-xl transition-all hover:scale-105 active:scale-95"
-                      style={{ background: `${COLORS.white}20`, border: `1px solid ${COLORS.white}30`, backdropFilter: 'blur(10px)' }}
-                    >
-                      LOGIN
-                    </Link>
-                  ) : (
-                    (() => {
-                      const role = (user.role || '').toLowerCase();
-                      let dashboardPath = '/';
-                      if (['superadmin','admin','principal'].includes(role)) dashboardPath = '/admin';
-                      else if (role === 'student') dashboardPath = '/student';
-                      else if (role === 'teacher') dashboardPath = '/teacher';
-                      else if (role === 'parent') dashboardPath = '/parent';
-                      else if (role === 'accountant') dashboardPath = '/account';
-                      else if (role === 'examcontroller') dashboardPath = '/exam';
-                      return (
-                        <Link
-                          to={dashboardPath}
-                          onClick={(e) => { setIsOpen(false); }}
-                          className="ml-auto px-4 py-2 rounded-md text-sm font-semibold text-white shadow-xl transition-all hover:scale-105 active:scale-95"
-                          style={{ background: `${COLORS.white}20`, border: `1px solid ${COLORS.white}30`, backdropFilter: 'blur(10px)' }}
-                        >
-                          Dashboard
-                        </Link>
-                      );
-                    })()
-                  )}
+                  <div className="ml-auto flex items-center gap-2">
+                    {/* Language Toggle */}
+                    <div className="flex items-center gap-1 bg-white/20 p-1 rounded-lg backdrop-blur-sm">
+                      <button onClick={() => changeLanguage('en')} className={`px-2.5 py-1.5 rounded-md text-sm font-semibold transition-all duration-300 ${language === 'en' ? 'bg-white text-blue-900 shadow-sm' : 'text-white'}`}>EN</button>
+                      <button onClick={() => changeLanguage('ne')} className={`px-2.5 py-1.5 rounded-md text-sm font-semibold transition-all duration-300 ${language === 'ne' ? 'bg-white text-blue-900 shadow-sm' : 'text-white'}`}>ने</button>
+                    </div>
+                    { !user ? (
+                      <Link
+                        to="/login?force=true"
+                        onClick={(e) => { setIsOpen(false); }}
+                        className="px-4 py-2 rounded-md text-sm font-semibold text-white shadow-xl transition-all hover:scale-105 active:scale-95"
+                        style={{ background: `${COLORS.white}20`, border: `1px solid ${COLORS.white}30`, backdropFilter: 'blur(10px)' }}
+                      >
+                        LOGIN
+                      </Link>
+                    ) : (
+                      (() => {
+                        const role = (user.role || '').toLowerCase();
+                        let dashboardPath = '/';
+                        if (['superadmin','admin','principal'].includes(role)) dashboardPath = '/admin';
+                        else if (role === 'student') dashboardPath = '/student';
+                        else if (role === 'teacher') dashboardPath = '/teacher';
+                        else if (role === 'parent') dashboardPath = '/parent';
+                        else if (role === 'accountant') dashboardPath = '/account';
+                        else if (role === 'examcontroller') dashboardPath = '/exam';
+                        return (
+                          <Link
+                            to={dashboardPath}
+                            onClick={(e) => { setIsOpen(false); }}
+                            className="px-4 py-2 rounded-md text-sm font-semibold text-white shadow-xl transition-all hover:scale-105 active:scale-95"
+                            style={{ background: `${COLORS.white}20`, border: `1px solid ${COLORS.white}30`, backdropFilter: 'blur(10px)' }}
+                          >
+                            Dashboard
+                          </Link>
+                        );
+                      })()
+                    )}
+                  </div>
                 </div>
 
                 {/* Menu items */}
