@@ -144,7 +144,7 @@ export default function Layout({ children }) {
           onLogoutRequest={openLogout}
         />
 
-        <main className="flex-1 p-4 md:p-6 w-full">
+        <main className="flex-1 p-4 md:p-6 w-full lg:ml-8 lg:pt-8">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>

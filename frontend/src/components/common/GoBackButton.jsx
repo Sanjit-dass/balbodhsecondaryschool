@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaArrowLeft } from 'react-icons/fa';
+import { SPACING_CLASSES } from '../../constants/spacing';
 
 /**
  * Reusable Go Back Button Component
@@ -84,7 +85,7 @@ const GoBackButton = ({
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="mb-6 md:mb-8"
+        className="mt-6 mb-6 md:mb-8"
       >
         {buttonContent}
       </motion.div>
@@ -92,7 +93,7 @@ const GoBackButton = ({
   }
 
   return (
-    <div className="mb-6 md:mb-8">
+    <div className="mt-6 mb-6 md:mb-8">
       {buttonContent}
     </div>
   );

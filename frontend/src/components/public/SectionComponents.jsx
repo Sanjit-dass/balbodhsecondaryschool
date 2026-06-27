@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useTranslate } from '../../hooks/useTranslate';
 import { COLORS } from '../../constants/schoolData';
+import { SPACING_CLASSES } from '../../constants/spacing';
 const defaultAvatar = '/images/faculty1.png';
 import { getImageUrl } from '../../services/api';
 
@@ -75,7 +76,7 @@ export const FeatureCard = ({ icon: Icon, title, description, delay }) => {
         <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-white text-xl shadow-md flex-shrink-0" style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}>
           <Icon />
         </div>
-        <h3 className="text-lg md:text-xl font-bold transition-colors duration-300" style={{ color: COLORS.dark }} className="group-hover:text-blue-600">{translatedTitle}</h3>
+        <h3 className="text-lg md:text-xl font-bold transition-colors duration-300 group-hover:text-blue-600" style={{ color: COLORS.dark }}>{translatedTitle}</h3>
       </div>
       <p className="text-sm md:text-base leading-relaxed transition-colors duration-300" style={{ color: COLORS.slate }}>{translatedDescription}</p>
     </motion.div>
@@ -130,7 +131,7 @@ export const TestimonialCard = ({ name, role, text, image, delay }) => {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay }}
       viewport={{ once: true }}
-      className="rounded-xl p-5 md:p-6 lg:p-8 shadow-lg hover:shadow-2xl transition-transform transform hover:-translate-y-2 h-full flex flex-col bg-white/40 backdrop-blur-md border border-white/10"
+      className="p-5 md:p-6 lg:p-8 rounded-xl shadow-lg hover:shadow-2xl transition-transform transform hover:-translate-y-2 h-full flex flex-col bg-white/40 backdrop-blur-md border border-white/10"
     >
       <div className="flex-1 flex flex-col">
         <div className="flex justify-center -mt-10 md:-mt-12 mb-4">
