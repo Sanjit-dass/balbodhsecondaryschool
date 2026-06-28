@@ -35,3 +35,16 @@ export const getGradeColor = (grade) => {
       return 'text-slate-700';
   }
 };
+
+export const calculateStatus = (percentage, passStatus = null) => {
+  // Use the backend passStatus if available, otherwise default to Pass
+  // The backend calculates pass/fail based on subject-wise pass marks
+  const passed = passStatus === 'Pass' || passStatus === null;
+  return {
+    passed,
+    text: passed ? 'PASS' : 'FAIL',
+    display: passed ? 'PASS' : 'FAIL',
+    color: passed ? '#16A34A' : '#DC2626',
+    className: passed ? 'text-green-600' : 'text-red-600'
+  };
+};

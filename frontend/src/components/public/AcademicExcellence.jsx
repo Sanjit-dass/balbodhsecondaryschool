@@ -13,7 +13,7 @@ export default function AcademicExcellence() {
   const fetchAchievements = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API}/api/academic-excellence`);
+      const res = await fetch(`${API}/api/academic-excellence?featured=true`);
       if (!res.ok) throw new Error('Failed to load achievements');
       const body = await res.json();
       const list = Array.isArray(body.data) ? body.data : [];
@@ -49,7 +49,17 @@ export default function AcademicExcellence() {
         ) : achievements.length === 0 ? (
           <div className="text-center py-12 text-gray-500">No achievements published yet.</div>
         ) : (
-          <AchievementSlider achievements={achievements} onSelect={setSelected} />
+          <>
+            <AchievementSlider achievements={achievements} onSelect={setSelected} />
+            {achievements.length > 0 && (
+              <div className="text-center mt-8">
+                <a href="/student-achievements" className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold">
+                  View All Academic Excellence
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                </a>
+              </div>
+            )}
+          </>
         )}
 
         <AnimatePresence>

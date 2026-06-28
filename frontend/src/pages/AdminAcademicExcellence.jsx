@@ -5,7 +5,7 @@ import ResponsiveSelect from '../components/ResponsiveSelect';
 
 function formatDate(d){ if(!d) return ''; try{ const dt = new Date(d); return isNaN(dt.getTime())? '': dt.toISOString().slice(0,10); }catch(e){ return ''; } }
 
-export default function AdminStudentAchievements(){
+export default function AdminAcademicExcellence(){
   const { token } = useContext(AuthContext);
   const API = API_BASE;
 
@@ -67,10 +67,10 @@ export default function AdminStudentAchievements(){
 
   async function fetchAchievements(){
     setLoading(true);
-    try{ const res = await fetch(`${API}/api/student-achievements`); const body = await res.json().catch(()=>({})); const list = Array.isArray(body.data)? body.data : (body.achievements||body.data||[]); setAchievements((list||[]).sort((a,b)=> (a.displayOrder||0)-(b.displayOrder||0))); }catch(e){ console.error(e); setAchievements([]); }finally{ setLoading(false); }
+    try{ const res = await fetch(`${API}/api/academic-excellence`); const body = await res.json().catch(()=>({})); const list = Array.isArray(body.data)? body.data : (body.achievements||body.data||[]); setAchievements((list||[]).sort((a,b)=> (a.displayOrder||0)-(b.displayOrder||0))); }catch(e){ console.error(e); setAchievements([]); }finally{ setLoading(false); }
   }
 
-  function emptyForm(){ return { studentName:'', studentClass:'', title:'', category:'Academic', shortDescription:'', description:'', achievementDate:'', statistics:[], photos:[], status:'published', displayOrder: (achievements.length+1), _newFiles:[], _coverIndex:0 }; }
+  function emptyForm(){ return { studentName:'', studentClass:'', rollNumber:'', title:'', category:'Academic', shortDescription:'', description:'', achievementDate:'', academicYear:'', percentage:'', gpa:'', marks:'', position:'', rank:'', featured:false, statistics:[], photos:[], status:'published', displayOrder: (achievements.length+1), _newFiles:[], _coverIndex:0 }; }
   function openNew(){ setEditing(emptyForm()); setShowForm(true); }
 
   function openEdit(a){
@@ -105,46 +105,62 @@ export default function AdminStudentAchievements(){
         const fd = new FormData();
         fd.append('studentName', editing.studentName||'');
         fd.append('studentClass', editing.studentClass||'');
+        fd.append('rollNumber', editing.rollNumber||'');
         fd.append('title', editing.title||'');
         fd.append('category', editing.category||'Academic');
         fd.append('shortDescription', editing.shortDescription||'');
         fd.append('description', editing.description||'');
         fd.append('achievementDate', editing.achievementDate||'');
+        fd.append('academicYear', editing.academicYear||'');
+        fd.append('percentage', editing.percentage||'');
+        fd.append('gpa', editing.gpa||'');
+        fd.append('marks', editing.marks||'');
+        fd.append('position', editing.position||'');
+        fd.append('rank', editing.rank||'');
+        fd.append('featured', editing.featured ? 'true' : 'false');
         fd.append('statistics', JSON.stringify(editing.statistics||[]));
         fd.append('displayOrder', String(editing.displayOrder||0));
         fd.append('status', editing.status||'published');
         fd.append('coverIndex', String(editing._coverIndex||0));
         (editing._newFiles||[]).forEach(f=> fd.append('photos', f));
-        res = await fetch(isNew? `${API}/api/student-achievements` : `${API}/api/student-achievements/${editing._id}`, { method: isNew? 'POST':'PUT', body: fd, headers: { Authorization: token? `Bearer ${token}`: undefined } });
+        res = await fetch(isNew? `${API}/api/academic-excellence` : `${API}/api/academic-excellence/${editing._id}`, { method: isNew? 'POST':'PUT', body: fd, headers: { Authorization: token? `Bearer ${token}`: undefined } });
       } else {
         const payload = {
           studentName: editing.studentName,
           studentClass: editing.studentClass,
+          rollNumber: editing.rollNumber,
           title: editing.title,
           category: editing.category,
           shortDescription: editing.shortDescription,
           description: editing.description,
           achievementDate: editing.achievementDate,
+          academicYear: editing.academicYear,
+          percentage: editing.percentage,
+          gpa: editing.gpa,
+          marks: editing.marks,
+          position: editing.position,
+          rank: editing.rank,
+          featured: editing.featured,
           statistics: editing.statistics||[],
           displayOrder: editing.displayOrder||0,
           status: editing.status||'published',
           photos: editing.photos||[]
         };
         if (editing._coverIndex !== undefined && editing.photos && editing.photos[editing._coverIndex]) payload.coverPhoto = editing.photos[editing._coverIndex]._id;
-        res = await fetch(isNew? `${API}/api/student-achievements` : `${API}/api/student-achievements/${editing._id}`, { method: isNew? 'POST':'PATCH', headers: {'Content-Type':'application/json', Authorization: token? `Bearer ${token}`: undefined}, body: JSON.stringify(payload) });
+        res = await fetch(isNew? `${API}/api/academic-excellence` : `${API}/api/academic-excellence/${editing._id}`, { method: isNew? 'POST':'PATCH', headers: {'Content-Type':'application/json', Authorization: token? `Bearer ${token}`: undefined}, body: JSON.stringify(payload) });
       }
 
       const body = await res.json().catch(()=>({}));
       if (!res.ok || body.success === false){ const msg = body.message || body.error || 'Save failed'; throw new Error(msg); }
-      await fetchAchievements(); try{ if (typeof window !== 'undefined') window.dispatchEvent(new Event('student-achievements:updated')); }catch(e){}
+      await fetchAchievements(); try{ if (typeof window !== 'undefined') window.dispatchEvent(new Event('academic-excellence:updated')); }catch(e){}
       closeForm();
     }catch(err){ console.error(err); setSaveError(err.message||'Failed'); alert(err.message||'Failed'); }
     finally{ setSaving(false); }
   }
 
-  async function deleteOne(id){ if(!confirm('Are you sure you want to permanently delete this record? This action cannot be undone.')) return; const res = await fetch(`${API}/api/student-achievements/${id}`, { method:'DELETE', headers: { Authorization: token? `Bearer ${token}`: undefined } }); if(!res.ok){ alert('Delete failed'); return; } await fetchAchievements(); }
+  async function deleteOne(id){ if(!confirm('Are you sure you want to permanently delete this record? This action cannot be undone.')) return; const res = await fetch(`${API}/api/academic-excellence/${id}`, { method:'DELETE', headers: { Authorization: token? `Bearer ${token}`: undefined } }); if(!res.ok){ alert('Delete failed'); return; } await fetchAchievements(); }
 
-  async function deletePhoto(i){ if (!editing) return; if (i < (editing.photos||[]).length){ if(!confirm('Are you sure you want to permanently delete this record? This action cannot be undone.')) return; const photo = editing.photos[i]; const res = await fetch(`${API}/api/student-achievements/${editing._id}/photos/${photo._id}`, { method:'DELETE', headers:{ Authorization: token? `Bearer ${token}`: undefined } }); if(!res.ok){ alert('Photo delete failed'); return; } setEditing(prev=> ({ ...prev, photos: prev.photos.filter((_,idx)=> idx!==i) })); }
+  async function deletePhoto(i){ if (!editing) return; if (i < (editing.photos||[]).length){ if(!confirm('Are you sure you want to permanently delete this record? This action cannot be undone.')) return; const photo = editing.photos[i]; const res = await fetch(`${API}/api/academic-excellence/${editing._id}/photos/${photo._id}`, { method:'DELETE', headers:{ Authorization: token? `Bearer ${token}`: undefined } }); if(!res.ok){ alert('Photo delete failed'); return; } setEditing(prev=> ({ ...prev, photos: prev.photos.filter((_,idx)=> idx!==i) })); }
   }
 
   return (
@@ -152,8 +168,8 @@ export default function AdminStudentAchievements(){
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold">Student Achievements Management</h1>
-            <div className="text-sm text-slate-600">Manage student achievements, awards, and recognition records.</div>
+            <h1 className="text-2xl font-bold">🏆 Academic Excellence Management</h1>
+            <div className="text-sm text-slate-600">Manage academic excellence, student achievements, recognition records, scholarships, competition winners, awards, and success stories.</div>
           </div>
           <div>
             <button onClick={openNew} className="px-4 py-2 bg-green-600 text-white rounded">+ Add Achievement</button>
@@ -171,6 +187,8 @@ export default function AdminStudentAchievements(){
                     <th className="px-4 py-2">Title</th>
                     <th className="px-4 py-2">Class</th>
                     <th className="px-4 py-2">Category</th>
+                    <th className="px-4 py-2">Academic Year</th>
+                    <th className="px-4 py-2">Featured</th>
                     <th className="px-4 py-2">Status</th>
                     <th className="px-4 py-2">Last Updated</th>
                     <th className="px-4 py-2">Actions</th>
@@ -186,13 +204,15 @@ export default function AdminStudentAchievements(){
                         <td className="px-4 py-3">{a.title}</td>
                         <td className="px-4 py-3">{a.studentClass||''}</td>
                         <td className="px-4 py-3">{a.category||'Other'}</td>
+                        <td className="px-4 py-3">{a.academicYear||'—'}</td>
+                        <td className="px-4 py-3">{a.featured ? '⭐' : '—'}</td>
                         <td className="px-4 py-3">{a.status||'draft'}</td>
                         <td className="px-4 py-3">{a.updatedAt? formatDate(a.updatedAt):(a.createdAt? formatDate(a.createdAt):'')}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <button onClick={()=>{ setEditing(a); setShowForm(true); }} className="px-3 py-1 border rounded">View</button>
                             <button onClick={()=> openEdit(a)} className="px-3 py-1 bg-blue-600 text-white rounded">Edit</button>
-                            <button onClick={()=> { if(confirm('Delete this achievement?')){ fetch(`${API}/api/student-achievements/${a._id}`, { method:'DELETE', headers:{ Authorization: token? `Bearer ${token}`: undefined } }).then(()=>fetchAchievements()); } }} className="px-3 py-1 bg-red-600 text-white rounded">Delete</button>
+                            <button onClick={()=> { if(confirm('Delete this achievement?')){ fetch(`${API}/api/academic-excellence/${a._id}`, { method:'DELETE', headers:{ Authorization: token? `Bearer ${token}`: undefined } }).then(()=>fetchAchievements()); } }} className="px-3 py-1 bg-red-600 text-white rounded">Delete</button>
                           </div>
                         </td>
                       </tr>
@@ -231,8 +251,19 @@ export default function AdminStudentAchievements(){
                           />
                         </div>
                         <div>
+                          <label className="block font-semibold">Roll Number (Optional)</label>
+                          <input className="w-full border p-2 rounded" value={editing.rollNumber||''} onChange={(e)=> setEditing(prev=> ({ ...prev, rollNumber: e.target.value }))} />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
                           <label className="block font-semibold">Achievement Title</label>
                           <input className="w-full border p-2 rounded" value={editing.title||''} onChange={(e)=> setEditing(prev=> ({ ...prev, title: e.target.value }))} />
+                        </div>
+                        <div>
+                          <label className="block font-semibold">Academic Year</label>
+                          <input className="w-full border p-2 rounded" value={editing.academicYear||''} onChange={(e)=> setEditing(prev=> ({ ...prev, academicYear: e.target.value }))} placeholder="e.g., 2026" />
                         </div>
                       </div>
 
@@ -265,9 +296,44 @@ export default function AdminStudentAchievements(){
                         <textarea className="w-full border p-2 rounded h-28" value={editing.description||''} onChange={(e)=> setEditing(prev=> ({ ...prev, description: e.target.value }))} />
                       </div>
 
-                      <div>
-                        <label className="block font-semibold">Achievement Date</label>
-                        <input type="date" className="w-full border p-2 rounded" value={editing.achievementDate||''} onChange={(e)=> setEditing(prev=> ({ ...prev, achievementDate: e.target.value }))} />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block font-semibold">Achievement Date</label>
+                          <input type="date" className="w-full border p-2 rounded" value={editing.achievementDate||''} onChange={(e)=> setEditing(prev=> ({ ...prev, achievementDate: e.target.value }))} />
+                        </div>
+                        <div>
+                          <label className="block font-semibold">Featured</label>
+                          <select className="w-full border p-2 rounded" value={editing.featured ? 'true' : 'false'} onChange={(e)=> setEditing(prev=> ({ ...prev, featured: e.target.value === 'true' }))}>
+                            <option value="false">No</option>
+                            <option value="true">Yes (Show on Homepage)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block font-semibold">Percentage</label>
+                          <input className="w-full border p-2 rounded" value={editing.percentage||''} onChange={(e)=> setEditing(prev=> ({ ...prev, percentage: e.target.value }))} placeholder="e.g., 95.5%" />
+                        </div>
+                        <div>
+                          <label className="block font-semibold">GPA</label>
+                          <input className="w-full border p-2 rounded" value={editing.gpa||''} onChange={(e)=> setEditing(prev=> ({ ...prev, gpa: e.target.value }))} placeholder="e.g., 4.0" />
+                        </div>
+                        <div>
+                          <label className="block font-semibold">Marks</label>
+                          <input className="w-full border p-2 rounded" value={editing.marks||''} onChange={(e)=> setEditing(prev=> ({ ...prev, marks: e.target.value }))} placeholder="e.g., 500/500" />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block font-semibold">Position</label>
+                          <input className="w-full border p-2 rounded" value={editing.position||''} onChange={(e)=> setEditing(prev=> ({ ...prev, position: e.target.value }))} placeholder="e.g., 1st, 2nd, 3rd" />
+                        </div>
+                        <div>
+                          <label className="block font-semibold">Rank</label>
+                          <input className="w-full border p-2 rounded" value={editing.rank||''} onChange={(e)=> setEditing(prev=> ({ ...prev, rank: e.target.value }))} placeholder="e.g., School Topper, District First" />
+                        </div>
                       </div>
 
                       <div>
@@ -350,7 +416,15 @@ export default function AdminStudentAchievements(){
                               <div className="flex-1">
                                 <div className="font-semibold text-lg">{editing.title || 'Untitled'}</div>
                                 <div className="text-sm text-slate-600 mt-1">{editing.studentName || ''} • {editing.studentClass || ''}</div>
+                                <div className="text-sm text-slate-600 mt-1">{editing.academicYear ? `Academic Year: ${editing.academicYear}` : ''}</div>
                                 <div className="text-sm text-slate-600 mt-1">{editing.shortDescription || ''}</div>
+                                {(editing.percentage || editing.gpa || editing.marks) && (
+                                  <div className="text-sm text-slate-600 mt-1">
+                                    {editing.percentage && <span>{editing.percentage} </span>}
+                                    {editing.gpa && <span>• GPA: {editing.gpa} </span>}
+                                    {editing.marks && <span>• {editing.marks}</span>}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>

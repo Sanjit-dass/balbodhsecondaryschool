@@ -51,8 +51,8 @@ const StudentAchievementsPage = () => {
     return ()=>{ try{ if (typeof document !== 'undefined') document.body.style.overflow = prev; }catch(e){} };
   }, [selectedAchievement]);
 
-  // Build category list but exclude the 'Academic' category to avoid mixing with Academic Excellence
-  const categories = [...new Set((achievements||[]).map(a => a.category).filter(Boolean))].filter(c => c !== 'Academic');
+  // Build category list
+  const categories = [...new Set((achievements||[]).map(a => a.category).filter(Boolean))];
 
   const filtered = !filterCategory
     ? achievements

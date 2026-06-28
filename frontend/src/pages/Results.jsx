@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import api from '../services/api';
-import { calculateGrade, getGradeColor } from '../utils/gradingSystem';
+import { calculateGrade, getGradeColor, calculateStatus } from '../utils/gradingSystem';
 import html2pdf from 'html2pdf.js';
 import Marksheet from '../components/Marksheet';
 
@@ -19,10 +19,11 @@ export default function Results() {
 
   const downloadCSV = () => {
     if (!selectedExam || !results.length) return;
-    const headers = ['Roll No', 'Student Name', 'Total Marks', 'Percentage', 'Grade', 'GPA', 'Position'];
+    const headers = ['Roll No', 'Student Name', 'Total Marks', 'Percentage', 'Grade', 'GPA', 'Status', 'Position'];
     const rows = results.map((result) => {
       const percentage = result.totalMaxMarks > 0 ? (result.totalMarksObtained / result.totalMaxMarks) * 100 : 0;
       const gradeInfo = calculateGrade(percentage);
+      const statusInfo = calculateStatus(percentage, result.passStatus);
       return [
         result.student?.rollNumber || result.student?.admissionNumber || '',
         result.student?.user?.name || result.student?.fullName || '',
@@ -30,6 +31,7 @@ export default function Results() {
         percentage.toFixed(2),
         gradeInfo.grade,
         gradeInfo.gpa.toFixed(1),
+        statusInfo.text,
         result.classPosition || 'N/A'
       ];
     });
@@ -66,15 +68,17 @@ export default function Results() {
         const obtained = result.totalMarksObtained || 0;
         const percentage = totalMax > 0 ? (obtained / totalMax) * 100 : 0;
         const gradeInfo = calculateGrade(percentage);
-        const status = result.passStatus || (percentage >= 40 ? 'Pass' : 'Fail');
+        const statusInfo = calculateStatus(percentage, result.passStatus);
+        const statusColor = statusInfo.color;
         return `
           <tr>
             <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${result.classPosition || index + 1}</td>
             <td style="border: 1px solid #d1d5db; padding: 10px; white-space: normal; word-break: break-word;">${result.student?.user?.name || result.student?.fullName || 'N/A'}</td>
             <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${obtained}/${totalMax}</td>
             <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${percentage.toFixed(2)}%</td>
+            <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${gradeInfo.grade}</td>
             <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${gradeInfo.gpa.toFixed(1)}</td>
-            <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${status}</td>
+            <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap; font-weight: bold; color: ${statusColor};">${statusInfo.display}</td>
           </tr>
         `;
       })
@@ -108,7 +112,7 @@ export default function Results() {
               <th style="border: 1px solid #d1d5db; padding: 10px; min-width: 110px;">Percentage</th>
               <th style="border: 1px solid #d1d5db; padding: 10px; min-width: 90px;">Grade</th>
               <th style="border: 1px solid #d1d5db; padding: 10px; min-width: 70px;">GPA</th>
-              <th style="border: 1px solid #d1d5db; padding: 10px; min-width: 90px;">Status</th>
+              <th style="border: 1px solid #d1d5db; padding: 10px; min-width: 100px;">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -119,7 +123,7 @@ export default function Results() {
     `;
 
     const container = document.createElement('div');
-    container.style.maxWidth = '180mm';
+    container.style.maxWidth = '210mm';
     container.style.width = '100%';
     container.style.padding = '16px';
     container.style.background = '#fff';
@@ -232,16 +236,6 @@ export default function Results() {
     <div className="space-y-6 p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">Results / Marksheet</h1>
-        {selectedExam && results.length > 0 && (
-          <button
-            type="button"
-            onClick={downloadFullClassResultPDF}
-            disabled={loading}
-            className="self-start px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed"
-          >
-            📄 Download Full Class Result
-          </button>
-        )}
       </div>
 
       {!selectedResult ? (
@@ -357,6 +351,7 @@ export default function Results() {
                 ) : filteredResults.length === 0 ? (
                   <div className="text-center text-slate-500">No results found</div>
                 ) : (
+                  <>
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead className="bg-slate-100 border-b">
@@ -366,6 +361,8 @@ export default function Results() {
                           <th className="px-4 py-2 text-center text-sm font-semibold">Total Marks</th>
                           <th className="px-4 py-2 text-center text-sm font-semibold">Percentage</th>
                           <th className="px-4 py-2 text-center text-sm font-semibold">Grade</th>
+                          <th className="px-4 py-2 text-center text-sm font-semibold">GPA</th>
+                          <th className="px-4 py-2 text-center text-sm font-semibold">Status</th>
                           <th className="px-4 py-2 text-center text-sm font-semibold">Position</th>
                           <th className="px-4 py-2 text-center text-sm font-semibold">Action</th>
                         </tr>
@@ -374,6 +371,7 @@ export default function Results() {
                         {filteredResults.map((result, idx) => {
                           const percentage = result.totalMaxMarks > 0 ? (result.totalMarksObtained / result.totalMaxMarks) * 100 : 0;
                           const gradeInfo = calculateGrade(percentage);
+                          const statusInfo = calculateStatus(percentage, result.passStatus);
                           return (
                             <tr key={idx} className="border-b hover:bg-slate-50">
                               <td className="px-4 py-2 text-sm">{result.student?.rollNumber || result.student?.admissionNumber || '-'}</td>
@@ -381,6 +379,8 @@ export default function Results() {
                               <td className="px-4 py-2 text-center text-sm">{result.totalMarksObtained || 0}</td>
                               <td className="px-4 py-2 text-center text-sm">{percentage.toFixed(2)}%</td>
                               <td className={`px-4 py-2 text-center text-sm font-semibold ${getGradeColor(gradeInfo.grade)}`}>{gradeInfo.grade}</td>
+                              <td className="px-4 py-2 text-center text-sm font-semibold">{gradeInfo.gpa.toFixed(1)}</td>
+                              <td className={`px-4 py-2 text-center text-sm font-bold ${statusInfo.className}`}>{statusInfo.display}</td>
                               <td className="px-4 py-2 text-center text-sm">{Number.isFinite(result.classPosition) ? result.classPosition : 'N/A'}</td>
                               <td className="px-4 py-2 text-center">
                                 <button
@@ -396,6 +396,19 @@ export default function Results() {
                       </tbody>
                     </table>
                   </div>
+                  {selectedExam && results.length > 0 && (
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={downloadFullClassResultPDF}
+                        disabled={loading}
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed"
+                      >
+                        📄 Download Full Class Result
+                      </button>
+                    </div>
+                  )}
+                  </>
                 )}
               </>
             )}

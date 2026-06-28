@@ -18,7 +18,7 @@ const StudentAchievementSchema = new mongoose.Schema({
   achievementDate: { type: Date },
   shortDescription: { type: String, trim: true },
   description: { type: String, trim: true },
-  category: { type: String, default: 'Academic', trim: true },
+  category: { type: String, enum: ['Academic', 'Sports', 'Cultural', 'Science', 'Technology', 'Other'], default: 'Academic', trim: true },
   status: { type: String, enum: ['draft','published','hidden'], default: 'published' },
   statistics: { type: [StatisticSchema], default: [] },
   photos: { type: [PhotoSchema], default: [] },

@@ -12,7 +12,12 @@ const upload = multer({ storage: multer.memoryStorage() });
 // public list
 router.get('/', async (req, res) => {
   try {
-    const items = await StudentAchievement.find({ status: { $ne: 'hidden' } }).sort({ displayOrder: 1, createdAt: -1 }).lean();
+    const { category, academicYear, featured } = req.query;
+    const filter = { status: 'published' };
+    if (category) filter.category = category;
+    if (academicYear) filter.academicYear = academicYear;
+    if (featured === 'true') filter.featured = true;
+    const items = await StudentAchievement.find(filter).sort({ displayOrder: 1, createdAt: -1 }).lean();
     return res.json({ success: true, data: items });
   } catch (err) {
     console.error(err);
@@ -35,6 +40,8 @@ router.get('/:id', async (req, res) => {
 // admin create
 router.post('/', auth, roles(['superadmin','principal','admin']), upload.array('photos'), async (req, res) => {
   try {
+    console.log('POST student-achievements body:', req.body);
+    console.log('POST student-achievements files:', req.files?.length);
     const body = req.body || {};
     const title = body.title || '';
     const studentName = body.studentName || '';
@@ -42,18 +49,22 @@ router.post('/', auth, roles(['superadmin','principal','admin']), upload.array('
     const achievementDate = body.achievementDate ? new Date(body.achievementDate) : undefined;
     const shortDescription = body.shortDescription || '';
     const description = body.description || '';
+    const category = body.category || 'Academic';
     let statistics = [];
     if (body.statistics) {
       try {
         const parsed = typeof body.statistics === 'string' ? JSON.parse(body.statistics) : body.statistics;
         if (Array.isArray(parsed)) statistics = parsed;
         else if (parsed && typeof parsed === 'object') statistics = Object.entries(parsed).map(([k,v])=> ({ label:k, value:String(v) }));
-      } catch(e){ statistics = []; }
+      } catch(e){ console.error('Statistics parse error:', e); statistics = []; }
     }
     const displayOrder = body.displayOrder ? Number(body.displayOrder) : 0;
     const status = body.status || 'published';
 
-    const item = new StudentAchievement({ title, studentName, studentClass, achievementDate, shortDescription, description, statistics, displayOrder, status, createdBy: req.user.id || req.user._id });
+    const item = new StudentAchievement({ 
+      title, studentName, studentClass, achievementDate, shortDescription, description, 
+      category, statistics, displayOrder, status, createdBy: req.user?.id || req.user?._id 
+    });
 
     if (req.files && req.files.length) {
       const folder = `balbodh-school/student-achievements/${item._id}`;
@@ -74,10 +85,11 @@ router.post('/', auth, roles(['superadmin','principal','admin']), upload.array('
     }
 
     await item.save();
+    console.log('Student achievement saved successfully:', item._id);
     return res.json({ success: true, data: item });
   } catch (err) {
-    console.error('Create student achievement error', err);
-    return res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Create student achievement error:', err);
+    return res.status(500).json({ success: false, message: err.message || 'Server error' });
   }
 });
 
@@ -86,13 +98,14 @@ router.patch('/:id', auth, roles(['superadmin','principal','admin']), async (req
   try {
     const item = await StudentAchievement.findById(req.params.id);
     if (!item) return res.status(404).json({ message: 'Not found' });
-    const { title, description, statistics, displayOrder, status, studentName, studentClass, achievementDate, shortDescription } = req.body;
+    const { title, description, statistics, displayOrder, status, shortDescription, studentName, studentClass, achievementDate, category } = req.body;
     if (title !== undefined) item.title = title;
     if (description !== undefined) item.description = description;
     if (studentName !== undefined) item.studentName = studentName;
     if (studentClass !== undefined) item.studentClass = studentClass;
     if (achievementDate !== undefined) item.achievementDate = achievementDate ? new Date(achievementDate) : undefined;
     if (shortDescription !== undefined) item.shortDescription = shortDescription;
+    if (category !== undefined) item.category = category;
     if (statistics !== undefined) item.statistics = statistics;
     if (displayOrder !== undefined) item.displayOrder = displayOrder;
     if (status !== undefined) item.status = status;
@@ -117,6 +130,7 @@ router.put('/:id', auth, roles(['superadmin','principal','admin']), upload.array
     if (body.studentClass !== undefined) item.studentClass = body.studentClass;
     if (body.achievementDate !== undefined) item.achievementDate = body.achievementDate ? new Date(body.achievementDate) : undefined;
     if (body.shortDescription !== undefined) item.shortDescription = body.shortDescription;
+    if (body.category !== undefined) item.category = body.category;
     if (body.statistics !== undefined) {
       try {
         const parsed = typeof body.statistics === 'string' ? JSON.parse(body.statistics) : body.statistics;

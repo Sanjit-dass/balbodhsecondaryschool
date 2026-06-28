@@ -40,6 +40,7 @@ import Notifications from './pages/Notifications';
 import CreateNotification from './pages/notifications/CreateNotification';
 import Results from './pages/Results';
 import AdminAchievements from './pages/AdminAchievements';
+import AdminAcademicExcellence from './pages/AdminAcademicExcellence';
 import AdminStudentAchievements from './pages/AdminStudentAchievements';
 import AdminFacilities from './pages/AdminFacilities';
 import AdminEvents from './pages/AdminEvents';
@@ -82,6 +83,7 @@ import PublicContact from './pages/public/Contact';
 import PrincipalMessage from './pages/public/PrincipalMessage';
 import StudentAchievements from './pages/public/StudentAchievements';
 import AcademicExcellence from './pages/public/AcademicExcellence';
+import AcademicExcellencePage from './pages/public/AcademicExcellencePage';
 import LanguageToggleTest from './pages/public/LanguageToggleTest';
 import PublicLayout from './components/public/PublicLayout';
 import ScrollToTop from './components/ScrollToTop';
@@ -98,12 +100,12 @@ export default function App(){
         <Route path="/" element={<PublicLayout><PublicHome /></PublicLayout>} />
         <Route path="/about" element={<PublicLayout><PublicAbout /></PublicLayout>} />
         <Route path="/academics" element={<PublicLayout><PublicAcademics /></PublicLayout>} />
-        <Route path="/academic-excellence" element={<PublicLayout><AcademicExcellence /></PublicLayout>} />
         <Route path="/admissions" element={<PublicLayout><PublicAdmissions /></PublicLayout>} />
         <Route path="/facilities" element={<PublicLayout><FacilitiesPage /></PublicLayout>} />
         <Route path="/facilities/:id" element={<PublicLayout><PublicFacilityDetails /></PublicLayout>} />
         <Route path="/principal-message" element={<PublicLayout><PrincipalMessage /></PublicLayout>} />
         <Route path="/student-achievements" element={<PublicLayout><StudentAchievements /></PublicLayout>} />
+        <Route path="/academic-excellence" element={<PublicLayout><AcademicExcellencePage /></PublicLayout>} />
         <Route path="/student-life" element={<PublicLayout><PublicStudentLife /></PublicLayout>} />
         <Route path="/gallery" element={<PublicLayout><PublicGallery /></PublicLayout>} />
         <Route path="/notice-board" element={<PublicLayout><PublicNoticeBoard /></PublicLayout>} />
@@ -208,6 +210,7 @@ export default function App(){
           <Route path="admit-cards" element={<AdminAdmitCardNew />} />
           <Route path="admit-cards/view/:studentId" element={<AdmitCardView />} />
           <Route path="achievements" element={<AdminAchievements />} />
+          <Route path="academic-excellence" element={<AdminAcademicExcellence />} />
           <Route path="student-achievements" element={<AdminStudentAchievements />} />
           <Route path="photo-gallery" element={<AdminPhotoGallery />} />
           <Route path="admissions" element={<AdminAdmissions />} />

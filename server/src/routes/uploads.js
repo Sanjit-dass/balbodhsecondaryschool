@@ -38,7 +38,7 @@ router.post('/', auth, roles(['superadmin','principal','admin']), upload.single(
         folder,
         resource_type: resourceType,
         use_filename: true,
-        unique_filename: false,
+        unique_filename: true,
         overwrite: false,
       },
       async (error, result) => {
@@ -52,8 +52,14 @@ router.post('/', auth, roles(['superadmin','principal','admin']), upload.single(
           return res.status(500).json({ message: 'Upload succeeded but no file URL returned' });
         }
 
-        console.log('Cloudinary upload response:', result);
+        // Validate the URL is properly formed
         const fileUrl = result.secure_url || result.url;
+        if (!fileUrl || !fileUrl.startsWith('http')) {
+          console.error('Invalid Cloudinary URL:', fileUrl);
+          return res.status(500).json({ message: 'Cloudinary returned invalid URL' });
+        }
+
+        console.log('Cloudinary upload response:', result);
         console.log('📎 Upload complete: resource_type=', result.resource_type, 'type=', result.type, 'format=', result.format);
         console.log('SAVED FILE URL:', fileUrl, 'PUBLIC ID:', result.public_id);
 

@@ -39,7 +39,6 @@ import {
 import { getImageUrl } from '../../services/api';
 import StaffModal from '../../components/public/StaffModal';
 import HeroSlider from '../../components/public/HeroSlider';
-const AcademicExcellence = React.lazy(() => import('../../components/public/AcademicExcellence'));
 const StudentAchievements = React.lazy(() => import('./StudentAchievements'));
 const Facilities = React.lazy(() => import('../../components/public/Facilities'));
 import HomeAnnouncementBanner from '../../components/public/HomeAnnouncementBanner';
@@ -401,13 +400,6 @@ import api from '../../services/api';
 </div>
       </section>
       
-      {/* Academic Excellence Section - Database Driven */}
-      <Suspense fallback={<div className="py-12 text-center">Loading Academic Excellence…</div>}>
-        <div id="academics">
-          <AcademicExcellence />
-        </div>
-      </Suspense>
-
       {/* Facilities Showcase Section - Database Driven */}
       <Suspense fallback={<div className="py-12 text-center">Loading Facilities…</div>}>
         <div id="facilities">
@@ -460,8 +452,6 @@ import api from '../../services/api';
           <StudentAchievements />
         </div>
       </Suspense>
-
-      {/* Achievements are displayed via the AcademicExcellence component (DB-driven) */}
 
       {/* Testimonials Section */}
       <section className="py-12 md:py-16 lg:py-20 xl:py-28 bg-gradient-to-b from-gray-50 to-white">
