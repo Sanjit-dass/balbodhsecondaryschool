@@ -187,7 +187,7 @@ export default function Login() {
         className="absolute top-4 left-4 z-30 rounded-2xl px-3 py-2 shadow-xl"
         style={{ backgroundColor: `${COLORS.dark}90`, backdropFilter: 'blur(10px)' }}
       >
-        <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-white/80 transition-colors">
+        <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-white/80 transition-colors ">
           <span>←</span> Back to Home
         </Link>
       </motion.div>
@@ -268,7 +268,7 @@ export default function Login() {
         style={{ backgroundColor: `${COLORS.error}40`, backdropFilter: 'blur(10px)' }}
       ></motion.div>
       
-      <div className="relative z-10 mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 min-h-screen flex items-center">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-12 pb-32 sm:px-6 lg:px-8 min-h-screen flex items-center">
         <motion.div
           initial={{ opacity: 0, y: 50, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
