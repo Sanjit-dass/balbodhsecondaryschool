@@ -20,10 +20,6 @@ function openPdf(receipt, print = false) {
   const url = receipt?.receiptUrl || receipt?.pdfUrl || receipt?.receipt?.pdfUrl;
   const base64 = receipt?.pdfBase64 || receipt?.receipt?.pdfBase64;
 
-  if (receiptId) {
-    return false;
-  }
-
   if (url) {
     const win = window.open(url, '_blank', 'noopener,noreferrer');
     if (print && win) setTimeout(() => win.print?.(), 600);
@@ -33,39 +29,6 @@ function openPdf(receipt, print = false) {
   if (base64) {
     const win = window.open(`data:application/pdf;base64,${base64}`, '_blank', 'noopener,noreferrer');
     if (print && win) setTimeout(() => win.print?.(), 600);
-    return true;
-  }
-
-  return false;
-}
-
-function downloadReceipt(receipt) {
-  const url = receipt?.receiptUrl || receipt?.pdfUrl || receipt?.receipt?.pdfUrl;
-  const base64 = receipt?.pdfBase64 || receipt?.receipt?.pdfBase64;
-  const filename = `${receipt?.receiptNumber || receipt?.receiptId || receipt?.id || 'receipt'}.pdf`;
-
-  if (url) {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    return true;
-  }
-
-  if (base64) {
-    const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
-    const objectUrl = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
-    const link = document.createElement('a');
-    link.href = objectUrl;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(objectUrl);
     return true;
   }
 
@@ -260,13 +223,6 @@ export default function StudentFeeReceiptView() {
                             className="rounded bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700"
                           >
                             View
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => downloadReceipt(receipt)}
-                            className="rounded border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                          >
-                            Download
                           </button>
                           <button
                             type="button"

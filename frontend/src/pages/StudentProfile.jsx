@@ -1024,44 +1024,7 @@ export default function StudentProfile({ studentId }){
                         >
                           View
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const url = item.receiptUrl || item.pdfUrl || item.receipt?.pdfUrl || null;
-                            const base64 = item.pdfBase64 || item.receipt?.pdfBase64 || null;
-                            if (url) {
-                              const a = document.createElement('a');
-                              a.href = url;
-                              a.download = `${item.receiptNumber || 'receipt'}.pdf`;
-                              a.target = '_blank';
-                              a.rel = 'noopener noreferrer';
-                              document.body.appendChild(a);
-                              a.click();
-                              a.remove();
-                              return;
-                            }
-                            if (base64) {
-                              const byteChars = atob(base64);
-                              const byteNumbers = new Array(byteChars.length);
-                              for (let i = 0; i < byteChars.length; i += 1) byteNumbers[i] = byteChars.charCodeAt(i);
-                              const byteArray = new Uint8Array(byteNumbers);
-                              const blob = new Blob([byteArray], { type: 'application/pdf' });
-                              const downloadUrl = URL.createObjectURL(blob);
-                              const a = document.createElement('a');
-                              a.href = downloadUrl;
-                              a.download = `${item.receiptNumber || 'receipt'}.pdf`;
-                              document.body.appendChild(a);
-                              a.click();
-                              a.remove();
-                              URL.revokeObjectURL(downloadUrl);
-                              return;
-                            }
-                            alert('PDF not available for this receipt.');
-                          }}
-                          className="rounded-2xl border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
-                        >
-                          Download
-                        </button>
+                       
                         <button
                           type="button"
                           onClick={() => {
@@ -1175,44 +1138,6 @@ export default function StudentProfile({ studentId }){
                           className="rounded-2xl bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700 transition"
                         >
                           View
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const url = item.receiptUrl || item.pdfUrl || item.receipt?.pdfUrl || null;
-                            const base64 = item.pdfBase64 || item.receipt?.pdfBase64 || null;
-                            if (url) {
-                              const a = document.createElement('a');
-                              a.href = url;
-                              a.download = `${item.receiptNumber || 'receipt'}.pdf`;
-                              a.target = '_blank';
-                              a.rel = 'noopener noreferrer';
-                              document.body.appendChild(a);
-                              a.click();
-                              a.remove();
-                              return;
-                            }
-                            if (base64) {
-                              const byteChars = atob(base64);
-                              const byteNumbers = new Array(byteChars.length);
-                              for (let i = 0; i < byteChars.length; i += 1) byteNumbers[i] = byteChars.charCodeAt(i);
-                              const byteArray = new Uint8Array(byteNumbers);
-                              const blob = new Blob([byteArray], { type: 'application/pdf' });
-                              const downloadUrl = URL.createObjectURL(blob);
-                              const a = document.createElement('a');
-                              a.href = downloadUrl;
-                              a.download = `${item.receiptNumber || 'receipt'}.pdf`;
-                              document.body.appendChild(a);
-                              a.click();
-                              a.remove();
-                              URL.revokeObjectURL(downloadUrl);
-                              return;
-                            }
-                            alert('PDF not available for this receipt.');
-                          }}
-                          className="rounded-2xl border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
-                        >
-                          Download
                         </button>
                         <button
                           type="button"

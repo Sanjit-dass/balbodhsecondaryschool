@@ -127,82 +127,133 @@ export default function ReceiptPage(){
     return () => { mounted = false; };
   }, [idToUse]);
 
-  const handleDownloadPdf = useCallback(() => {
+  const handleDownloadPdf = useCallback(async () => {
+    console.log('Download PDF - PDF state:', { hasUrl: !!pdf.url, hasBase64: !!pdf.base64, hasReceipt: !!receipt });
+    
     if (pdf.url) {
-      const a = document.createElement('a');
-      a.href = pdf.url;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      a.click();
-      return;
+      console.log('Downloading from URL:', pdf.url);
+      try {
+        const response = await fetch(pdf.url);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${receipt.receiptNumber || 'receipt'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        return;
+      } catch (err) {
+        console.error('Failed to download from URL:', err);
+      }
     }
+    
     if (pdf.base64) {
-      const byteChars = atob(pdf.base64);
-      const byteNumbers = new Array(byteChars.length);
-      for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${receipt.receiptNumber || 'receipt'}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      return;
+      console.log('Downloading from base64');
+      try {
+        const byteChars = atob(pdf.base64);
+        const byteNumbers = new Array(byteChars.length);
+        for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${receipt.receiptNumber || 'receipt'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        return;
+      } catch (err) {
+        console.error('Failed to download from base64:', err);
+      }
     }
+    
     // If we have rendered receipt HTML, generate a PDF from the DOM as a fallback
     const element = receiptRef.current;
     if (element) {
-      const filename = `${receipt.receiptNumber || 'receipt'}.pdf`;
-      const container = element.cloneNode(true);
-      container.style.maxWidth = '180mm';
-      container.style.padding = '12px';
-      container.style.background = '#fff';
-      container.style.boxSizing = 'border-box';
-      // append off-screen so html2pdf can render it
-      container.style.position = 'fixed';
-      container.style.left = '-9999px';
-      document.body.appendChild(container);
-      const opts = {
-        margin: 10,
-        filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      };
-      html2pdf().set(opts).from(container).save().finally(() => { try { document.body.removeChild(container); } catch (e) {} });
-      return;
+      console.log('Generating PDF from HTML element');
+      try {
+        const filename = `${receipt.receiptNumber || 'receipt'}.pdf`;
+        
+        // Use the actual element directly instead of cloning
+        const opts = {
+          margin: 10,
+          filename,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            backgroundColor: '#ffffff', 
+            logging: false,
+            scrollY: 0,
+            scrollX: 0,
+            windowWidth: element.scrollWidth,
+            windowHeight: element.scrollHeight
+          },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        };
+        
+        await html2pdf().set(opts).from(element).save();
+        return;
+      } catch (err) {
+        console.error('Failed to generate PDF from HTML:', err);
+      }
     }
+    
     alert('PDF not available. You can print the receipt to PDF using the Print action.');
   }, [pdf.base64, pdf.url, receipt?.receiptNumber]);
 
   const handlePrint = useCallback(() => {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    // Mobile: Use native print dialog or PDF download
+    // Mobile: Use native print dialog with full page styling
     if (isMobile) {
-      if (pdf.base64 || pdf.url) {
-        // Try native print first if we have PDF content
-        try {
-          const printContent = receiptRef.current?.innerHTML;
-          if (printContent) {
-            // Use system print dialog for rendering
-            window.print();
-            return;
+      const element = receiptRef.current;
+      if (element) {
+        // Create a print-specific container for mobile
+        const printContainer = document.createElement('div');
+        printContainer.innerHTML = element.innerHTML;
+        printContainer.style.position = 'fixed';
+        printContainer.style.top = '0';
+        printContainer.style.left = '0';
+        printContainer.style.width = '100%';
+        printContainer.style.height = '100%';
+        printContainer.style.background = '#fff';
+        printContainer.style.zIndex = '9999';
+        printContainer.style.padding = '10mm';
+        printContainer.style.overflow = 'auto';
+        printContainer.className = 'print-only';
+        
+        // Add print-specific styles
+        const style = document.createElement('style');
+        style.textContent = `
+          @media print {
+            body * { visibility: hidden; }
+            .print-only, .print-only * { visibility: visible; }
+            .print-only { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
+            @page { size: A4; margin: 10mm; }
           }
-        } catch (err) {
-          console.error('Print failed:', err);
-        }
-        // Fallback: Download PDF
-        handleDownloadPdf();
+        `;
+        document.head.appendChild(style);
+        document.body.appendChild(printContainer);
+        
+        setTimeout(() => {
+          window.print();
+          setTimeout(() => {
+            document.body.removeChild(printContainer);
+            document.head.removeChild(style);
+          }, 1000);
+        }, 100);
         return;
       }
       
-      // If HTML content available, use native print
-      if (receiptRef.current) {
-        window.print();
+      // Fallback for mobile if no HTML content
+      if (pdf.base64 || pdf.url) {
+        handleDownloadPdf();
         return;
       }
       
@@ -210,7 +261,7 @@ export default function ReceiptPage(){
       return;
     }
 
-    // Desktop: Original logic with window.open() for better control
+    // Desktop: Use window.open() for better control
     if (pdf.base64 && !receiptRef.current) {
       const src = `data:application/pdf;base64,${pdf.base64}`;
       const win = window.open(src, '_blank');
@@ -251,12 +302,15 @@ export default function ReceiptPage(){
       <base href="${window.location.origin}" />
       ${getPageStyles()}
       <style>
-        @page { size: A4; margin: 15mm; }
+        @page { size: A4; margin: 10mm; }
         html, body { width: 100%; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #fff; color: #111827; font-size: 13px; }
-        .receipt-root { max-width: 800px; margin: 0 auto; max-height: 100vh; overflow: hidden; page-break-after: avoid; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #fff; color: #111827; font-size: 12px; }
+        .receipt-root { max-width: 210mm; margin: 0 auto; page-break-after: avoid; }
         .receipt-student-header, .receipt-breakdown-summary, .receipt-overall-summary, .receipt-payment-method { page-break-inside: avoid; break-inside: avoid; }
         .no-print { display: none !important; }
+        table { page-break-inside: auto; }
+        tr { page-break-inside: avoid; page-break-after: auto; }
+        td, th { page-break-inside: avoid; page-break-after: auto; }
       </style>
     `;
 
