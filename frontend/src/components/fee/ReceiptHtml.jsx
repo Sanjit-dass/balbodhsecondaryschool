@@ -143,7 +143,7 @@ export default function ReceiptHtml({ receipt = {}, student = {}, breakdown = []
       </div>
 
       <div className="overflow-x-auto px-6 pb-6">
-        <table className="min-w-full border-collapse text-sm text-slate-700">
+        <table className="min-w-[600px] border-collapse text-sm text-slate-700">
           <thead>
             <tr className="border-y border-slate-200 bg-slate-100 text-left text-sm font-semibold text-slate-700">
               <th className="px-4 py-3">S.No</th>

@@ -411,7 +411,7 @@ export default function ReceiptPage(){
       {pdf.base64 ? (
         <ReceiptViewer base64={pdf.base64} />
       ) : (
-        <div ref={receiptRef}>
+        <div ref={receiptRef} className="overflow-x-auto">
           <ReceiptHtml receipt={receipt} student={studentData || receipt.data?.student || receipt.student || {}} breakdown={receipt.feeBreakdown || receipt.data?.breakdown || []} amountPaid={receipt.data?.amountPaid} totalFee={receipt.data?.totalFeeAll || receipt.data?.totalAmount} dueAmount={receipt.data?.dueAmount} paymentMethod={receipt.data?.paymentMethod || receipt.paymentMethod} />
         </div>
       )}
