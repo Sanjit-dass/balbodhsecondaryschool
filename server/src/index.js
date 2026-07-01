@@ -160,6 +160,17 @@ app.use('/admin', require('./routes/admin'));
 app.use('/accountant', require('./routes/accountant'));
 app.use('/student', require('./routes/student'));
 
+app.get('/api/health', (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    database: dbStatus,
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 app.get('/api/dashboard', async (req, res) => {
   try {
     const Student = require('./models/Student');
@@ -407,11 +418,14 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('unhandledRejection', (reason) => {
   console.error('❌ Unhandled Rejection:', reason);
-  shutdown('unhandledRejection');
+  // Don't shutdown on unhandled rejections - log and continue
+  // This prevents server crashes from async errors
 });
+
 process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught Exception:', err);
-  shutdown('uncaughtException');
+  // Don't shutdown on uncaught exceptions - log and continue
+  // This prevents server crashes from sync errors
 });
 
 startServer();

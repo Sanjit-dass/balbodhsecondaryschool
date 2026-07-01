@@ -103,8 +103,8 @@ api.interceptors.response.use(
       }
       const status = err?.response?.status;
       const message = err?.response?.data?.message || '';
-      // Check for auth errors and clear session
-      if ((status === 401 || status === 403) && /token is not valid|no token|unauthorized|forbidden/i.test(message)) {
+      // Check for auth errors and clear session - only on explicit auth errors
+      if (status === 401 || (status === 403 && /token is not valid|no token|unauthorized|forbidden/i.test(message))) {
         // Clear all auth data
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -115,9 +115,9 @@ api.interceptors.response.use(
         localStorage.removeItem('remember-me');
         sessionStorage.removeItem('currentUser');
         
-        // Force redirect to login
-        if (typeof window !== 'undefined') {
-          console.debug('[Auth][api] received auth error, redirecting to login');
+        // Force redirect to login only on 401
+        if (status === 401 && typeof window !== 'undefined') {
+          console.debug('[Auth][api] received 401 auth error, redirecting to login');
           // Use replace to prevent back button access
           window.location.replace('/login?force=true&t=' + Date.now());
         }

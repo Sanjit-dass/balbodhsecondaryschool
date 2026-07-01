@@ -156,6 +156,18 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
+    // Check if token is expired before making API call
+    const decoded = decodeToken(token);
+    if (decoded && decoded.exp) {
+      const now = Math.floor(Date.now() / 1000);
+      if (decoded.exp < now) {
+        console.warn('[Auth] token expired, logging out');
+        logout();
+        setLoading(false);
+        return;
+      }
+    }
+
     setLoading(true);
     console.debug('[Auth] calling /auth/me to validate token');
     api.get('/auth/me')
@@ -166,7 +178,10 @@ export const AuthProvider = ({ children }) => {
       })
       .catch((err) => {
         console.warn('[Auth] /auth/me failed, logging out. reason:', err && err.message);
-        logout();
+        // Only logout on actual auth errors, not network errors
+        if (err?.response?.status === 401 || err?.response?.status === 403) {
+          logout();
+        }
       })
       .finally(() => {
         setLoading(false);

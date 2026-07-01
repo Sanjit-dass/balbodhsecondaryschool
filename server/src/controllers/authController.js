@@ -75,7 +75,7 @@ async function login(req, res) {
     if (!isMatch) return res.status(401).json({ message: 'Invalid email or password' });
 
     if (requestedRole && requestedRole !== user.role) {
-      return res.status(403).json({ message: 'Selected role does not match account role.' });
+      return res.status(403).json({ message: 'Access denied. This account does not belong to the selected portal.' });
     }
 
     if (user.status !== 'active') {

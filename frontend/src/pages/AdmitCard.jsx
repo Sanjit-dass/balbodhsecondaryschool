@@ -352,26 +352,26 @@ export default function AdmitCard() {
   }));
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-6 sm:p-8">
+    <div className="min-h-screen bg-[#F8FAFC] p-4 sm:p-6 md:p-8">
       <div className="mx-auto max-w-4xl">
         {/* Action Buttons */}
-        <div className="mb-6 flex flex-wrap gap-3">
+        <div className="mb-4 sm:mb-6 flex flex-wrap gap-2 sm:gap-3">
           <button
             onClick={downloadPDF}
-            className="no-print inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-blue-700"
+            className="no-print inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-semibold text-white shadow-sm transition hover:bg-blue-700"
           >
             📥 Download PDF
           </button>
           <button
             onClick={handlePrint}
-            className="inline-flex items-center gap-2 rounded-lg border border-[#E2E8F0] bg-white px-6 py-3 font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-[#E2E8F0] bg-white px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
           >
             🖨️ Print Admit Card
           </button>
         </div>
 
         {/* Admit Card */}
-        <div id="admit-card-content" className="rounded-xl bg-white p-8 shadow-sm">
+        <div id="admit-card-content" className="rounded-xl bg-white p-4 sm:p-6 md:p-8 shadow-sm">
           {/* Header */}
           <div className="border-b-4 border-[#DC2626] pb-4 text-center">
             {/* School Name */}
@@ -392,33 +392,33 @@ export default function AdmitCard() {
           {/* Main Content */}
           <div className="mt-6 space-y-4">
             {/* Student Info Section - Professional Layout */}
-            <div className="border-2 border-[#1F2937] p-6">
-              <div className="flex gap-8 items-start">
+            <div className="border-2 border-[#1F2937] p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 items-start">
                 {/* Left: Student Details */}
                 <div className="flex-1 space-y-3">
                   <div className="grid grid-cols-1 gap-3 text-sm">
                     <div className="flex">
-                      <span className="w-32 font-bold text-[#0F172A]">Name :</span>
+                      <span className="w-24 sm:w-32 font-bold text-[#0F172A]">Name :</span>
                       <span className="text-[#0F172A]">{studentName}</span>
                     </div>
                     <div className="flex">
-                      <span className="w-32 font-bold text-[#0F172A]">Roll No :</span>
+                      <span className="w-24 sm:w-32 font-bold text-[#0F172A]">Roll No :</span>
                       <span className="text-[#0F172A]">{rollNumber}</span>
                     </div>
                     <div className="flex">
-                      <span className="w-32 font-bold text-[#0F172A]">Class :</span>
+                      <span className="w-24 sm:w-32 font-bold text-[#0F172A]">Class :</span>
                       <span className="text-[#0F172A]">{studentClass}</span>
                     </div>
                     <div className="flex">
-                      <span className="w-32 font-bold text-[#0F172A]">Section :</span>
+                      <span className="w-24 sm:w-32 font-bold text-[#0F172A]">Section :</span>
                       <span className="text-[#0F172A]">{section || 'N/A'}</span>
                     </div>
                     <div className="flex">
-                      <span className="w-32 font-bold text-[#0F172A]">Date of Birth :</span>
+                      <span className="w-24 sm:w-32 font-bold text-[#0F172A]">Date of Birth :</span>
                       <span className="text-[#0F172A]">{dob}</span>
                     </div>
                     <div className="flex">
-                      <span className="w-32 font-bold text-[#0F172A]">Gender :</span>
+                      <span className="w-24 sm:w-32 font-bold text-[#0F172A]">Gender :</span>
                       <span className="text-[#0F172A]">{gender || 'N/A'}</span>
                     </div>
                   </div>
@@ -426,11 +426,11 @@ export default function AdmitCard() {
 
                 {/* Right: Student Photo */}
                 {(studentPhoto || studentData?.photo || studentData?.image) && (
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 self-center sm:self-start">
                     <img 
                       src={studentPhoto || studentData?.photo || studentData?.image} 
                       alt="Student Photo" 
-                      className="h-32 w-28 rounded-lg object-cover border-4 border-[#0F172A] shadow-md" 
+                      className="h-28 w-24 sm:h-32 sm:w-28 rounded-lg object-cover border-4 border-[#0F172A] shadow-md" 
                     />
                   </div>
                 )}

@@ -5,9 +5,16 @@ const cloudinary = require('cloudinary').v2;
 // so returned URLs use HTTPS.
 try {
   if (process.env.CLOUDINARY_URL) {
-    // cloudinary.config accepts a single string argument (the URL)
-    cloudinary.config(process.env.CLOUDINARY_URL);
-    cloudinary.config({ secure: true });
+    // Validate that CLOUDINARY_URL is not using placeholder values
+    const cloudinaryUrl = process.env.CLOUDINARY_URL;
+    if (cloudinaryUrl.includes('<your_api_key>') || cloudinaryUrl.includes('<your_api_secret>') || cloudinaryUrl.includes('<cloud_name>')) {
+      console.error('❌ Cloudinary URL contains placeholder values. Please configure real credentials in .env');
+    } else {
+      // cloudinary.config accepts a single string argument (the URL)
+      cloudinary.config(cloudinaryUrl);
+      cloudinary.config({ secure: true });
+      console.log('✅ Cloudinary configured successfully');
+    }
   } else {
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -15,12 +22,12 @@ try {
       api_secret: process.env.CLOUDINARY_API_SECRET,
       secure: true,
     });
+    console.log('✅ Cloudinary configured with individual credentials');
   }
 } catch (err) {
   // Log configuration errors but don't throw here — callers will surface problems
   // when trying to use Cloudinary.
-  // eslint-disable-next-line no-console
-  console.error('Cloudinary configuration failed:', err && err.message);
+  console.error('❌ Cloudinary configuration failed:', err && err.message);
 }
 
 module.exports = cloudinary;

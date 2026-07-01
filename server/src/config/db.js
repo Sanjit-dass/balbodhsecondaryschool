@@ -55,10 +55,15 @@ const testTcpConnection = (host, port = 27017, timeout = 5000) => {
 
 const connectWithMongoose = async (uri) => {
   await mongoose.connect(uri, {
-    serverSelectionTimeoutMS: 10000,
-    connectTimeoutMS: 10000,
-    socketTimeoutMS: 45000,
+    serverSelectionTimeoutMS: 15000,
+    connectTimeoutMS: 15000,
+    socketTimeoutMS: 60000,
     family: 4,
+    retryWrites: true,
+    retryReads: true,
+    maxPoolSize: 10,
+    minPoolSize: 2,
+    maxIdleTimeMS: 30000,
     // Mongoose v6+ and the Node driver handle URL parsing and topology by default.
   });
 };

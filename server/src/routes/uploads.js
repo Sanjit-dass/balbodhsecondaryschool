@@ -64,17 +64,21 @@ router.post('/', auth, roles(['superadmin','principal','admin']), upload.single(
         console.log('SAVED FILE URL:', fileUrl, 'PUBLIC ID:', result.public_id);
 
         const docType = req.body.type || req.query.folder || 'other';
-        // determine strict category
+        // determine strict category - require explicit category from frontend
         let category = req.body.category || req.query.category || null;
         const mime = (req.file.mimetype || '').toLowerCase();
         const ext = (req.file.originalname || '').split('.').pop().toLowerCase();
+        
+        // Only infer category if not explicitly provided
         if (!category) {
           if (mime.startsWith('image/')) {
-            // infer from folder name hints
+            // Strict folder-based categorization to prevent data isolation issues
             if (/staff|teacher/i.test(folder)) category = 'staff-gallery';
             else if (/event|events/i.test(folder)) category = 'event-gallery';
-            else if (/class|classroom|class-?/i.test(folder) || /students?/i.test(folder)) category = 'class-gallery';
-            else category = 'student-gallery';
+            else if (/achievement|student-achievement/i.test(folder)) category = 'student-achievements';
+            else if (/class|classroom/i.test(folder)) category = 'class-gallery';
+            else if (/student/i.test(folder)) category = 'student-gallery';
+            else category = 'general-gallery';
           } else if (['pdf','doc','docx'].includes(ext) || mime === 'application/pdf' || /word|pdf/.test(mime)) {
             category = 'important-document';
           } else {
