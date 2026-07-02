@@ -5,11 +5,46 @@ const auth = require('../middleware/auth');
 const roles = require('../middleware/roles');
 const Teacher = require('../models/Teacher');
 const User = require('../models/User');
+const TeacherSubjectAssignment = require('../models/TeacherSubjectAssignment');
 const { createStorage } = require('../middleware/upload');
 const cloudinary = require('../utils/cloudinary');
 const { getCloudinaryResourceType } = require('../utils/cloudinaryHelpers');
 
 const teacherAdminRoles = ['superadmin','admin','principal'];
+
+async function getNextTeacherId() {
+  let nextNumber = 1;
+  while (true) {
+    const candidateId = `BBS${String(nextNumber).padStart(2, '0')}`;
+    const existingTeacher = await Teacher.findOne({ employeeId: candidateId }).lean();
+    if (!existingTeacher) {
+      return candidateId;
+    }
+    nextNumber += 1;
+  }
+}
+
+async function normalizeTeacherId(teacherDoc) {
+  if (!teacherDoc) return null;
+  if (teacherDoc.employeeId && /^BBS\d+$/.test(teacherDoc.employeeId)) {
+    return teacherDoc.employeeId;
+  }
+
+  const previousEmployeeId = teacherDoc.employeeId;
+  const nextId = await getNextTeacherId();
+  teacherDoc.employeeId = nextId;
+  await teacherDoc.save();
+
+  if (teacherDoc._id) {
+    const updateQuery = { teacher: teacherDoc._id };
+    if (previousEmployeeId) {
+      updateQuery.teacherId = previousEmployeeId;
+    }
+    await TeacherSubjectAssignment.updateMany(updateQuery, { $set: { teacherId: nextId } });
+  }
+
+  return nextId;
+}
 
 // Export teachers CSV
 router.get('/export/csv', auth, roles(teacherAdminRoles), async (req,res)=>{
@@ -106,6 +141,8 @@ router.post('/', auth, roles(teacherAdminRoles), async (req, res) => {
       joiningDate,
       subject,
       assignedClass,
+      assignedSubjects,
+      assignedClasses,
       status,
       photoUrl
     } = req.body;
@@ -116,9 +153,14 @@ router.post('/', auth, roles(teacherAdminRoles), async (req, res) => {
       return res.status(400).json({ message: 'Employee ID already exists.' });
     }
 
+    let generatedEmployeeId = employeeId;
+    if (!generatedEmployeeId) {
+      generatedEmployeeId = await getNextTeacherId();
+    }
+
     const teacher = await Teacher.create({
       fullName,
-      employeeId: employeeId || `TCHR${Date.now()}`,
+      employeeId: generatedEmployeeId,
       username,
       email: normalizedEmail || undefined,
       gender,
@@ -130,10 +172,20 @@ router.post('/', auth, roles(teacherAdminRoles), async (req, res) => {
       joiningDate,
       subject,
       assignedClass,
+      assignedSubjects: assignedSubjects || [],
+      assignedClasses: assignedClasses || [],
       status: status || 'active',
       role: 'teacher',
       photoUrl
     });
+
+    // If teacher has a user account, update their assignments
+    if (teacher.user) {
+      await User.findByIdAndUpdate(teacher.user, {
+        assignedSubjects: assignedSubjects || [],
+        assignedClasses: assignedClasses || []
+      });
+    }
 
     res.status(201).json(teacher);
   } catch (err) {
@@ -157,7 +209,7 @@ router.post('/:id/photo', auth, roles(teacherAdminRoles), (req, res) => {
   });
 });
 
-router.get('/', auth, roles(teacherAdminRoles), async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const { q, employeeId, subject, assignedClass, phone, status } = req.query;
     const filter = {};
@@ -179,7 +231,13 @@ router.get('/', auth, roles(teacherAdminRoles), async (req, res) => {
     if (status) filter.status = status;
 
     const teachers = await Teacher.find(filter).sort({ createdAt: -1 });
-    res.json({ teachers });
+    const normalizedTeachers = await Promise.all(teachers.map(async (teacher) => {
+      if (!teacher.employeeId || !/^BBS\d+$/.test(teacher.employeeId)) {
+        await normalizeTeacherId(teacher);
+      }
+      return teacher;
+    }));
+    res.json(normalizedTeachers);
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
@@ -190,6 +248,9 @@ router.get('/:id', auth, roles(teacherAdminRoles), async (req,res)=>{
   try{
     const teacher = await Teacher.findById(req.params.id);
     if (!teacher) return res.status(404).json({ message: 'Teacher not found' });
+    if (!teacher.employeeId || !/^BBS\d+$/.test(teacher.employeeId)) {
+      await normalizeTeacherId(teacher);
+    }
     res.json(teacher);
   }catch(err){
     console.error(err);
@@ -217,6 +278,8 @@ router.put('/:id', auth, roles(teacherAdminRoles), async (req,res)=>{
       joiningDate,
       subject,
       assignedClass,
+      assignedSubjects,
+      assignedClasses,
       status,
       photoUrl
     } = req.body;
@@ -247,6 +310,8 @@ router.put('/:id', auth, roles(teacherAdminRoles), async (req,res)=>{
     teacher.joiningDate = joiningDate ?? teacher.joiningDate;
     teacher.subject = subject ?? teacher.subject;
     teacher.assignedClass = assignedClass ?? teacher.assignedClass;
+    teacher.assignedSubjects = assignedSubjects ?? teacher.assignedSubjects;
+    teacher.assignedClasses = assignedClasses ?? teacher.assignedClasses;
     teacher.status = status ?? teacher.status;
     if (photoUrl) teacher.photoUrl = photoUrl;
 
@@ -259,6 +324,8 @@ router.put('/:id', auth, roles(teacherAdminRoles), async (req,res)=>{
         user.profile.phone = teacher.phone || user.profile.phone;
         user.profile.department = teacher.subject || user.profile.department;
         user.profile.address = teacher.address || user.profile.address;
+        user.assignedSubjects = teacher.assignedSubjects || [];
+        user.assignedClasses = teacher.assignedClasses || [];
         if (password) {
           user.password = await bcrypt.hash(password, 10);
         }

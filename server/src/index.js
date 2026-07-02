@@ -2,6 +2,7 @@ const dotenv = require('dotenv');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const mongoose = require('mongoose');
 const { connectDB, disconnectDB } = require('./config/db');
 
 const envResult = dotenv.config();
@@ -104,6 +105,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/students', require('./routes/students'));
 app.use('/api/teachers', require('./routes/teachers'));
+app.use('/api/teacher-subject-assignments', require('./routes/teacherSubjectAssignments'));
 app.use('/api/classes', require('./routes/classes'));
 app.use('/api/subjects', require('./routes/subjects'));
 app.use('/api/attendance', require('./routes/attendance'));

@@ -49,6 +49,7 @@ import AdminPhotoGallery from './pages/admin/AdminPhotoGallery';
 import AdminAdmissions from './pages/admin/Admissions';
 import ContactMessages from './pages/admin/ContactMessages';
 import UserRoles from './pages/admin/UserRoles';
+import TeacherSubjectAssignments from './pages/admin/TeacherSubjectAssignments';
 import StudentResults from './pages/StudentResults';
 import StudentAdmitCard from './pages/StudentAdmitCard';
 import StudentPortal from './pages/StudentPortal';
@@ -89,6 +90,7 @@ import PublicLayout from './components/public/PublicLayout';
 import ScrollToTop from './components/ScrollToTop';
 import Register from './pages/Register';
 import StudentResultsPublic from './pages/public/StudentResultsPublic';
+import TeacherMarksEntryPage from './pages/teacher/MarksEntry';
 
 export default function App(){
   return (
@@ -220,6 +222,7 @@ export default function App(){
           <Route path="events" element={<AdminEvents />} />
           <Route path="school-leadership" element={<AdminSchoolLeadership />} />
           <Route path="contact-messages" element={<ContactMessages />} />
+          <Route path="teacher-subject-assignments" element={<TeacherSubjectAssignments />} />
           <Route path="collect-fee" element={<CollectFee />} />
           <Route path="fee-categories" element={<FeeCategories />} />
           <Route path="payment-history" element={<FeeHistory />} />
@@ -296,6 +299,7 @@ export default function App(){
         >
           <Route index element={<TeacherPortal />} />
           <Route path="dashboard" element={<TeacherPortal />} />
+          <Route path="marks-entry" element={<TeacherMarksEntryPage />} />
           <Route path="attendance" element={<Attendance />} />
           <Route path="attendance/history" element={<AttendanceHistory />} />
           <Route path="assignments" element={<Assignments />} />

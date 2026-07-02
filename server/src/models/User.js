@@ -13,6 +13,9 @@ const UserSchema = new mongoose.Schema({
     designation: { type: String },
     address: { type: String }
   },
+  // Teacher-specific assignments
+  assignedSubjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Subject' }],
+  assignedClasses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Class' }],
   permissions: [{ type: String }],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }

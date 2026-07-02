@@ -1,13 +1,28 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { COLORS } from '../constants/schoolData';
+import api from '../services/api';
 
 export default function TeacherPortal(){
   const { user } = useContext(AuthContext);
   const teacherName = user?.name || user?.email || 'Teacher';
   const academicYear = user?.academicYear;
   const today = useMemo(() => new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' }), []);
+  const [teacherMarks, setTeacherMarks] = useState([]);
+
+  useEffect(() => {
+    const loadTeacherMarks = async () => {
+      try {
+        const res = await api.get('/exams/teacher/my-marks');
+        setTeacherMarks(res.data.marks || []);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadTeacherMarks();
+  }, []);
 
   const actionCards = [
     {
@@ -115,13 +130,34 @@ export default function TeacherPortal(){
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-[10px] md:text-sm uppercase tracking-[0.24em]" style={{ color: COLORS.slate }}>Recent Activity</p>
-            <h2 className="mt-1 md:mt-2 text-xl md:text-2xl font-semibold" style={{ color: COLORS.dark }}>Latest updates</h2>
+            <h2 className="mt-1 md:mt-2 text-xl md:text-2xl font-semibold" style={{ color: COLORS.dark }}>My Entered Marks</h2>
           </div>
         </div>
         <div className="mt-4 md:mt-6 rounded-2xl md:rounded-3xl border p-4 md:p-6"
           style={{ borderColor: COLORS.lightGray, backgroundColor: COLORS.gray, color: COLORS.slate }}
         >
-          <p className="text-xs md:text-sm">No recent activity available.</p>
+          {teacherMarks.length === 0 ? (
+            <p className="text-xs md:text-sm">No marks entered yet. Once you save marks for an exam, they will appear here.</p>
+          ) : (
+            <div className="space-y-3">
+              {teacherMarks.slice(0, 8).map((entry) => (
+                <div key={entry._id} className="rounded-xl border border-slate-200 bg-white p-3 md:p-4 shadow-sm">
+                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-800">{entry.exam?.title || 'Exam'}</p>
+                      <p className="text-xs text-slate-500">{entry.subject?.name || 'Subject'} • {entry.class?.name || 'Class'}</p>
+                    </div>
+                    <div className="text-sm font-medium text-slate-700">
+                      Theory {entry.theoryMarks ?? '-'} / {entry.maxTheoryMarks ?? 50} • Practical {entry.practicalMarks ?? '-'} / {entry.maxPracticalMarks ?? 50}
+                    </div>
+                  </div>
+                  <div className="mt-2 text-xs text-slate-500">
+                    Student: {entry.student?.user?.name || entry.student?.fullName || 'Unknown'} • Roll: {entry.student?.rollNumber || entry.student?.admissionNumber || '-'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </div>

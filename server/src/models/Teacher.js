@@ -15,6 +15,9 @@ const TeacherSchema = new mongoose.Schema({
   joiningDate: { type: Date },
   subject: { type: String, trim: true },
   assignedClass: { type: String, trim: true },
+  // New fields for teacher marks entry system
+  assignedSubjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Subject' }],
+  assignedClasses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Class' }],
   role: { type: String, enum: ['teacher'], default: 'teacher' },
   status: { type: String, enum: ['active','inactive','suspended'], default: 'active' },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

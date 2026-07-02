@@ -10,13 +10,13 @@ const ExamResultSchema = new mongoose.Schema({
       marksObtained: Number,
       maxMarks: Number,
       passMarks: Number,
-      percentage: Number,
+     
       grade: String
     }
   ],
   totalMarksObtained: { type: Number },
   totalMaxMarks: { type: Number },
-  totalPercentage: { type: Number },
+  
   totalGrade: { type: String },
   passStatus: { type: String, enum: ['Pass', 'Fail'], default: 'Pass' },
   classPosition: { type: Number },

@@ -19,7 +19,7 @@ export default function Results() {
 
   const downloadCSV = () => {
     if (!selectedExam || !results.length) return;
-    const headers = ['Roll No', 'Student Name', 'Total Marks', 'Percentage', 'Grade', 'GPA', 'Status', 'Position'];
+    const headers = ['Roll No', 'Student Name', 'Total Marks', 'Grade', 'GPA', 'Status', 'Position'];
     const rows = results.map((result) => {
       const percentage = result.totalMaxMarks > 0 ? (result.totalMarksObtained / result.totalMaxMarks) * 100 : 0;
       const gradeInfo = calculateGrade(percentage);
@@ -28,7 +28,6 @@ export default function Results() {
         result.student?.rollNumber || result.student?.admissionNumber || '',
         result.student?.user?.name || result.student?.fullName || '',
         result.totalMarksObtained || 0,
-        percentage.toFixed(2),
         gradeInfo.grade,
         gradeInfo.gpa.toFixed(1),
         statusInfo.text,
@@ -75,7 +74,6 @@ export default function Results() {
             <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${result.classPosition || index + 1}</td>
             <td style="border: 1px solid #d1d5db; padding: 10px; white-space: normal; word-break: break-word;">${result.student?.user?.name || result.student?.fullName || 'N/A'}</td>
             <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${obtained}/${totalMax}</td>
-            <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${percentage.toFixed(2)}%</td>
             <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${gradeInfo.grade}</td>
             <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${gradeInfo.gpa.toFixed(1)}</td>
             <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap; font-weight: bold; color: ${statusColor};">${statusInfo.display}</td>
@@ -109,7 +107,6 @@ export default function Results() {
               <th style="border: 1px solid #d1d5db; padding: 10px; min-width: 50px;">Position</th>
               <th style="border: 1px solid #d1d5db; padding: 10px; min-width: 160px;">Student Name</th>
               <th style="border: 1px solid #d1d5db; padding: 10px; min-width: 110px;">Total Marks</th>
-              <th style="border: 1px solid #d1d5db; padding: 10px; min-width: 110px;">Percentage</th>
               <th style="border: 1px solid #d1d5db; padding: 10px; min-width: 90px;">Grade</th>
               <th style="border: 1px solid #d1d5db; padding: 10px; min-width: 70px;">GPA</th>
               <th style="border: 1px solid #d1d5db; padding: 10px; min-width: 100px;">Status</th>
@@ -161,7 +158,7 @@ export default function Results() {
     const topPerformers = results.slice(0, 5).map((result, index) => {
       const percentage = result.totalMaxMarks > 0 ? (result.totalMarksObtained / result.totalMaxMarks) * 100 : 0;
       const gradeInfo = calculateGrade(percentage);
-      return `${index + 1}. ${result.student?.user?.name || result.student?.fullName || 'N/A'} — ${result.totalMarksObtained || 0}/${result.totalMaxMarks || 0}, ${percentage.toFixed(2)}%, ${gradeInfo.grade}, GPA: ${gradeInfo.gpa.toFixed(1)}`;
+      return `${index + 1}. ${result.student?.user?.name || result.student?.fullName || 'N/A'} — ${result.totalMarksObtained || 0}/${result.totalMaxMarks || 0}, Grade: ${gradeInfo.grade}, GPA: ${gradeInfo.gpa.toFixed(1)}`;
     }).join('\n');
     
     const body = `Results for ${exam.type} (${exam.class?.name || 'Class'}) are now available.\n\nTop performers:\n${topPerformers}\n\nDownload the detailed result from the admin portal or view the notice board for full details.`;
@@ -359,7 +356,6 @@ export default function Results() {
                           <th className="px-4 py-2 text-left text-sm font-semibold">Roll No.</th>
                           <th className="px-4 py-2 text-left text-sm font-semibold">Student Name</th>
                           <th className="px-4 py-2 text-center text-sm font-semibold">Total Marks</th>
-                          <th className="px-4 py-2 text-center text-sm font-semibold">Percentage</th>
                           <th className="px-4 py-2 text-center text-sm font-semibold">Grade</th>
                           <th className="px-4 py-2 text-center text-sm font-semibold">GPA</th>
                           <th className="px-4 py-2 text-center text-sm font-semibold">Status</th>
@@ -377,7 +373,6 @@ export default function Results() {
                               <td className="px-4 py-2 text-sm">{result.student?.rollNumber || result.student?.admissionNumber || '-'}</td>
                               <td className="px-4 py-2 text-sm">{result.student?.user?.name || result.student?.fullName || 'N/A'}</td>
                               <td className="px-4 py-2 text-center text-sm">{result.totalMarksObtained || 0}</td>
-                              <td className="px-4 py-2 text-center text-sm">{percentage.toFixed(2)}%</td>
                               <td className={`px-4 py-2 text-center text-sm font-semibold ${getGradeColor(gradeInfo.grade)}`}>{gradeInfo.grade}</td>
                               <td className="px-4 py-2 text-center text-sm font-semibold">{gradeInfo.gpa.toFixed(1)}</td>
                               <td className={`px-4 py-2 text-center text-sm font-bold ${statusInfo.className}`}>{statusInfo.display}</td>

@@ -69,7 +69,7 @@ export default function Marksheet({ result, exam, school = {} }) {
           {schoolLogo && (
             <img src={schoolLogo} alt="School Logo" className="h-16 mx-auto mb-2" />
           )}
-          <h1 className="text-2xl font-bold">{schoolName}</h1>
+          <h1 className="text-2xl font-bold text-[#DC2626]">{schoolName}</h1>
           <p className="mt-1 text-sm font-semibold text-[#2563EB]">{school.address || 'Kanchanrup Municipality-08, Kanchanpur'}</p>
           <p className="text-sm font-semibold text-[#64748B]">ESTD. {school.established || 2055}</p>
         </div>
@@ -109,28 +109,40 @@ export default function Marksheet({ result, exam, school = {} }) {
               <tr className="bg-slate-100 border border-slate-300">
                 <th className="border border-slate-300 px-2 py-2 text-left">S.N</th>
                 <th className="border border-slate-300 px-2 py-2 text-left">Subject Name</th>
-                <th className="border border-slate-300 px-2 py-2 text-center">Full Marks</th>
-                <th className="border border-slate-300 px-2 py-2 text-center">Pass Marks</th>
-                <th className="border border-slate-300 px-2 py-2 text-center">Obtained Marks</th>
-                <th className="border border-slate-300 px-2 py-2 text-center">%</th>
-                <th className="border border-slate-300 px-2 py-2 text-center">Grade</th>
+                <th className="border border-slate-300 px-2 py-2 text-center">Max Theory</th>
+                <th className="border border-slate-300 px-2 py-2 text-center">Obtained Theory</th>
+                <th className="border border-slate-300 px-2 py-2 text-center">Max Practical</th>
+                <th className="border border-slate-300 px-2 py-2 text-center">Obtained Practical</th>
                 <th className="border border-slate-300 px-2 py-2 text-center">GPA</th>
+                <th className="border border-slate-300 px-2 py-2 text-center">Grade</th>
+                <th className="border border-slate-300 px-2 py-2 text-center">Status</th>
               </tr>
             </thead>
             <tbody>
               {result.subjectMarks && result.subjectMarks.map((sm, idx) => {
-                const subjectPercentage = sm.maxMarks ? (sm.marksObtained / sm.maxMarks) * 100 : 0;
+                const theoryMarks = sm.theoryMarks != null ? sm.theoryMarks : (sm.marksObtained != null ? Math.round(sm.marksObtained / 2) : 0);
+                const practicalMarks = sm.practicalMarks != null ? sm.practicalMarks : (sm.marksObtained != null ? Math.round(sm.marksObtained / 2) : 0);
+                const maxTheory = sm.maxTheoryMarks != null ? sm.maxTheoryMarks : 50;
+                const maxPractical = sm.maxPracticalMarks != null ? sm.maxPracticalMarks : 50;
+                const totalMarks = (theoryMarks || 0) + (practicalMarks || 0);
+                const maxTotal = maxTheory + maxPractical;
+                const subjectPercentage = maxTotal > 0 ? (totalMarks / maxTotal) * 100 : 0;
+                const theoryPassMark = Math.min(20, maxTheory);
+                const practicalPassMark = Math.min(20, maxPractical);
+                const subjectPassed = theoryMarks > theoryPassMark && practicalMarks > practicalPassMark;
+                const subjectStatusText = subjectPassed ? 'PASS' : (theoryMarks <= theoryPassMark && practicalMarks <= practicalPassMark ? 'FAIL (Theory & Practical)' : (theoryMarks <= theoryPassMark ? 'FAIL (Theory)' : 'FAIL (Practical)'));
                 const subjectGradeInfo = calculateGrade(subjectPercentage);
                 return (
                   <tr key={idx} className="border border-slate-300">
                     <td className="border border-slate-300 px-2 py-2 text-center">{idx + 1}</td>
                     <td className="border border-slate-300 px-2 py-2">{sm.subject?.name || 'N/A'}</td>
-                    <td className="border border-slate-300 px-2 py-2 text-center">{sm.maxMarks != null ? sm.maxMarks : (exam?.maxMarks != null ? exam.maxMarks : 100)}</td>
-                      <td className="border border-slate-300 px-2 py-2 text-center">{sm.passMarks != null ? sm.passMarks : (exam?.passMarks != null ? exam.passMarks : 40)}</td>
-                    <td className="border border-slate-300 px-2 py-2 text-center font-semibold">{sm.marksObtained}</td>
-                    <td className="border border-slate-300 px-2 py-2 text-center">{subjectPercentage.toFixed(1)}%</td>
-                    <td className={`border border-slate-300 px-2 py-2 text-center font-semibold ${getGradeColor(subjectGradeInfo.grade)}`}>{subjectGradeInfo.grade}</td>
+                    <td className="border border-slate-300 px-2 py-2 text-center">{maxTheory}</td>
+                    <td className="border border-slate-300 px-2 py-2 text-center">{theoryMarks}</td>
+                    <td className="border border-slate-300 px-2 py-2 text-center">{maxPractical}</td>
+                    <td className="border border-slate-300 px-2 py-2 text-center">{practicalMarks}</td>
                     <td className="border border-slate-300 px-2 py-2 text-center font-semibold">{subjectGradeInfo.gpa.toFixed(1)}</td>
+                    <td className={`border border-slate-300 px-2 py-2 text-center font-semibold ${getGradeColor(subjectGradeInfo.grade)}`}>{subjectGradeInfo.grade}</td>
+                    <td className={`border border-slate-300 px-2 py-2 text-center font-semibold ${subjectPassed ? 'text-green-600' : 'text-red-600'}`}>{subjectStatusText}</td>
                   </tr>
                 );
               })}
@@ -140,18 +152,6 @@ export default function Marksheet({ result, exam, school = {} }) {
 
         {/* Summary */}
         <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
-          <div className="border border-slate-300 p-3">
-            <span className="font-semibold">Total Full Marks:</span>
-            <p className="text-lg font-bold">{totalMaxMarks}</p>
-          </div>
-          <div className="border border-slate-300 p-3">
-            <span className="font-semibold">Total Marks Obtained:</span>
-            <p className="text-lg font-bold">{totalObtained}</p>
-          </div>
-          <div className="border border-slate-300 p-3">
-            <span className="font-semibold">Percentage (%):</span>
-            <p className="text-lg font-bold">{percentage.toFixed(2)}%</p>
-          </div>
           <div className="border border-slate-300 p-3">
             <span className="font-semibold">Result Status:</span>
             <p className={`text-lg font-bold ${passStatus === 'Pass' ? 'text-green-600' : 'text-red-600'}`}>

@@ -46,7 +46,8 @@ const ROLE_MENU = {
         { path: '/admin/results', label: 'Results', icon: FaChartBar },
         { path: '/admin/exams', label: 'Exams', icon: FaClipboardList },
         { path: '/admin/assignments', label: 'Assignments', icon: FaClipboardList },
-        { path: '/admin/admit-cards', label: 'Admit Card', icon: FaFileInvoiceDollar }
+        { path: '/admin/admit-cards', label: 'Admit Card', icon: FaFileInvoiceDollar },
+        { path: '/admin/teacher-subject-assignments', label: 'Teacher Subject Assignments', icon: FaBook }
       ]
     },
     {
@@ -98,9 +99,15 @@ const ROLE_MENU = {
   ],
   teacher: [
     {
-      title: 'Teacher Tools',
+      title: 'Main',
       items: [
-        { path: '/teacher/dashboard', label: 'Dashboard', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z' },
+        { path: '/teacher/dashboard', label: 'Dashboard', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z' }
+      ]
+    },
+    {
+      title: 'Academic',
+      items: [
+        { path: '/teacher/marks-entry', label: 'Enter Marks', icon: FaClipboardList },
         { path: '/teacher/attendance', label: 'Attendance', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
         { path: '/teacher/assignments', label: 'Assignments', icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' },
         { path: '/teacher/results', label: 'Students Report', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z' }

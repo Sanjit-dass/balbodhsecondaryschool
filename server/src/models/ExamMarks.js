@@ -5,8 +5,12 @@ const ExamMarksSchema = new mongoose.Schema({
   class: { type: mongoose.Schema.Types.ObjectId, ref: 'Class', required: true },
   subject: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject', required: true },
   student: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
-  marksObtained: { type: Number, required: true, min: 0 },
-  maxMarks: { type: Number, required: true, min: 0 },
+  theoryMarks: { type: Number, required: true, min: 0, default: 0 },
+  practicalMarks: { type: Number, required: true, min: 0, default: 0 },
+  totalMarks: { type: Number, required:true, min: 0 },
+  maxTheoryMarks: { type: Number, required: true, min: 0, default: 50 },
+  maxPracticalMarks: { type: Number, required: true, min: 0, default: 50 },
+  maxMarks: { type: Number, required: true, min: 0, default: 100 },
   percentage: { type: Number },
   grade: { type: String },
   enteredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -15,9 +19,15 @@ const ExamMarksSchema = new mongoose.Schema({
 });
 
 ExamMarksSchema.pre('save', function (next) {
-  // Calculate percentage and grade
-  if (this.marksObtained !== undefined && this.maxMarks) {
-    this.percentage = (this.marksObtained / this.maxMarks) * 100;
+  // Calculate total marks
+  this.totalMarks = (this.theoryMarks || 0) + (this.practicalMarks || 0);
+  
+  // Calculate max marks
+  this.maxMarks = (this.maxTheoryMarks || 50) + (this.maxPracticalMarks || 50);
+  
+  // Calculate percentage and grade based on total marks
+  if (this.totalMarks !== undefined && this.maxMarks) {
+    this.percentage = (this.totalMarks / this.maxMarks) * 100;
     if (this.percentage >= 90) this.grade = 'A+';
     else if (this.percentage >= 80) this.grade = 'A';
     else if (this.percentage >= 70) this.grade = 'B+';

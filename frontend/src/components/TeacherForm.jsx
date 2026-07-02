@@ -13,12 +13,14 @@ const defaultFormState = {
   dateOfBirth: '',
   phone: '',
   address: '',
-  employeeId: '',
+  employeeId: 'BBS',
   qualification: '',
   experience: '',
   joiningDate: '',
   subject: '',
   assignedClass: '',
+  assignedSubjects: [],
+  assignedClasses: [],
   status: 'active',
   photoUrl: ''
 };
@@ -27,6 +29,13 @@ export default function TeacherForm({ existing, onSaved }){
   const [form, setForm] = useState(defaultFormState);
   const [uploadMeta, setUploadMeta] = useState(null);
   const [saveError, setSaveError] = useState('');
+  const [subjects, setSubjects] = useState([]);
+  const [classes, setClasses] = useState([]);
+
+  useEffect(() => {
+    loadSubjects();
+    loadClasses();
+  }, []);
 
   useEffect(() => {
     if (existing) {
@@ -43,6 +52,8 @@ export default function TeacherForm({ existing, onSaved }){
         joiningDate: existing.joiningDate ? new Date(existing.joiningDate).toISOString().slice(0, 10) : '',
         subject: existing.subject || '',
         assignedClass: existing.assignedClass || '',
+        assignedSubjects: existing.assignedSubjects || [],
+        assignedClasses: existing.assignedClasses || [],
         status: existing.status || 'active',
         photoUrl: existing.photoUrl || ''
       });
@@ -52,6 +63,42 @@ export default function TeacherForm({ existing, onSaved }){
       setUploadMeta(null);
     }
   }, [existing]);
+
+  const loadSubjects = async () => {
+    try {
+      const res = await api.get('/subjects');
+      setSubjects(res.data.subjects || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const loadClasses = async () => {
+    try {
+      const res = await api.get('/classes');
+      setClasses(res.data.classes || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const toggleSubject = (subjectId) => {
+    const current = form.assignedSubjects || [];
+    if (current.includes(subjectId)) {
+      setForm({ ...form, assignedSubjects: current.filter(id => id !== subjectId) });
+    } else {
+      setForm({ ...form, assignedSubjects: [...current, subjectId] });
+    }
+  };
+
+  const toggleClass = (classId) => {
+    const current = form.assignedClasses || [];
+    if (current.includes(classId)) {
+      setForm({ ...form, assignedClasses: current.filter(id => id !== classId) });
+    } else {
+      setForm({ ...form, assignedClasses: [...current, classId] });
+    }
+  };
 
   const submit = async (e) => {
     e && e.preventDefault();
@@ -72,6 +119,8 @@ export default function TeacherForm({ existing, onSaved }){
         joiningDate: form.joiningDate || undefined,
         subject: form.subject,
         assignedClass: form.assignedClass,
+        assignedSubjects: form.assignedSubjects,
+        assignedClasses: form.assignedClasses,
         status: form.status,
         photoUrl: uploadMeta?.fileUrl || form.photoUrl
       };
@@ -120,8 +169,8 @@ export default function TeacherForm({ existing, onSaved }){
           <input placeholder="Qualification" value={form.qualification} onChange={e => setForm({ ...form, qualification: e.target.value })} className="w-full p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
           <input placeholder="Experience" value={form.experience} onChange={e => setForm({ ...form, experience: e.target.value })} className="w-full p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
           <input type="date" placeholder="Joining Date" value={form.joiningDate} onChange={e => setForm({ ...form, joiningDate: e.target.value })} className="w-full p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
-          <input placeholder="Subject Specialization" value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} className="w-full p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
-          <input placeholder="Assigned Class" value={form.assignedClass} onChange={e => setForm({ ...form, assignedClass: e.target.value })} className="w-full p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
+          <input placeholder="Subject Specialization (Legacy)" value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} className="w-full p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
+          <input placeholder="Assigned Class (Legacy)" value={form.assignedClass} onChange={e => setForm({ ...form, assignedClass: e.target.value })} className="w-full p-2.5 md:p-3 text-sm md:text-base border border-slate-300 rounded-lg focus:border-indigo-500 focus:outline-none" />
           <ResponsiveSelect
             value={form.status}
             onChange={(v) => setForm({ ...form, status: v })}
@@ -132,7 +181,47 @@ export default function TeacherForm({ existing, onSaved }){
         </div>
 
         <div className="space-y-2 md:space-y-3">
-          <h2 className="text-sm md:text-base lg:text-lg font-semibold text-slate-900">Profile</h2>
+          <h2 className="text-sm md:text-base lg:text-lg font-semibold text-slate-900">Assignments</h2>
+          <div>
+            <label className="block text-xs md:text-sm text-slate-600 font-medium mb-2">Assigned Subjects (for Marks Entry)</label>
+            <div className="max-h-32 overflow-y-auto border border-slate-300 rounded-lg p-2 space-y-1">
+              {subjects.length === 0 ? (
+                <p className="text-xs text-slate-500">No subjects available</p>
+              ) : (
+                subjects.map(sub => (
+                  <label key={sub._id} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={form.assignedSubjects?.includes(sub._id)}
+                      onChange={() => toggleSubject(sub._id)}
+                      className="rounded border-slate-300"
+                    />
+                    {sub.name}
+                  </label>
+                ))
+              )}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs md:text-sm text-slate-600 font-medium mb-2">Assigned Classes (for Marks Entry)</label>
+            <div className="max-h-32 overflow-y-auto border border-slate-300 rounded-lg p-2 space-y-1">
+              {classes.length === 0 ? (
+                <p className="text-xs text-slate-500">No classes available</p>
+              ) : (
+                classes.map(cls => (
+                  <label key={cls._id} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={form.assignedClasses?.includes(cls._id)}
+                      onChange={() => toggleClass(cls._id)}
+                      className="rounded border-slate-300"
+                    />
+                    {cls.name}
+                  </label>
+                ))
+              )}
+            </div>
+          </div>
           <div>
             <label className="block text-xs md:text-sm text-slate-600 font-medium mb-2">Profile Photo</label>
             <FileUploader folder="teachers" accept="image/*" onUploaded={(data) => { setUploadMeta(data); setForm(prev => ({ ...prev, photoUrl: data.fileUrl })); }} />

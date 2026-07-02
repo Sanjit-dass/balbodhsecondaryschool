@@ -3,12 +3,16 @@ const mongoose = require('mongoose');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const roles = require('../middleware/roles');
+const teacherAccess = require('../middleware/teacherAccess');
 const Exam = require('../models/Exam');
 const ExamMarks = require('../models/ExamMarks');
 const ExamResult = require('../models/ExamResult');
 const Student = require('../models/Student');
 const ClassModel = require('../models/Class');
 const Subject = require('../models/Subject');
+const User = require('../models/User');
+const TeacherSubjectAssignment = require('../models/TeacherSubjectAssignment');
+const { buildTeacherAssignmentQuery, getAcademicYearCandidates } = require('../utils/teacherAssignmentQuery');
 
 function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -37,6 +41,50 @@ async function resolveClassId(value) {
     await cls.save();
   }
   return cls._id;
+}
+
+async function lookupClassId(value) {
+  if (!value) return null;
+  if (mongoose.Types.ObjectId.isValid(value)) {
+    const existing = await ClassModel.findById(value).select('_id').lean();
+    if (existing) return existing._id;
+  }
+
+  const normalized = String(value).trim();
+  if (!normalized) return null;
+
+  let cls = await ClassModel.findOne({ name: new RegExp(`^${escapeRegex(normalized)}$`, 'i') }).select('_id').lean();
+  if (!cls) {
+    const numericMatch = normalized.match(/^(\d+)$/);
+    if (numericMatch) {
+      cls = await ClassModel.findOne({ numeric: parseInt(numericMatch[1], 10) }).select('_id').lean();
+    }
+  }
+
+  return cls ? cls._id : null;
+}
+
+async function normalizeSubjectId(value) {
+  if (!value) return null;
+  if (mongoose.Types.ObjectId.isValid(value)) {
+    const existing = await Subject.findById(value).select('_id').lean();
+    if (existing) return existing._id;
+  }
+
+  const normalized = String(value).trim();
+  if (!normalized) return null;
+
+  const subject = await Subject.findOne({ name: new RegExp(`^${escapeRegex(normalized)}$`, 'i') }).select('_id').lean();
+  return subject ? subject._id : null;
+}
+
+async function getTeacherAssignmentForClass(teacher, classId) {
+  if (!teacher || !classId) return null;
+  return TeacherSubjectAssignment.findOne(buildTeacherAssignmentQuery({
+    teacher,
+    classId,
+    academicYear: new Date().getFullYear().toString()
+  })).lean();
 }
 
 function normalizeClassLabel(value) {
@@ -152,6 +200,246 @@ async function buildStudentClassFilters(rawClassValue) {
   }
 
   return filters;
+}
+
+async function hasTeacherHistoricalMarksForClass(teacherId, classId) {
+  if (!teacherId || !classId) return false;
+  return await ExamMarks.exists({ class: classId, enteredBy: teacherId });
+}
+
+async function getTeacherHistoricalSubjectsForExamClass(teacherId, examId, classId) {
+  if (!teacherId || !classId) return [];
+  const query = { class: classId, enteredBy: teacherId };
+  if (examId) query.exam = examId;
+  return await ExamMarks.distinct('subject', query);
+}
+
+async function resolveAssignmentSubjectIds(assignment) {
+  if (!assignment) return [];
+
+  const subjectIds = new Set();
+  if (Array.isArray(assignment.subjects) && assignment.subjects.length > 0) {
+    assignment.subjects.forEach(subject => {
+      if (subject) subjectIds.add(String(subject));
+    });
+  }
+
+  if (Array.isArray(assignment.subjectNames) && assignment.subjectNames.length > 0) {
+    const subjectDocs = await Subject.find({
+      name: { $in: assignment.subjectNames }
+    }).select('_id name').lean();
+    subjectDocs.forEach(subject => {
+      if (subject?._id) subjectIds.add(String(subject._id));
+    });
+  }
+
+  return Array.from(subjectIds);
+}
+
+async function resolveClassEntries(classIds) {
+  if (!classIds || !classIds.length) return [];
+
+  const ids = Array.from(new Set(classIds.filter(Boolean).map(String)));
+  const classDocs = await ClassModel.find({ _id: { $in: ids } }).select('_id name').lean();
+  const classMap = new Map(classDocs.map(cls => [String(cls._id), { _id: cls._id, id: cls._id, name: cls.name || String(cls._id) }]));
+
+  return ids.map(id => classMap.get(id) || { _id: id, id, name: String(id) });
+}
+
+async function resolveSubjectEntries(subjectIds) {
+  if (!subjectIds || !subjectIds.length) return [];
+
+  const ids = Array.from(new Set(subjectIds.filter(Boolean).map(String)));
+  const objectIds = ids.filter(id => mongoose.Types.ObjectId.isValid(id));
+  const nameValues = ids.filter(id => !mongoose.Types.ObjectId.isValid(id));
+
+  const subjects = [];
+  const seen = new Set();
+
+  if (objectIds.length > 0) {
+    const subjectDocs = await Subject.find({ _id: { $in: objectIds } }).select('_id name').lean();
+    subjectDocs.forEach(subject => {
+      if (!subject?._id) return;
+      const key = String(subject._id);
+      seen.add(key);
+      subjects.push({ _id: subject._id, id: subject._id, name: subject.name || String(subject._id) });
+    });
+  }
+
+  if (nameValues.length > 0) {
+    const subjectDocs = await Subject.find({ name: { $in: nameValues } }).select('_id name').lean();
+    subjectDocs.forEach(subject => {
+      if (!subject?._id) return;
+      const key = String(subject._id);
+      if (seen.has(key)) return;
+      seen.add(key);
+      subjects.push({ _id: subject._id, id: subject._id, name: subject.name || String(subject._id) });
+    });
+
+    for (const subjectName of nameValues) {
+      if (seen.has(subjectName)) continue;
+      seen.add(subjectName);
+      subjects.push({ _id: subjectName, id: subjectName, name: subjectName });
+    }
+  }
+
+  return subjects;
+}
+
+async function buildAssignmentSubjectEntries(assignment) {
+  if (!assignment) return [];
+
+  const classId = assignment.class?._id || assignment.class || assignment.className;
+  const subjects = [];
+  const seen = new Set();
+
+  if (Array.isArray(assignment.subjects) && assignment.subjects.length > 0) {
+    const subjectDocs = await Subject.find({ _id: { $in: assignment.subjects } }).select('_id name').lean();
+    for (const subject of subjectDocs) {
+      if (!subject?._id) continue;
+      const key = String(subject._id);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      subjects.push({
+        _id: subject._id,
+        id: subject._id,
+        name: subject.name || String(subject._id),
+        classId
+      });
+    }
+
+    for (const subjectRef of assignment.subjects) {
+      const key = String(subjectRef);
+      if (!seen.has(key)) {
+        seen.add(key);
+        subjects.push({
+          _id: subjectRef,
+          id: subjectRef,
+          name: String(subjectRef),
+          classId
+        });
+      }
+    }
+  }
+
+  if (Array.isArray(assignment.subjectNames) && assignment.subjectNames.length > 0) {
+    const normalizedNames = assignment.subjectNames
+      .filter(name => typeof name === 'string' && name.trim())
+      .map(name => name.trim());
+
+    const subjectDocs = await Subject.find({ name: { $in: normalizedNames } }).select('_id name').lean();
+    const foundIds = new Set();
+    for (const subject of subjectDocs) {
+      if (!subject?._id) continue;
+      const key = String(subject._id);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      foundIds.add(subject.name);
+      subjects.push({
+        _id: subject._id,
+        id: subject._id,
+        name: subject.name || String(subject._id),
+        classId
+      });
+    }
+
+    for (const subjectName of normalizedNames) {
+      if (foundIds.has(subjectName)) continue;
+      const key = subjectName;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      subjects.push({
+        _id: subjectName,
+        id: subjectName,
+        name: subjectName,
+        classId
+      });
+    }
+  }
+
+  return subjects;
+}
+
+async function buildAssignmentsFromTeacherMarks(teacherId) {
+  if (!teacherId) return { classes: [], subjects: [] };
+
+  const marks = await ExamMarks.find({ enteredBy: teacherId })
+    .populate('class', 'name')
+    .populate('subject', 'name')
+    .lean();
+
+  const classesMap = new Map();
+  const subjectsMap = new Map();
+
+  marks.forEach(mark => {
+    const classId = mark.class?._id || mark.class;
+    if (classId && !classesMap.has(String(classId))) {
+      classesMap.set(String(classId), {
+        _id: classId,
+        name: mark.class?.name || mark.className || String(classId),
+        id: classId
+      });
+    }
+
+    const subjectId = mark.subject?._id || mark.subject;
+    if (subjectId && !subjectsMap.has(String(subjectId))) {
+      subjectsMap.set(String(subjectId), {
+        _id: subjectId,
+        name: mark.subject?.name || mark.subjectName || String(subjectId),
+        id: subjectId,
+        classId
+      });
+    }
+  });
+
+  return {
+    classes: Array.from(classesMap.values()),
+    subjects: Array.from(subjectsMap.values())
+  };
+}
+
+async function getExamCompletionSummary(examId) {
+  const exam = await Exam.findById(examId)
+    .populate('class', 'name')
+    .populate('subjects', 'name')
+    .lean();
+
+  if (!exam) return null;
+
+  const classId = exam.class?._id || exam.class;
+  const studentCount = await Student.countDocuments({ class: classId });
+  const subjectProgress = [];
+
+  for (const subject of exam.subjects || []) {
+    const subjectId = subject._id || subject;
+    const marks = await ExamMarks.find({ exam: examId, class: classId, subject: subjectId })
+      .populate('enteredBy', 'name')
+      .sort({ createdAt: 1 })
+      .lean();
+
+    const completed = studentCount > 0 && marks.length >= studentCount;
+    subjectProgress.push({
+      subject: {
+        _id: subjectId,
+        name: subject.name || 'Unnamed Subject'
+      },
+      marksCount: marks.length,
+      studentCount,
+      completed,
+      status: completed ? 'completed' : 'pending',
+      submittedBy: marks[0]?.enteredBy?.name || null
+    });
+  }
+
+  const incompleteSubjects = subjectProgress.filter(item => !item.completed);
+  return {
+    exam,
+    classId,
+    studentCount,
+    subjectProgress,
+    incompleteSubjects,
+    allCompleted: incompleteSubjects.length === 0
+  };
 }
 
 // GET: List all exams, optionally filtered by class
@@ -293,6 +581,293 @@ router.delete('/:id', auth, roles(['admin', 'examcontroller', 'superadmin', 'pri
   }
 });
 
+// Teacher-specific routes (must come before generic :examId routes to avoid route conflicts)
+
+// GET: Get marks already entered by the current teacher
+router.get('/teacher/my-marks', auth, teacherAccess, async (req, res) => {
+  try {
+    const teacherId = req.user.id || req.user._id;
+    const marks = await ExamMarks.find({ enteredBy: teacherId })
+      .populate('exam', 'title type academicYear')
+      .populate('subject', 'name')
+      .populate('class', 'name')
+      .populate('student', 'user fullName admissionNumber rollNumber')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({ marks });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET: Get teacher's assigned subjects and classes
+router.get('/teacher/assignments', auth, teacherAccess, async (req, res) => {
+  try {
+    const teacher = req.teacher;
+    let response = { subjects: [], classes: [] };
+
+    if (teacher) {
+      const assignments = await TeacherSubjectAssignment.find(buildTeacherAssignmentQuery({
+        teacher,
+        academicYear: new Date().getFullYear().toString()
+      }))
+        .populate('class', 'name')
+        .populate('subjects', 'name')
+        .lean();
+
+      const classesMap = new Map();
+      const subjectsMap = new Map();
+
+      for (const assignment of assignments) {
+        const classId = assignment.class?._id || assignment.class || assignment.className;
+        if (classId && !classesMap.has(String(classId))) {
+          classesMap.set(String(classId), {
+            _id: classId,
+            name: assignment.class?.name || assignment.className || String(classId),
+            id: classId
+          });
+        }
+
+        const subjectEntries = await buildAssignmentSubjectEntries(assignment);
+        subjectEntries.forEach(subject => {
+          if (!subject?._id) return;
+          const subjectId = subject._id;
+          if (!subjectsMap.has(String(subjectId))) {
+            subjectsMap.set(String(subjectId), {
+              _id: subjectId,
+              name: subject.name || String(subjectId),
+              id: subjectId,
+              classId
+            });
+          }
+        });
+      }
+
+      response = {
+        subjects: Array.from(subjectsMap.values()),
+        classes: Array.from(classesMap.values())
+      };
+    }
+
+    if ((response.classes.length === 0 && response.subjects.length === 0) &&
+      (req.teacherAssignments?.classes?.length > 0 || req.teacherAssignments?.subjects?.length > 0)
+    ) {
+      response = {
+        classes: await resolveClassEntries(req.teacherAssignments.classes || []),
+        subjects: await resolveSubjectEntries(req.teacherAssignments.subjects || [])
+      };
+    }
+
+    if (response.classes.length === 0 && response.subjects.length === 0) {
+      const fallback = await buildAssignmentsFromTeacherMarks(req.user.id || req.user._id);
+      if (fallback.classes.length > 0 || fallback.subjects.length > 0) {
+        response = fallback;
+      }
+    }
+
+    res.json(response);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET: Get students for teacher's assigned class
+router.get('/teacher/students/:classId', auth, teacherAccess, async (req, res) => {
+  try {
+    const { classId: rawClassId } = req.params;
+    const classId = await lookupClassId(rawClassId);
+
+    if (!classId) {
+      return res.status(400).json({ message: 'Invalid class ID' });
+    }
+
+    const assignment = await getTeacherAssignmentForClass(req.teacher, classId);
+    if (!assignment) {
+      const historyExists = await hasTeacherHistoricalMarksForClass(req.user.id || req.user._id, classId);
+      if (!historyExists) {
+        return res.status(403).json({ message: 'Access denied. You are not assigned to this class.' });
+      }
+    }
+
+    const students = await Student.find({ class: classId, status: 'active' })
+      .populate('user', 'name')
+      .select('_id user fullName admissionNumber rollNumber')
+      .lean();
+
+    res.json({ students });
+  } catch (err) {
+    console.error('Error in teacher students endpoint:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET: Get teacher's assigned subjects for a specific class
+router.get('/teacher/subjects/:classId', auth, teacherAccess, async (req, res) => {
+  try {
+    const { classId: rawClassId } = req.params;
+    const classId = await lookupClassId(rawClassId);
+
+    if (!classId) {
+      return res.status(400).json({ message: 'Invalid class ID' });
+    }
+
+    const assignment = await getTeacherAssignmentForClass(req.teacher, classId);
+    let subjects = [];
+
+    if (assignment) {
+      if (Array.isArray(assignment.subjects) && assignment.subjects.length > 0) {
+        subjects = await Subject.find({ _id: { $in: assignment.subjects } }).lean();
+      }
+
+      if (subjects.length === 0 && Array.isArray(assignment.subjectNames) && assignment.subjectNames.length > 0) {
+        const normalizedNames = assignment.subjectNames
+          .filter(name => typeof name === 'string' && name.trim())
+          .map(name => name.trim());
+
+        const subjectDocs = await Subject.find({ name: { $in: normalizedNames } }).lean();
+        const foundNames = new Set(subjectDocs.map(s => String(s.name).trim()));
+
+        subjects = subjectDocs.slice();
+        normalizedNames.forEach(name => {
+          if (!foundNames.has(name)) {
+            subjects.push({ _id: name, name });
+          }
+        });
+      }
+
+      if (subjects.length === 0) {
+        return res.status(403).json({ message: 'No assigned subjects found for this class.' });
+      }
+    } else {
+      const historicalSubjectIds = await getTeacherHistoricalSubjectsForExamClass(req.user.id || req.user._id, null, classId);
+      if (historicalSubjectIds && historicalSubjectIds.length > 0) {
+        subjects = await Subject.find({ _id: { $in: historicalSubjectIds } }).lean();
+      } else {
+        return res.status(403).json({ message: 'Access denied. You are not assigned to this class.' });
+      }
+    }
+
+    res.json({ subjects });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST: Teacher save marks (with access validation)
+router.post('/teacher/:examId/marks', auth, teacherAccess, async (req, res) => {
+  try {
+    const { studentId, subjectId: rawSubject, theoryMarks, practicalMarks, maxTheoryMarks, maxPracticalMarks, classId: rawClassId } = req.body;
+    const exam = await Exam.findById(req.params.examId);
+    if (!exam) return res.status(404).json({ message: 'Exam not found' });
+
+    const classId = await lookupClassId(rawClassId || exam.class);
+    if (!classId) return res.status(400).json({ message: 'Valid class ID is required' });
+
+    const assignment = await getTeacherAssignmentForClass(req.teacher, classId);
+    if (!assignment) {
+      return res.status(403).json({ message: 'Access denied. You are not assigned to this class.' });
+    }
+
+    const allowedSubjectIds = await resolveAssignmentSubjectIds(assignment);
+    if (!allowedSubjectIds.length) {
+      return res.status(403).json({ message: 'No assigned subjects found for this class.' });
+    }
+
+    const subjectId = await normalizeSubjectId(rawSubject);
+    if (!subjectId) {
+      return res.status(400).json({ message: 'Invalid subject' });
+    }
+
+    if (!allowedSubjectIds.includes(String(subjectId))) {
+      return res.status(403).json({ message: 'Access denied. You are not assigned to this subject for this class.' });
+    }
+
+    const marks = await ExamMarks.findOneAndUpdate(
+      { exam: req.params.examId, student: studentId, subject: subjectId, class: classId },
+      {
+        exam: req.params.examId,
+        student: studentId,
+        subject: subjectId,
+        class: classId,
+        theoryMarks,
+        practicalMarks,
+        maxTheoryMarks,
+        maxPracticalMarks,
+        enteredBy: req.user.id || req.user._id
+      },
+      { upsert: true, new: true }
+    );
+
+    await marks.save();
+    res.json(marks);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error saving marks', error: err.message });
+  }
+});
+
+// GET: Get marks for teacher's subject assignments in a class
+router.get('/teacher/:examId/marks', auth, teacherAccess, async (req, res) => {
+  try {
+    const { classId: rawClassId, subjectId: rawSubject } = req.query;
+    const exam = await Exam.findById(req.params.examId);
+    if (!exam) return res.status(404).json({ message: 'Exam not found' });
+
+    const classId = await lookupClassId(rawClassId || exam.class);
+    if (!classId) {
+      return res.status(400).json({ message: 'Valid class ID is required' });
+    }
+
+    const assignment = await getTeacherAssignmentForClass(req.teacher, classId);
+    let allowedSubjectIds = [];
+    if (assignment) {
+      allowedSubjectIds = await resolveAssignmentSubjectIds(assignment);
+      if (allowedSubjectIds.length === 0) {
+        return res.status(403).json({ message: 'No assigned subjects found for this class.' });
+      }
+    } else {
+      const subjectHistory = await getTeacherHistoricalSubjectsForExamClass(req.user.id || req.user._id, req.params.examId, classId);
+      if (!subjectHistory || subjectHistory.length === 0) {
+        return res.status(403).json({ message: 'Access denied. You are not assigned to this class and no previous marks exist.' });
+      }
+      allowedSubjectIds = subjectHistory.map(String);
+    }
+
+    let subjectId = null;
+    if (rawSubject) {
+      subjectId = await normalizeSubjectId(rawSubject);
+      if (!subjectId) {
+        return res.status(400).json({ message: 'Invalid subject' });
+      }
+      if (!allowedSubjectIds.includes(String(subjectId))) {
+        return res.status(403).json({ message: 'Access denied. You are not assigned to this subject for this class.' });
+      }
+    }
+
+    const query = {
+      exam: req.params.examId,
+      class: classId,
+      subject: subjectId ? subjectId : { $in: allowedSubjectIds }
+    };
+
+    const marks = await ExamMarks.find(query)
+      .populate('student', 'user fullName admissionNumber rollNumber')
+      .populate('subject', 'name')
+      .lean();
+
+    res.json({ marks });
+  } catch (err) {
+    console.error('Error in teacher marks endpoint:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Generic exam routes (must come after teacher-specific routes)
+
 // GET: Get students for marks entry
 router.get('/:examId/students', auth, roles(['admin', 'examcontroller', 'superadmin', 'principal']), async (req, res) => {
   try {
@@ -388,12 +963,23 @@ router.get('/:examId/subjects', auth, roles(['admin', 'examcontroller', 'superad
 // POST: Enter marks
 router.post('/:examId/marks', auth, roles(['admin', 'examcontroller', 'superadmin', 'principal']), async (req, res) => {
   try {
-    const { studentId, subjectId: rawSubject, marksObtained, maxMarks, classId: rawClassId } = req.body;
+    const { studentId, subjectId: rawSubject, theoryMarks, practicalMarks, maxTheoryMarks, maxPracticalMarks, classId: rawClassId } = req.body;
     const exam = await Exam.findById(req.params.examId);
     if (!exam) return res.status(404).json({ message: 'Exam not found' });
 
     const classId = rawClassId || exam.class;
     if (!classId) return res.status(400).json({ message: 'Class ID is required for saving marks' });
+
+    // Validate theory and practical marks
+    if (theoryMarks === undefined || theoryMarks === null || theoryMarks === '') {
+      return res.status(400).json({ message: 'Theory marks are required' });
+    }
+    if (practicalMarks === undefined || practicalMarks === null || practicalMarks === '') {
+      return res.status(400).json({ message: 'Practical marks are required' });
+    }
+    if (isNaN(theoryMarks) || isNaN(practicalMarks)) {
+      return res.status(400).json({ message: 'Marks must be numeric values' });
+    }
 
     let subjectId = rawSubject;
     if (subjectId && !mongoose.Types.ObjectId.isValid(subjectId)) {
@@ -421,13 +1007,17 @@ router.post('/:examId/marks', auth, roles(['admin', 'examcontroller', 'superadmi
         student: studentId,
         subject: subjectId,
         class: classId,
-        marksObtained,
-        maxMarks,
+        theoryMarks: Number(theoryMarks) || 0,
+        practicalMarks: Number(practicalMarks) || 0,
+        maxTheoryMarks: Number(maxTheoryMarks) || 50,
+        maxPracticalMarks: Number(maxPracticalMarks) || 50,
         enteredBy: req.user.id || req.user._id
       });
     } else {
-      marks.marksObtained = marksObtained;
-      marks.maxMarks = maxMarks;
+      marks.theoryMarks = Number(theoryMarks) || 0;
+      marks.practicalMarks = Number(practicalMarks) || 0;
+      if (maxTheoryMarks !== undefined) marks.maxTheoryMarks = Number(maxTheoryMarks) || 50;
+      if (maxPracticalMarks !== undefined) marks.maxPracticalMarks = Number(maxPracticalMarks) || 50;
       marks.enteredBy = req.user.id || req.user._id;
     }
 
@@ -505,6 +1095,17 @@ router.post('/:examId/generate-results', auth, roles(['admin', 'examcontroller',
     const exam = await Exam.findById(req.params.examId);
     if (!exam) return res.status(404).json({ message: 'Exam not found' });
 
+    const completion = await getExamCompletionSummary(req.params.examId);
+    if (!completion?.allCompleted) {
+      const pendingNames = (completion?.incompleteSubjects || [])
+        .map(item => item.subject?.name || 'Unnamed Subject')
+        .join(', ');
+      return res.status(400).json({
+        message: 'Results cannot be generated until all subjects are fully marked.',
+        pendingSubjects: pendingNames
+      });
+    }
+
     // Get all students in the class, including legacy records that store className instead of class ObjectId
     const studentClassFilters = await buildStudentClassFilters(exam.class);
     if (!studentClassFilters || studentClassFilters.length === 0) {
@@ -527,26 +1128,33 @@ router.post('/:examId/generate-results', auth, roles(['admin', 'examcontroller',
       const subjectMarks = [];
 
       marks.forEach(m => {
-        // Determine max marks for this entry with fallbacks: saved mark -> subject definition -> exam default -> 100
-        const entryMax = (m.maxMarks != null && !isNaN(Number(m.maxMarks))) ? Number(m.maxMarks) :
-                         (m.subject && m.subject.maxMarks != null && !isNaN(Number(m.subject.maxMarks)) ? Number(m.subject.maxMarks) :
-                           (exam.maxMarks != null && !isNaN(Number(exam.maxMarks)) ? Number(exam.maxMarks) : 0));
+        const theoryObtained = Number(m.theoryMarks) || 0;
+        const practicalObtained = Number(m.practicalMarks) || 0;
+        const obtained = theoryObtained + practicalObtained;
 
-        const entryPass = (m.passMarks != null && !isNaN(Number(m.passMarks))) ? Number(m.passMarks) :
-                         (m.subject && m.subject.passMarks != null && !isNaN(Number(m.subject.passMarks)) ? Number(m.subject.passMarks) :
-                           (exam.passMarks != null && !isNaN(Number(exam.passMarks)) ? Number(exam.passMarks) : 0));
+        const maxTheory = Number(m.maxTheoryMarks) || 50;
+        const maxPractical = Number(m.maxPracticalMarks) || 50;
+        const entryMax = maxTheory + maxPractical;
 
-        const obtained = Number(m.marksObtained) || 0;
+        const theoryPass = Number(m.maxTheoryMarks) > 0 ? Math.min(20, Number(m.maxTheoryMarks) || 50) : 20;
+        const practicalPass = Number(m.maxPracticalMarks) > 0 ? Math.min(20, Number(m.maxPracticalMarks) || 50) : 20;
+        const subjectPassed = theoryObtained > theoryPass && practicalObtained > practicalPass;
+
         totalMarksObtained += obtained;
         totalMaxMarks += entryMax;
         const percentageForSubject = entryMax > 0 ? (obtained / entryMax) * 100 : 0;
         subjectMarks.push({
           subject: m.subject._id,
+          theoryMarks: theoryObtained,
+          practicalMarks: practicalObtained,
+          maxTheoryMarks: maxTheory,
+          maxPracticalMarks: maxPractical,
           marksObtained: obtained,
           maxMarks: entryMax,
-          passMarks: entryPass,
+          passMarks: theoryPass + practicalPass,
           percentage: percentageForSubject,
-          grade: m.grade
+          grade: m.grade,
+          passStatus: subjectPassed ? 'Pass' : 'Fail'
         });
       });
 
@@ -558,8 +1166,13 @@ router.post('/:examId/generate-results', auth, roles(['admin', 'examcontroller',
       else if (totalPercentage >= 60) totalGrade = 'B';
       else if (totalPercentage >= 50) totalGrade = 'C';
 
-      // Determine pass status per subject using subject/exam/pass fallback
-      const failedAnySubject = subjectMarks.some(s => Number(s.marksObtained) < (s.passMarks != null ? Number(s.passMarks) : (exam.passMarks != null ? Number(exam.passMarks) : 0)));
+      const failedAnySubject = subjectMarks.some(s => {
+        const theory = Number(s.theoryMarks) || 0;
+        const practical = Number(s.practicalMarks) || 0;
+        const theoryPass = Number(s.maxTheoryMarks) > 0 ? Math.min(20, Number(s.maxTheoryMarks)) : 20;
+        const practicalPass = Number(s.maxPracticalMarks) > 0 ? Math.min(20, Number(s.maxPracticalMarks)) : 20;
+        return theory <= theoryPass || practical <= practicalPass;
+      });
       const passStatus = failedAnySubject ? 'Fail' : 'Pass';
 
       const result = new ExamResult({
@@ -717,4 +1330,33 @@ router.get('/export/csv', auth, async (req, res) => {
   }
 });
 
+// ==================== TEACHER-SPECIFIC ENDPOINTS ====================
+
+// GET: Get exam subject completion progress for admins
+router.get('/:examId/progress', auth, roles(['admin', 'examcontroller', 'superadmin', 'principal']), async (req, res) => {
+  try {
+    const completion = await getExamCompletionSummary(req.params.examId);
+    if (!completion) {
+      return res.status(404).json({ message: 'Exam not found' });
+    }
+
+    res.json({
+      exam: {
+        _id: completion.exam._id,
+        title: completion.exam.title,
+        type: completion.exam.type,
+        className: completion.exam.class?.name || null
+      },
+      subjectProgress: completion.subjectProgress,
+      allCompleted: completion.allCompleted
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
+
+
+

@@ -22,7 +22,7 @@ export default function ExamForm({ existing, onSaved }){
     startDate: '',
     endDate: '',
     maxMarks: '100',
-    passMarks: '40',
+    passMarks: '20',
     notes: ''
   });
   const [subjects, setSubjects] = useState([]);
@@ -47,7 +47,7 @@ export default function ExamForm({ existing, onSaved }){
         startDate: existing.startDate ? new Date(existing.startDate).toISOString().slice(0,10) : '',
         endDate: existing.endDate ? new Date(existing.endDate).toISOString().slice(0,10) : '',
         maxMarks: existing.maxMarks != null ? String(existing.maxMarks) : '100',
-        passMarks: existing.passMarks != null ? String(existing.passMarks) : '40',
+        passMarks: existing.passMarks != null ? String(existing.passMarks) : '20',
         notes: existing.notes || ''
       });
       setSelectedSubjects(existing.subjects?.map(s => s._id || s) || []);
