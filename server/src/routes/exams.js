@@ -709,45 +709,42 @@ router.get('/teacher/subjects/:classId', auth, teacherAccess, async (req, res) =
   try {
     const { classId: rawClassId } = req.params;
     const classId = await lookupClassId(rawClassId);
-
-    if (!classId) {
-      return res.status(400).json({ message: 'Invalid class ID' });
-    }
-
-    const assignment = await getTeacherAssignmentForClass(req.teacher, classId);
     let subjects = [];
 
-    if (assignment) {
-      if (Array.isArray(assignment.subjects) && assignment.subjects.length > 0) {
-        subjects = await Subject.find({ _id: { $in: assignment.subjects } }).lean();
-      }
+    if (classId) {
+      const assignment = await getTeacherAssignmentForClass(req.teacher, classId);
+      if (assignment) {
+        if (Array.isArray(assignment.subjects) && assignment.subjects.length > 0) {
+          subjects = await Subject.find({ _id: { $in: assignment.subjects } }).lean();
+        }
 
-      if (subjects.length === 0 && Array.isArray(assignment.subjectNames) && assignment.subjectNames.length > 0) {
-        const normalizedNames = assignment.subjectNames
-          .filter(name => typeof name === 'string' && name.trim())
-          .map(name => name.trim());
+        if (subjects.length === 0 && Array.isArray(assignment.subjectNames) && assignment.subjectNames.length > 0) {
+          const normalizedNames = assignment.subjectNames
+            .filter(name => typeof name === 'string' && name.trim())
+            .map(name => name.trim());
 
-        const subjectDocs = await Subject.find({ name: { $in: normalizedNames } }).lean();
-        const foundNames = new Set(subjectDocs.map(s => String(s.name).trim()));
+          const subjectDocs = await Subject.find({ name: { $in: normalizedNames } }).lean();
+          const foundNames = new Set(subjectDocs.map(s => String(s.name).trim()));
 
-        subjects = subjectDocs.slice();
-        normalizedNames.forEach(name => {
-          if (!foundNames.has(name)) {
-            subjects.push({ _id: name, name });
-          }
-        });
+          subjects = subjectDocs.slice();
+          normalizedNames.forEach(name => {
+            if (!foundNames.has(name)) {
+              subjects.push({ _id: name, name });
+            }
+          });
+        }
       }
+    }
 
-      if (subjects.length === 0) {
-        return res.status(403).json({ message: 'No assigned subjects found for this class.' });
+    if (subjects.length === 0) {
+      const className = classId ? await resolveClassNameFromId(classId) : String(rawClassId || '').trim();
+      if (className) {
+        subjects = await Subject.find({ class: className }).lean();
       }
-    } else {
-      const historicalSubjectIds = await getTeacherHistoricalSubjectsForExamClass(req.user.id || req.user._id, null, classId);
-      if (historicalSubjectIds && historicalSubjectIds.length > 0) {
-        subjects = await Subject.find({ _id: { $in: historicalSubjectIds } }).lean();
-      } else {
-        return res.status(403).json({ message: 'Access denied. You are not assigned to this class.' });
-      }
+    }
+
+    if (subjects.length === 0) {
+      return res.status(200).json({ subjects: [] });
     }
 
     res.json({ subjects });

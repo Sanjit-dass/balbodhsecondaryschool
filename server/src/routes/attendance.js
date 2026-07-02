@@ -30,15 +30,11 @@ async function resolveStudentByUser(userId) {
 // Notifications are reserved for manual notices, published results, and other explicit announcements.
 router.post('/', auth, roles(['superadmin','admin','principal','teacher']), async (req,res)=>{
   try{
-    const { date, class: className, section, period, periods, subject, records, topic, homeworkGiven, homework, notes } = req.body;
-    if(!date || !className) return res.status(400).json({ message: 'Missing required fields: date or class' });
+    const { date, class: className, section, subject, records, topic, homeworkGiven, homework, notes } = req.body;
+    if(!date || !className || !subject) return res.status(400).json({ message: 'Missing required fields: date, class, or subject' });
 
     const range = normalizeDateRange(date);
     if (!range) return res.status(400).json({ message: 'Invalid date' });
-
-    const selectedPeriods = Array.isArray(periods) ? periods.filter(p => typeof p === 'string' && p.trim()) : [];
-    if (period && !selectedPeriods.length) selectedPeriods.push(period);
-    if (!selectedPeriods.length) return res.status(400).json({ message: 'Please select at least one period' });
 
     const preparedRecords = (Array.isArray(records) ? records : []).map((record) => ({
       person: record.person,
@@ -48,52 +44,63 @@ router.post('/', auth, roles(['superadmin','admin','principal','teacher']), asyn
       note: record.note || ''
     }));
 
-    const results = [];
-    for (const p of selectedPeriods) {
-      const existingQuery = { class: className, date: { $gte: range.start, $lte: range.end }, period: p };
-      if (section) existingQuery.section = section;
-      const existing = await Attendance.findOne(existingQuery);
-      if (existing) {
-        if (req.user.role === 'teacher' && existing.submitted && existing.date.toDateString() !== new Date().toDateString()) {
-          return res.status(403).json({ message: 'Submitted attendance for a previous date cannot be edited by teacher' });
-        }
-        existing.records = preparedRecords;
-        existing.period = p;
-        existing.subject = subject;
-        existing.topic = topic;
-        existing.homeworkGiven = !!homeworkGiven;
-        existing.homework = homework;
-        existing.notes = notes;
-        existing.recordedBy = req.user.id;
-        existing.submitted = true;
-        existing.date = date;
-        await existing.save();
-        results.push(existing);
-      } else {
-        const a = new Attendance({ date, class: className, section, period: p, subject, records: preparedRecords, topic, homeworkGiven: !!homeworkGiven, homework, notes, recordedBy: req.user.id, submitted: true });
-        await a.save();
-        results.push(a);
+    const existingQuery = { class: className, date: { $gte: range.start, $lte: range.end }, subject };
+    if (section) existingQuery.section = section;
+
+    const existing = await Attendance.findOne(existingQuery);
+    if (existing) {
+      if (req.user.role === 'teacher' && existing.submitted && existing.date.toDateString() !== new Date().toDateString()) {
+        return res.status(403).json({ message: 'Submitted attendance for a previous date cannot be edited by teacher' });
       }
+      existing.records = preparedRecords;
+      existing.period = existing.period || 'Period 1';
+      existing.subject = subject;
+      existing.topic = topic;
+      existing.homeworkGiven = !!homeworkGiven;
+      existing.homework = homework;
+      existing.notes = notes;
+      existing.recordedBy = req.user.id;
+      existing.submitted = true;
+      existing.date = date;
+      await existing.save();
+      return res.json(existing);
     }
 
-    res.json(results.length === 1 ? results[0] : { attendance: results });
+    const a = new Attendance({
+      date,
+      class: className,
+      section,
+      period: 'Period 1',
+      subject,
+      records: preparedRecords,
+      topic,
+      homeworkGiven: !!homeworkGiven,
+      homework,
+      notes,
+      recordedBy: req.user.id,
+      submitted: true
+    });
+    await a.save();
+
+    res.json(a);
   }catch(err){console.error(err); res.status(500).send('Server error')} 
 });
 
 // List / filter attendance
 router.get('/', auth, roles(['superadmin','admin','principal','teacher','accountant','parent','student']), async (req,res)=>{
   try{
-    const { class: classId, section, subject, date, month, period, page = 1, limit = 100, studentId, studentUserId, studentName, rollNumber, q } = req.query;
+    const { class: classParam, classId: classIdParam, section, subject, date, month, period, page = 1, limit = 100, studentId, studentUserId, studentName, rollNumber, q } = req.query;
+    const effectiveClass = classIdParam || classParam;
     const isStudent = req.user.role === 'student';
     const query = {};
     
     // DEBUG: Log incoming request
     console.log(`[ATTENDANCE] ${isStudent ? 'STUDENT' : req.user.role.toUpperCase()} request:`, { 
-      classId, studentName, rollNumber, studentUserId, userId: req.user.id 
+      classParam, classIdParam, effectiveClass, studentName, rollNumber, studentUserId, userId: req.user.id 
     });
 
     // Apply top-level filters (skip for student name/roll as they'll be handled specially)
-    if (classId) query.class = classId;
+    if (effectiveClass) query.class = effectiveClass;
     if (section) query.section = section;
     if (subject) query.subject = subject;
     if (period) query.period = period;
@@ -253,7 +260,29 @@ router.put('/:id', auth, roles(['superadmin','admin','principal','teacher']), au
       const today = new Date().toDateString();
       if (a.date.toDateString() !== today) return res.status(403).json({ message: 'Submitted attendance for a previous date cannot be edited by teacher' });
     }
-    Object.assign(a, req.body);
+
+    const { date, class: className, section, subject, records, topic, homeworkGiven, homework, notes } = req.body;
+    if (date) a.date = date;
+    if (className) a.class = className;
+    if (section !== undefined) a.section = section;
+    if (subject) a.subject = subject;
+    a.period = a.period || 'Period 1';
+    if (Array.isArray(records)) {
+      a.records = records.map((record) => ({
+        person: record.person,
+        rollNumber: record.rollNumber,
+        name: record.name,
+        status: ['present','absent','leave'].includes(record.status) ? record.status : 'absent',
+        note: record.note || ''
+      }));
+    }
+    if (topic !== undefined) a.topic = topic;
+    if (homeworkGiven !== undefined) a.homeworkGiven = !!homeworkGiven;
+    if (homework !== undefined) a.homework = homework;
+    if (notes !== undefined) a.notes = notes;
+    a.recordedBy = req.user.id;
+    a.submitted = true;
+
     await a.save();
     res.json(a);
   }catch(err){console.error(err); res.status(500).send('Server error')} 

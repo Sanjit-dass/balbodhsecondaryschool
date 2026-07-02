@@ -100,16 +100,18 @@ async function resolveAttachmentRemote(att) {
 
   try {
     let res = null;
-    // Prefer 'auto' so Cloudinary determines the resource type; fallback to
-    // raw/image if needed. This increases chances of finding the stored asset
-    // without guessing a wrong resource_type that leads to 404s.
-    try { res = await cloudinary.api.resource(publicId, { resource_type: 'auto' }); } catch(e) { res = null; }
-    if (!res) {
-      try { res = await cloudinary.api.resource(publicId, { resource_type: 'raw' }); } catch(e) { res = null; }
+    const resourceTypes = ['auto', 'image', 'raw', 'video'];
+    for (const resourceType of resourceTypes) {
+      try {
+        res = await cloudinary.api.resource(publicId, { resource_type: resourceType });
+        if (res && (res.secure_url || res.url)) {
+          break;
+        }
+      } catch (e) {
+        res = null;
+      }
     }
-    if (!res) {
-      try { res = await cloudinary.api.resource(publicId, { resource_type: 'image' }); } catch(e) { res = null; }
-    }
+
     if (res && (res.secure_url || res.url)) {
       att.fileUrl = res.secure_url || res.url;
     }

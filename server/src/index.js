@@ -5,11 +5,18 @@ const path = require('path');
 const mongoose = require('mongoose');
 const { connectDB, disconnectDB } = require('./config/db');
 
-const envResult = dotenv.config();
+const isProduction = (process.env.NODE_ENV || 'development').trim().toLowerCase() === 'production';
+let envResult = { error: null, parsed: {} };
+
+if (isProduction) {
+  console.log('ℹ️ NODE_ENV=production detected, skipping local .env file load');
+} else {
+  envResult = dotenv.config();
+}
 
 if (envResult.error) {
   console.warn('⚠️ .env file not loaded:', envResult.error.message);
-} else {
+} else if (envResult.parsed && Object.keys(envResult.parsed).length > 0) {
   console.log('✅ .env file loaded successfully');
   console.log('   loaded keys:', Object.keys(envResult.parsed).join(', '));
 }
@@ -329,38 +336,38 @@ const ensureStudentIndexes = async () => {
   try {
     const indexes = await Student.collection.indexes();
     const hasGlobalAdmissionIndex = indexes.some((index) => index.name === 'admissionNumber_1');
+    const desiredIndexExists = indexes.some((index) => {
+      return index.key && index.key.class === 1 && index.key.admissionNumber === 1 && index.unique;
+    });
+
     if (hasGlobalAdmissionIndex) {
       console.log('🔧 Dropping legacy global admissionNumber index');
       await Student.collection.dropIndex('admissionNumber_1');
     }
 
-    const sameKeyIndexes = indexes.filter((index) => {
-      return index.key && index.key.class === 1 && index.key.admissionNumber === 1;
+    const duplicateClassAdmissionIndexes = indexes.filter((index) => {
+      return index.key && index.key.class === 1 && index.key.admissionNumber === 1 && index.name !== 'class_1_admissionNumber_1';
     });
 
-    for (const idx of sameKeyIndexes) {
-      console.log(`🔧 Dropping existing student index on class+admissionNumber (${idx.name})`);
+    for (const idx of duplicateClassAdmissionIndexes) {
+      console.log(`🔧 Dropping duplicate class+admissionNumber index (${idx.name})`);
       await Student.collection.dropIndex(idx.name);
     }
 
-    try {
+    if (!desiredIndexExists) {
       await Student.collection.createIndex(
         { class: 1, admissionNumber: 1 },
         {
           unique: true,
-          sparse: true
+          partialFilterExpression: { class: { $exists: true, $ne: null }, admissionNumber: { $exists: true, $ne: null } }
         }
       );
-      console.log('✅ Student class+admissionNumber sparse index ensured');
-    } catch (sparseErr) {
-      console.warn('⚠️ Could not create sparse student index:', sparseErr.message);
-      // Don't attempt fallback - sparse index with null values is problematic
-      // Just skip and continue - the constraint isn't critical for functionality
-      console.log('⚠️ Continuing without this index - functionality will still work');
+      console.log('✅ Student class+admissionNumber unique partial index ensured');
+    } else {
+      console.log('✅ Existing student class+admissionNumber index already present');
     }
   } catch (indexErr) {
     console.error('❌ Failed to ensure student indexes:', indexErr.message);
-    // Don't fail the server startup due to index issues
     console.log('⚠️ Continuing despite index error - server will function normally');
   }
 };

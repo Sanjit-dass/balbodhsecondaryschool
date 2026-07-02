@@ -3,19 +3,18 @@ import { AuthContext } from '../contexts/AuthContext';
 import api from '../services/api';
 import AttendanceForm from '../components/AttendanceForm';
 
-const FILTERS = [
-  { key: 'month', label: 'This month' },
-  { key: 'period', label: 'Last 30 days' },
-  { key: 'all', label: 'All records' }
-];
+const CLASS_OPTIONS = ['Nursery','LKG','UKG','1','2','3','4','5','6','7','8','9','10'];
 
 export default function Attendance(){
   const { user } = useContext(AuthContext);
   const [records, setRecords] = useState([]);
   const [editing, setEditing] = useState(null);
-  const [filter, setFilter] = useState('month');
-  const [searchClass, setSearchClass] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [selectedClass, setSelectedClass] = useState('');
+  const [searchName, setSearchName] = useState('');
   const [searchDate, setSearchDate] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filter, setFilter] = useState('month');
   const [loading, setLoading] = useState(false);
   const [studentInfo, setStudentInfo] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
@@ -29,6 +28,7 @@ export default function Attendance(){
   const [studentLoading, setStudentLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
   const [submittedDate, setSubmittedDate] = useState('');
+  const rowsPerPage = 20;
   const isStudent = user?.role === 'student';
   const isTeacher = user?.role === 'teacher';
   const useManualFallback = !studentProfileLoaded;
@@ -43,19 +43,18 @@ export default function Attendance(){
   };
 
   const fetch = useCallback(async () => {
-    if (isStudent || isTeacher) return;
+    if (isStudent || !selectedClass) return;
     setLoading(true);
     try {
-      const params = {};
-      if (searchClass) params.class = searchClass;
-      if (searchDate) params.date = searchDate;
+      const params = { class: selectedClass, classId: selectedClass, page: 1, limit: 200 };
       const res = await api.get('/attendance', { params });
       setRecords(res.data.attendance || []);
+      setCurrentPage(1);
     } catch (err) {
       console.error(err);
     }
     setLoading(false);
-  }, [searchClass, searchDate, isStudent]);
+  }, [selectedClass, isStudent]);
 
   const fetchStudentAttendance = useCallback(async (className, name, rollNumber) => {
     setStudentLoading(true);
@@ -64,6 +63,7 @@ export default function Attendance(){
       const params = {
         studentUserId: user?.id || user?._id,
         class: className,
+        classId: className,
         studentName: name,
         rollNumber,
         page: 1,
@@ -134,46 +134,42 @@ export default function Attendance(){
 
   const remove = async (id)=>{ if(!window.confirm('Are you sure you want to permanently delete this record? This action cannot be undone.')) return; try{ await api.delete(`/attendance/${id}`); fetch(); }catch(err){console.error(err);} };
 
-  const renderAttendanceRows = () => {
-    if (loading) {
-      return (
-        <tr>
-          <td colSpan={8} className="px-4 py-10 text-center text-slate-500">Loading attendance records…</td>
-        </tr>
-      );
-    }
-
-    if (!records.length) {
-      return (
-        <tr>
-          <td colSpan={8} className="px-4 py-10 text-center text-slate-500">No attendance records found.</td>
-        </tr>
-      );
-    }
-
-    return records.map(a => {
-      const present = (a.records || []).filter(r => r.status === 'present').length;
-      const absent = (a.records || []).length - present;
-      const locked = a.submitted && (user?.role !== 'teacher' || new Date(a.date).toDateString() !== new Date().toDateString());
-      return (
-        <tr key={a._id} className="odd:bg-white even:bg-slate-50">
-          <td className="px-4 py-3 border">{new Date(a.date).toLocaleDateString()}</td>
-          <td className="px-4 py-3 border">{a.class?.name || a.class || ''}</td>
-          <td className="px-4 py-3 border">{a.period || '–'}</td>
-          <td className="px-4 py-3 border">{a.subject?.name || a.subject || '–'}</td>
-          <td className="px-4 py-3 border text-center">{present}</td>
-          <td className="px-4 py-3 border text-center">{absent}</td>
-          <td className="px-4 py-3 border text-center">
-            {locked ? <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">Locked</span> : <span className="inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs text-emerald-700">Editable</span>}
-          </td>
-          <td className="px-4 py-3 border text-right">
-            <button onClick={() => setEditing(a)} className="rounded-2xl bg-amber-400 px-3 py-2 text-xs font-semibold text-slate-900 hover:bg-amber-300 transition">Edit</button>
-            <button onClick={() => remove(a._id)} className="ml-2 rounded-2xl bg-rose-600 px-3 py-2 text-xs font-semibold text-white hover:bg-rose-500 transition">Delete</button>
-          </td>
-        </tr>
-      );
+  const attendanceRows = useMemo(() => {
+    return records.flatMap(record => {
+      return (record.records || []).map(student => ({
+        id: `${record._id}-${student.person || student.rollNumber || student.name}`,
+        sheetId: record._id,
+        date: new Date(record.date).toISOString().slice(0,10),
+        className: record.class?.name || record.class || '',
+        subject: record.subject?.name || record.subject || '–',
+        studentName: student.name || '–',
+        rollNo: student.rollNumber || '–',
+        status: student.status || 'absent',
+        record
+      }));
     });
-  };
+  }, [records]);
+
+  const filteredAttendanceRows = useMemo(() => {
+    let rows = attendanceRows;
+    if (searchName) {
+      const term = searchName.trim().toLowerCase();
+      rows = rows.filter(row => row.studentName.toLowerCase().includes(term) || row.rollNo.toLowerCase().includes(term) || row.subject.toLowerCase().includes(term));
+    }
+    if (searchDate) {
+      rows = rows.filter(row => row.date === searchDate);
+    }
+    return rows;
+  }, [attendanceRows, searchName, searchDate]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredAttendanceRows.length / rowsPerPage));
+  const pagedAttendanceRows = filteredAttendanceRows.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const studentEntries = useMemo(() => {
     if (!isStudent) return [];
@@ -513,86 +509,162 @@ export default function Attendance(){
     );
   }
 
+  if (isTeacher) {
+    return (
+      <div id="attendance-print-section" className="space-y-6">
+        <div className="mb-4">
+          <h1 className="text-2xl font-semibold">Upload Attendance</h1>
+          <p className="text-sm text-slate-600">Teachers can upload attendance for their assigned subject here. Attendance history, edits, and deletions are managed by administrators.</p>
+        </div>
+
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <AttendanceForm existing={editing} onSaved={() => { setEditing(null); }} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div id="attendance-print-section" className="space-y-6">
       <div>
         <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-semibold">Attendance Management</h1>
-            <p className="text-sm text-slate-600">Create, search, edit and review daily attendance records for all classes.</p>
+            <p className="text-sm text-slate-600">Select a class to load its attendance records in one clean view.</p>
           </div>
-          <button onClick={() => setEditing(null)} className="rounded-3xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-blue-500 transition">New Attendance</button>
+          <button onClick={() => { setShowForm(true); setEditing(null); }} className="rounded-3xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-blue-500 transition">New Attendance</button>
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-4">
-        <div className="lg:col-span-3">
-          <AttendanceForm existing={editing} onSaved={() => { setEditing(null); fetch(); }} />
-        </div>
-
-        <div className="space-y-4">
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="text-sm font-semibold text-slate-900 mb-3">Search Attendance</div>
-            <div className="grid gap-3">
+      <div className="space-y-4">
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <label className="space-y-2">
+              <span className="text-sm font-medium text-slate-700">Select Class</span>
+              <select
+                value={selectedClass}
+                onChange={e => {
+                  setSelectedClass(e.target.value);
+                  setSearchName('');
+                  setSearchDate('');
+                  setCurrentPage(1);
+                }}
+                className="w-full rounded-3xl border border-slate-300 px-4 py-3"
+              >
+                <option value="">Select class</option>
+                {CLASS_OPTIONS.map(className => (
+                  <option key={className} value={className}>{className}</option>
+                ))}
+              </select>
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm font-medium text-slate-700">Search by student</span>
               <input
-                value={searchClass}
-                onChange={e => setSearchClass(e.target.value)}
-                placeholder="Class"
+                value={searchName}
+                onChange={e => { setSearchName(e.target.value); setCurrentPage(1); }}
+                placeholder="Name or roll no"
                 className="w-full rounded-3xl border border-slate-300 px-4 py-3"
               />
+            </label>
+            <label className="space-y-2">
+              <span className="text-sm font-medium text-slate-700">Search by date</span>
               <input
                 type="date"
                 value={searchDate}
-                onChange={e => setSearchDate(e.target.value)}
+                onChange={e => { setSearchDate(e.target.value); setCurrentPage(1); }}
                 className="w-full rounded-3xl border border-slate-300 px-4 py-3"
               />
-              <button onClick={fetch} className="w-full rounded-3xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500 transition">Apply filters</button>
+            </label>
+          </div>
+          <p className="mt-4 text-sm text-slate-500">Attendance records are automatically loaded for the selected class. Use search fields to narrow down by student or date.</p>
+        </div>
+
+        {showForm && (
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h2 className="text-lg font-semibold">Attendance sheet</h2>
+              <button onClick={() => setShowForm(false)} className="rounded-full border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 transition">Close</button>
+            </div>
+            <AttendanceForm existing={editing} onSaved={() => { setShowForm(false); setEditing(null); fetch(); }} />
+          </div>
+        )}
+
+        <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold">Attendance records</h2>
+              <p className="text-sm text-slate-500">Displaying records for {selectedClass || 'no class selected'}.</p>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                {selectedClass ? `${filteredAttendanceRows.length} student entries` : 'Pick a class to load attendance'}
+              </div>
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="text-sm font-semibold text-slate-900 mb-3">Filter Options</div>
-            <div className="flex flex-wrap gap-2">
-              {FILTERS.map(option => (
-                <button
-                  key={option.key}
-                  onClick={() => setFilter(option.key)}
-                  className={`rounded-3xl px-4 py-2 text-sm font-semibold ${filter === option.key ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700'}`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left text-sm text-slate-700">
+              <thead className="bg-slate-100 text-slate-600">
+                <tr>
+                  <th className="px-4 py-3 border">Date</th>
+                  <th className="px-4 py-3 border">Student Name</th>
+                  <th className="px-4 py-3 border">Roll No</th>
+                  <th className="px-4 py-3 border">Subject</th>
+                  <th className="px-4 py-3 border">Status</th>
+                  <th className="px-4 py-3 border">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {!selectedClass ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-10 text-center text-slate-500">Select a class to load attendance records.</td>
+                  </tr>
+                ) : loading ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-10 text-center text-slate-500">Loading attendance records…</td>
+                  </tr>
+                ) : !filteredAttendanceRows.length ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-10 text-center text-slate-500">No attendance records found for this class.</td>
+                  </tr>
+                ) : pagedAttendanceRows.map(row => (
+                  <tr key={row.id} className="odd:bg-white even:bg-slate-50">
+                    <td className="px-4 py-3 border">{new Date(row.date).toLocaleDateString()}</td>
+                    <td className="px-4 py-3 border">{row.studentName}</td>
+                    <td className="px-4 py-3 border">{row.rollNo}</td>
+                    <td className="px-4 py-3 border">{row.subject}</td>
+                    <td className={`px-4 py-3 border font-semibold ${row.status === 'present' ? 'text-emerald-700' : row.status === 'absent' ? 'text-rose-600' : 'text-slate-600'}`}>
+                      {row.status?.charAt(0).toUpperCase() + row.status?.slice(1)}
+                    </td>
+                    <td className="px-4 py-3 border text-right">
+                      <button onClick={() => { setEditing(row.record); setShowForm(true); }} className="rounded-2xl bg-amber-400 px-3 py-2 text-xs font-semibold text-slate-900 hover:bg-amber-300 transition">Edit</button>
+                      <button onClick={() => remove(row.sheetId)} className="ml-2 rounded-2xl bg-rose-600 px-3 py-2 text-xs font-semibold text-white hover:bg-rose-500 transition">Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
+
+          {selectedClass && filteredAttendanceRows.length > rowsPerPage && (
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-sm text-slate-600">Page {currentPage} of {totalPages}</div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  className="rounded-3xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >Previous</button>
+                <button
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  className="rounded-3xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >Next</button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {isTeacher ? (
-        <div className="mt-6 rounded-3xl border border-amber-200 bg-amber-50 p-6 text-slate-700 shadow-sm">
-          <h2 className="text-lg font-semibold">Attendance history is admin-only</h2>
-          <p className="mt-2 text-sm">Teachers can post daily attendance, but once attendance is submitted, only admin users can view the attendance record list.</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-          <table className="min-w-full text-left text-sm text-slate-700">
-            <thead className="bg-slate-100 text-slate-600">
-              <tr>
-                <th className="px-4 py-3 border">Date</th>
-                <th className="px-4 py-3 border">Class</th>
-                <th className="px-4 py-3 border">Period</th>
-                <th className="px-4 py-3 border">Subject</th>
-                <th className="px-4 py-3 border">Present</th>
-                <th className="px-4 py-3 border">Absent</th>
-                <th className="px-4 py-3 border">Status</th>
-                <th className="px-4 py-3 border">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {renderAttendanceRows()}
-            </tbody>
-          </table>
-        </div>
-      )}
     </div>
   );
 }
