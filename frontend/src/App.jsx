@@ -12,6 +12,7 @@ import Subjects from './pages/Subjects';
 import Uploads from './pages/Uploads';
 import Attendance from './pages/Attendance';
 import AttendanceHistory from './pages/AttendanceHistory';
+import AttendanceReport from './pages/AttendanceReport';
 import Exams from './pages/Exams';
 import Fees from './pages/Fees';
 import FeeOverview from './pages/FeeOverview';
@@ -184,6 +185,7 @@ export default function App(){
           <Route path="subjects/:className" element={<Subjects />} />
           <Route path="attendance" element={<Attendance />} />
           <Route path="attendance/history" element={<AttendanceHistory />} />
+          <Route path="attendance/report" element={<AttendanceReport />} />
           <Route path="exams" element={<Exams />} />
           <Route path="fees" element={<Fees />} />
           <Route path="fees/overview" element={<FeeOverview />} />

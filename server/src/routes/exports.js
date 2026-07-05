@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const mongoose = require('mongoose');
 const PDFDocument = require('pdfkit');
 const auth = require('../middleware/auth');
 
@@ -97,6 +98,34 @@ const generatePdf = (rows, fields, title) => new Promise((resolve, reject) => {
   doc.end();
 });
 
+const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const findClassByName = async (className) => {
+  if (!className || typeof className !== 'string') return null;
+  const Class = require('../models/Class');
+  let normalized = className.trim();
+  normalized = normalized.replace(/:\d+$/, '').trim();
+  normalized = normalized.replace(/^class\s*/i, '').trim();
+  normalized = normalized.replace(/(?:st|nd|rd|th)$/i, '').trim();
+  if (!normalized) return null;
+
+  if (mongoose.Types.ObjectId.isValid(normalized)) {
+    const classDoc = await Class.findById(normalized).lean();
+    if (classDoc) return classDoc;
+  }
+
+  let classDoc = await Class.findOne({ name: new RegExp(`^${escapeRegex(normalized)}$`, 'i') }).lean();
+  if (classDoc) return classDoc;
+
+  const numericMatch = normalized.match(/^(\d+)$/);
+  if (numericMatch) {
+    classDoc = await Class.findOne({ numeric: parseInt(numericMatch[1], 10) }).lean();
+    if (classDoc) return classDoc;
+  }
+
+  return Class.findOne({ name: new RegExp(escapeRegex(normalized), 'i') }).lean();
+};
+
 const buildRows = (resource, rows) => {
   if (resource === 'audit') {
     return rows.map((entry) => ({
@@ -123,10 +152,33 @@ const buildRows = (resource, rows) => {
   });
 };
 
-const getRows = async (resource) => {
+const getRows = async (resource, query = {}) => {
   const config = exportConfigs[resource];
   if (!config) throw new Error('Unsupported export resource');
   if (config.loader) return config.loader();
+
+  if (resource === 'students') {
+    const Student = require('../models/Student');
+    const filter = {};
+    const className = query.className || query.class || '';
+
+    if (className) {
+      const classDoc = await findClassByName(className);
+      if (classDoc) {
+        filter.$or = [
+          { class: classDoc._id },
+          { className: classDoc.name },
+          { className: className },
+          { className: new RegExp(`^${escapeRegex(className)}$`, 'i') }
+        ];
+      } else {
+        filter.className = className;
+      }
+    }
+
+    return Student.find(filter).populate('class', 'name section numeric').sort({ admissionNumber: 1, rollNumber: 1, fullName: 1 }).lean();
+  }
+
   return config.model.find().lean();
 };
 
@@ -169,7 +221,7 @@ router.get('/:resource/:type', auth, async (req, res) => {
       const rec = await Attendance.findById(req.query.id).populate('class','name').populate('subject','name').lean();
       rows = rec ? [rec] : [];
     } else {
-      rows = await getRows(resource);
+      rows = await getRows(resource, req.query);
     }
     const data = buildRows(resource, rows);
     const fields = config.fields;

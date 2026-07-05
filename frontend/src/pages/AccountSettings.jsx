@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
-import FileUploader from '../components/FileUploader';
 
 export default function AccountSettings() {
   const { user, updateProfile } = useContext(AuthContext);
@@ -13,8 +12,7 @@ export default function AccountSettings() {
     phone: '',
     address: '',
     department: '',
-    designation: '',
-    photoUrl: ''
+    designation: ''
   });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -29,8 +27,7 @@ export default function AccountSettings() {
         phone: user.profile?.phone || '',
         address: user.profile?.address || '',
         department: user.profile?.department || '',
-        designation: user.profile?.designation || '',
-        photoUrl: user.profile?.photoUrl || ''
+        designation: user.profile?.designation || ''
       }));
     }
   }, [user]);
@@ -51,7 +48,7 @@ export default function AccountSettings() {
     setError('');
     setMessage('');
 
-    try {
+      try {
       const payload = {
         name: form.name,
         email: form.email,
@@ -63,11 +60,6 @@ export default function AccountSettings() {
         }
       };
 
-      if (form.photoUrl === null) {
-        payload.profile.photoUrl = null;
-      } else if (form.photoUrl) {
-        payload.profile.photoUrl = form.photoUrl;
-      }
 
       if (form.password) {
         payload.currentPassword = form.currentPassword;
@@ -85,19 +77,7 @@ export default function AccountSettings() {
   };
 
   const removePhoto = async () => {
-    setSaving(true);
-    setError('');
-    setMessage('');
-
-    try {
-      await updateProfile({ profile: { photoUrl: null } });
-      setForm((prev) => ({ ...prev, photoUrl: null }));
-      setMessage('Profile photo removed successfully.');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Unable to remove photo. Please try again.');
-    } finally {
-      setSaving(false);
-    }
+    // removed: profile photos are no longer managed from account settings
   };
 
   const handleSubmit = async (event) => {
@@ -210,38 +190,7 @@ export default function AccountSettings() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Profile picture</label>
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-wrap items-center gap-4">
-                {form.photoUrl ? (
-                  <img src={form.photoUrl} alt="Profile" className="w-16 h-16 rounded-xl object-cover border border-slate-200" />
-                ) : (
-                  <div className="w-16 h-16 rounded-xl bg-slate-200 flex items-center justify-center text-slate-600">
-                    {user?.name?.trim()?.charAt(0)?.toUpperCase() || 'U'}
-                  </div>
-                )}
-                <div className="flex flex-col gap-2">
-                  <FileUploader
-                    folder="profile"
-                    accept="image/*"
-                    onUploaded={(data) => setForm((prev) => ({ ...prev, photoUrl: data.fileUrl }))}
-                  />
-                  {form.photoUrl && (
-                    <button
-                      type="button"
-                      onClick={removePhoto}
-                      disabled={saving}
-                      className="w-fit rounded-full border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      Remove photo
-                    </button>
-                  )}
-                </div>
-              </div>
-              <p className="text-xs text-slate-500">Upload a photo to display in the top bar. By default, your initial will show.</p>
-            </div>
-          </div>
+          {/* Profile picture removed from account settings */}
 
           <div className="space-y-2">
             <p className="text-sm font-semibold text-slate-700">Change password</p>

@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const PDFDocument = require('pdfkit');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const roles = require('../middleware/roles');
@@ -277,6 +278,123 @@ router.get('/', auth, roles(['superadmin','admin','principal','teacher','account
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
+  }
+});
+
+router.get('/export/full-class/pdf', auth, roles(['superadmin','admin','principal','teacher','accountant']), async (req, res) => {
+  try {
+    const { className } = req.query;
+    if (!className) {
+      return res.status(400).json({ message: 'Class name is required' });
+    }
+
+    const classDoc = await findClassByName(className);
+    const classFilter = classDoc
+      ? { $or: [{ class: classDoc._id }, { className: classDoc.name }, { className: className }] }
+      : { className: className };
+
+    const students = await Student.find(classFilter).populate('class', 'name section numeric').sort({ admissionNumber: 1, rollNumber: 1, fullName: 1 }).lean();
+
+    const doc = new PDFDocument({ margin: 30, size: 'A4' });
+    const chunks = [];
+
+    doc.on('data', (chunk) => chunks.push(chunk));
+    doc.on('end', () => {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="full_class_student_details.pdf"');
+      res.send(Buffer.concat(chunks));
+    });
+    doc.on('error', (err) => {
+      console.error('PDF generation error:', err);
+      if (!res.headersSent) {
+        res.status(500).json({ message: 'Unable to generate PDF' });
+      }
+    });
+
+    const schoolName = 'Bal Bodh Secondary School';
+    const schoolAddress = 'Kanchanrup Municipality-08, Kanchanpur';
+    const established = 'ESTD. 2055';
+    const generatedDate = new Date().toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+    const classLabel = classDoc?.name || className || 'Selected Class';
+    const academicYear = classDoc?.academicYear || '2026';
+
+    doc.fontSize(20).font('Helvetica-Bold').text(schoolName, { align: 'center' });
+    doc.fontSize(11).font('Helvetica').text(schoolAddress, { align: 'center' });
+    doc.fontSize(11).font('Helvetica').text(established, { align: 'center' });
+    doc.moveDown(0.5);
+
+    doc.rect(30, 90, 535, 28).lineWidth(1).stroke();
+    doc.fontSize(14).font('Helvetica-Bold').text('Full Class Student Details', 30, 96, { align: 'center' });
+    doc.moveDown(0.4);
+    doc.fontSize(10).font('Helvetica');
+    doc.text(`Academic Year: ${academicYear}`, { align: 'left' });
+    doc.text(`Class: ${classLabel}`, { align: 'left' });
+    doc.text(`Generated Date: ${generatedDate}`, { align: 'left' });
+    doc.moveDown(0.6);
+
+    const tableTop = 145;
+    const rowHeight = 20;
+    const colWidths = [28, 42, 88, 34, 54, 54, 56, 52, 58, 40];
+    const xPositions = [30, 58, 100, 188, 222, 276, 330, 386, 438, 496];
+
+    const headerY = tableTop;
+    const headers = ['S.N.', 'Roll No.', 'Student Name', 'Gender', 'Father Name', 'Mother Name', 'Guardian Name', 'Phone Number', 'Address', 'Section'];
+    headers.forEach((header, index) => {
+      const x = xPositions[index];
+      const width = colWidths[index];
+      doc.rect(x, headerY, width, rowHeight).stroke();
+      doc.fontSize(7.2).font('Helvetica-Bold');
+      doc.text(header, x + 2, headerY + 4, { width: width - 4, align: index === 0 || index === 1 || index === 3 || index === 4 || index === 5 || index === 6 || index === 7 || index === 9 ? 'center' : 'left' });
+    });
+
+    let y = headerY + rowHeight;
+    students.forEach((student, index) => {
+      if (y > 760) {
+        doc.addPage();
+        y = 40;
+      }
+
+      const guardianName = student.guardian?.guardianName || student.parentName || student.guardian?.fatherName || student.guardian?.motherName || '-';
+      const rowData = [
+        String(index + 1),
+        student.rollNumber || student.admissionNumber || '-',
+        student.fullName || student.name || '-',
+        student.gender ? student.gender.charAt(0).toUpperCase() + student.gender.slice(1) : '-',
+        student.guardian?.fatherName || '-',
+        student.guardian?.motherName || '-',
+        guardianName,
+        student.phone || student.contactNumber || student.guardian?.contact || '-',
+        student.guardian?.address || '-',
+        student.section || '-'
+      ];
+
+      rowData.forEach((value, valueIndex) => {
+        const x = xPositions[valueIndex];
+        const width = colWidths[valueIndex];
+        doc.rect(x, y, width, rowHeight).stroke();
+        doc.fontSize(6.8).font('Helvetica');
+        const align = valueIndex === 0 || valueIndex === 1 || valueIndex === 3 || valueIndex === 4 || valueIndex === 5 || valueIndex === 6 || valueIndex === 7 || valueIndex === 9 ? 'center' : 'left';
+        doc.text(String(value || '-'), x + 2, y + 4, { width: width - 4, align });
+      });
+      y += rowHeight;
+    });
+
+    doc.moveDown(2);
+    doc.fontSize(11).font('Helvetica-Bold').text('----------------------------------------', { align: 'center' });
+    doc.fontSize(10).font('Helvetica').text(`Total Students: ${students.length}`, { align: 'center' });
+    doc.moveDown(1);
+    doc.fontSize(10).font('Helvetica').text('Generated by:', { align: 'center' });
+    doc.fontSize(10).font('Helvetica-Bold').text('Bal Bodh Secondary School Management System', { align: 'center' });
+    doc.fontSize(11).font('Helvetica-Bold').text('----------------------------------------', { align: 'center' });
+
+    doc.end();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

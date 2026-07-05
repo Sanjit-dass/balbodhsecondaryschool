@@ -317,8 +317,19 @@ async function dashboard(req, res) {
     firstOfMonth.setDate(1);
     firstOfMonth.setHours(0, 0, 0, 0);
 
-    // ── Per-student aggregation (FIX: prevents double-counting dues) ──
+    // ── Safe payment match: only consider positive payments (ignore zero/negative/refunds)
+    // Exclude explicit cancelled/void payments when a `status` field exists.
+    const paymentMatch = {
+      amountPaid: { $gt: 0 },
+      $or: [
+        { status: { $exists: false } },
+        { status: { $nin: ['Cancelled', 'cancelled', 'Void', 'void', 'Canceled', 'canceled'] } }
+      ]
+    };
+
+    // ── Per-student aggregation (prevents double-counting dues) ──
     const perStudent = await FeePayment.aggregate([
+      { $match: paymentMatch },
       { $sort: { createdAt: 1 } },
       { $group: {
         _id: '$studentId',
@@ -342,9 +353,9 @@ async function dashboard(req, res) {
 
     // ── Collection totals (sum of every actual payment — correct) ──
     const [totalCollectedAgg, todayCollAgg, monthCollAgg] = await Promise.all([
-      FeePayment.aggregate([{ $group: { _id: null, total: { $sum: '$amountPaid' } } }]),
-      FeePayment.aggregate([{ $match: { createdAt: { $gte: today, $lt: tomorrow } } }, { $group: { _id: null, total: { $sum: '$amountPaid' } } }]),
-      FeePayment.aggregate([{ $match: { createdAt: { $gte: firstOfMonth } } }, { $group: { _id: null, total: { $sum: '$amountPaid' } } }]),
+      FeePayment.aggregate([{ $match: paymentMatch }, { $group: { _id: null, total: { $sum: '$amountPaid' } } }]),
+      FeePayment.aggregate([{ $match: { ...paymentMatch, createdAt: { $gte: today, $lt: tomorrow } } }, { $group: { _id: null, total: { $sum: '$amountPaid' } } }]),
+      FeePayment.aggregate([{ $match: { ...paymentMatch, createdAt: { $gte: firstOfMonth } } }, { $group: { _id: null, total: { $sum: '$amountPaid' } } }]),
     ]);
 
     const totalCollected = (totalCollectedAgg[0] && totalCollectedAgg[0].total) || 0;
@@ -356,6 +367,7 @@ async function dashboard(req, res) {
 
     // ── Class-wise collection (per-student, then per-class) ──
     const perStudentByClass = await FeePayment.aggregate([
+      { $match: paymentMatch },
       { $sort: { createdAt: 1 } },
       { $group: {
         _id: '$studentId',
@@ -391,7 +403,7 @@ async function dashboard(req, res) {
     const topPending = [...classWise].sort((a, b) => (b.due || 0) - (a.due || 0)).slice(0, 5);
 
     // ── Recent activity (resolve class names) ──
-    const recentPayments = await FeePayment.find().sort({ createdAt: -1 }).limit(8).lean();
+    const recentPayments = await FeePayment.find({ amountPaid: { $gt: 0 } }).sort({ createdAt: -1 }).limit(8).lean();
     const recentActivityClassIds = [...new Set(recentPayments.map(p => String(p.classId || '')).filter(id => id && ObjectId.isValid(id)))];
     if (recentActivityClassIds.length) {
       const recentClasses = await ClassModel.find({ _id: { $in: recentActivityClassIds } }).lean();

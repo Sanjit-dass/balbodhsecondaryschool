@@ -211,21 +211,12 @@ export default function Navbar({ onMenuClick, onLogoutRequest }) {
                     </span>
                   )}
             </div>
-            {/* USER AVATAR */}
-            {user?.profile?.photoUrl ? (
-              <img
-                src={user.profile.photoUrl}
-                alt={user.name}
-                className="w-9 h-9 rounded-xl object-cover border shadow-sm transition-all duration-200 hover:shadow-md"
-                style={{ borderColor: COLORS.white }}
-              />
-            ) : (
-              <div className="w-9 h-9 rounded-xl text-white flex items-center justify-center font-bold text-sm shadow-sm transition-all duration-200 hover:shadow-md"
-                style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}
-              >
-                {getInitials(user.name)}
-              </div>
-            )}
+            {/* USER INITIALS (profile pictures removed) */}
+            <div className="w-9 h-9 rounded-xl text-white flex items-center justify-center font-bold text-sm shadow-sm transition-all duration-200 hover:shadow-md"
+              style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}
+            >
+              {getInitials(user.name)}
+            </div>
 
             {/* LOGOUT */}
             <button
