@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import StudentForm from '../components/StudentForm';
 
+const ACADEMIC_YEAR_OPTIONS = ['2026', '2027', '2028'];
+
 const CLASS_OPTIONS = [
   'Nursery',
   'LKG',
@@ -41,6 +43,14 @@ export default function Students() {
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState('');
   const [exportingClassDetails, setExportingClassDetails] = useState(false);
+  const [showPromotionModal, setShowPromotionModal] = useState(false);
+  const [promotionTargetClass, setPromotionTargetClass] = useState('');
+  const [promotionAcademicYear, setPromotionAcademicYear] = useState('2026');
+  const [promotionStudents, setPromotionStudents] = useState([]);
+  const [selectedPromotionIds, setSelectedPromotionIds] = useState([]);
+  const [promoting, setPromoting] = useState(false);
+  const [promotionMessage, setPromotionMessage] = useState('');
+  const [promotionError, setPromotionError] = useState('');
 
   const fetchStudents = async (className, text = '') => {
     try {
@@ -82,6 +92,86 @@ export default function Students() {
   const handleAdd = () => {
     setEditing(null);
     setShowForm(true);
+  };
+
+  const resetPromotionState = () => {
+    setShowPromotionModal(false);
+    setPromotionTargetClass('');
+    setPromotionAcademicYear('2026');
+    setPromotionStudents([]);
+    setSelectedPromotionIds([]);
+    setPromotionMessage('');
+    setPromotionError('');
+  };
+
+  const openPromotionModal = async () => {
+    if (!selectedClass) return;
+    try {
+      setPromoting(true);
+      setPromotionError('');
+      setPromotionMessage('');
+      const res = await api.get('/students', { params: { className: selectedClass } });
+      setPromotionStudents(res.data.students || []);
+      setShowPromotionModal(true);
+    } catch (err) {
+      console.error(err);
+      setPromotionError('Unable to load students for promotion right now.');
+    } finally {
+      setPromoting(false);
+    }
+  };
+
+  const togglePromotionSelection = (studentId) => {
+    setSelectedPromotionIds((prev) => prev.includes(studentId) ? prev.filter((id) => id !== studentId) : [...prev, studentId]);
+  };
+
+  const handleSelectAllPromotion = () => {
+    setSelectedPromotionIds(promotionStudents.map((student) => student._id));
+  };
+
+  const handleClearPromotionSelection = () => {
+    setSelectedPromotionIds([]);
+  };
+
+  const handlePromoteSelected = async () => {
+    if (!selectedClass || !promotionAcademicYear || !promotionTargetClass) {
+      setPromotionError('Please choose a destination class and academic year.');
+      return;
+    }
+
+    if (!selectedPromotionIds.length) {
+      setPromotionError('Select at least one student to promote.');
+      return;
+    }
+
+    if (promotionTargetClass === selectedClass) {
+      setPromotionError('This student is already in the selected class.');
+      return;
+    }
+
+    const confirmed = window.confirm(`Promote ${selectedPromotionIds.length} selected students from ${selectedClass} to ${promotionTargetClass}?`);
+    if (!confirmed) return;
+
+    try {
+      setPromoting(true);
+      setPromotionError('');
+      setPromotionMessage('');
+      const res = await api.post('/students/promote', {
+        className: selectedClass,
+        academicYear: promotionAcademicYear,
+        targetClass: promotionTargetClass,
+        studentIds: selectedPromotionIds
+      });
+      setPromotionMessage(res.data.message || 'Promotion completed successfully.');
+      setSelectedPromotionIds([]);
+      await fetchStudents(selectedClass, filter);
+      setPromotionStudents((prev) => prev.filter((student) => !selectedPromotionIds.includes(student._id)));
+    } catch (err) {
+      console.error(err);
+      setPromotionError(err?.response?.data?.message || 'Unable to promote students right now.');
+    } finally {
+      setPromoting(false);
+    }
   };
 
   const onSaved = () => {
@@ -251,6 +341,13 @@ export default function Students() {
             </div>
             <div className="flex flex-wrap gap-2 md:gap-3">
               <button onClick={handleAdd} className="btn-primary py-2 md:py-3 text-xs md:text-sm">Add Student</button>
+              <button
+                type="button"
+                onClick={openPromotionModal}
+                className="px-3 sm:px-5 py-2 sm:py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-xs sm:text-sm font-medium rounded-lg sm:rounded-xl shadow-sm transition-colors"
+              >
+                🎓 Promote / Transfer Students
+              </button>
             </div>
           </div>
 
@@ -373,6 +470,95 @@ export default function Students() {
               </table>
             </div>
           </div>
+          </div>
+        </div>
+      )}
+
+      {showPromotionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-3 py-4">
+          <div className="w-full max-w-full max-h-[calc(100vh-2rem)] rounded-3xl border border-slate-200 bg-white shadow-2xl md:max-w-5xl flex flex-col overflow-hidden">
+            <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 md:flex-row md:items-start md:justify-between md:px-7">
+              <div>
+                <h3 className="text-xl font-semibold text-slate-900">Promote / Transfer Students</h3>
+                <p className="mt-1 text-sm text-slate-500">Move selected students to the next class for a new academic year without recreating their records.</p>
+              </div>
+              <button type="button" onClick={resetPromotionState} className="self-start text-slate-500 hover:text-slate-800">✕</button>
+            </div>
+
+            <div className="overflow-y-auto px-5 py-4 md:px-7 flex-1">
+              <div className="grid gap-4 border-b border-slate-200 pb-5 md:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">Current Class</label>
+                  <input value={selectedClass} readOnly className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">Academic Year</label>
+                  <select value={promotionAcademicYear} onChange={(e) => setPromotionAcademicYear(e.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm">
+                    {ACADEMIC_YEAR_OPTIONS.map((year) => <option key={year} value={year}>{year}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">Promote To</label>
+                  <select value={promotionTargetClass} onChange={(e) => setPromotionTargetClass(e.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm">
+                    <option value="">Select destination class</option>
+                    {CLASS_OPTIONS.filter((className) => className !== selectedClass).map((className) => (
+                      <option key={className} value={className}>{className}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {promotionError ? <div className="mt-4 mb-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{promotionError}</div> : null}
+              {promotionMessage ? <div className="mt-4 mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{promotionMessage}</div> : null}
+
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                <div className="text-sm text-slate-500">{promotionStudents.length} students available in {selectedClass}</div>
+                <div className="flex flex-wrap gap-2">
+                  <button type="button" onClick={handleSelectAllPromotion} className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">Select All</button>
+                  <button type="button" onClick={handleClearPromotionSelection} className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">Unselect All</button>
+                </div>
+              </div>
+
+              <div className="max-h-[420px] overflow-auto rounded-2xl border border-slate-200">
+                {promoting && !promotionStudents.length ? (
+                  <div className="py-8 text-center text-sm text-slate-500">Loading students...</div>
+                ) : promotionStudents.length === 0 ? (
+                  <div className="py-8 text-center text-sm text-slate-500">No students found for promotion in this class.</div>
+                ) : (
+                  <div className="w-full overflow-x-auto">
+                    <table className="w-full min-w-[640px] text-left text-sm">
+                      <thead className="bg-slate-50 text-slate-600">
+                        <tr>
+                          <th className="px-3 py-3 text-left">Select</th>
+                          <th className="px-3 py-3 text-left">Roll No.</th>
+                          <th className="px-3 py-3 text-left">Student Name</th>
+                          <th className="px-3 py-3 text-left">Gender</th>
+                          <th className="px-3 py-3 text-left">Current Class</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {promotionStudents.map((student) => (
+                          <tr key={student._id} className="border-t border-slate-100">
+                            <td className="px-3 py-3 align-top"><input type="checkbox" checked={selectedPromotionIds.includes(student._id)} onChange={() => togglePromotionSelection(student._id)} /></td>
+                            <td className="px-3 py-3 align-top">{student.admissionNumber || student.rollNumber || 'N/A'}</td>
+                            <td className="px-3 py-3 align-top">{student.fullName || student.name || 'N/A'}</td>
+                            <td className="px-3 py-3 align-top capitalize">{student.gender || 'N/A'}</td>
+                            <td className="px-3 py-3 align-top">{student.className || selectedClass}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap justify-end gap-2 border-t border-slate-200 px-5 py-4 md:px-7 bg-white">
+              <button type="button" onClick={resetPromotionState} className="rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Cancel</button>
+              <button type="button" onClick={handlePromoteSelected} disabled={promoting} className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700 disabled:cursor-not-allowed disabled:bg-violet-400">
+                {promoting ? 'Promoting...' : 'Promote Selected'}
+              </button>
+            </div>
           </div>
         </div>
       )}

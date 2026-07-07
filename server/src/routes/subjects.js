@@ -4,6 +4,7 @@ const auth = require('../middleware/auth');
 const roles = require('../middleware/roles');
 const Subject = require('../models/Subject');
 const ClassModel = require('../models/Class');
+const { buildSubjectPromotionPlan } = require('../utils/subjectPromotion');
 
 // CSV export removed - PDF exports are available via /api/exports
 
@@ -69,6 +70,74 @@ router.get('/', auth, async (req,res)=>{
 		res.status(500).send('Server error')
 	}
 });
+router.post('/promote', auth, roles(['superadmin','principal','admin']), async (req, res) => {
+  try {
+    const { currentClass, academicYear, targetClass, subjectIds = [] } = req.body;
+
+    if (!currentClass || !targetClass || !academicYear) {
+      return res.status(400).json({ message: 'Current class, target class, and academic year are required.' });
+    }
+
+    if (String(currentClass).trim() === String(targetClass).trim()) {
+      return res.status(400).json({ message: 'The destination class cannot be the same as the current class.' });
+    }
+
+    const sourceClassName = String(currentClass).trim();
+    const targetClassName = String(targetClass).trim();
+    const academicYearValue = String(academicYear).trim();
+
+    const sourceSubjects = await Subject.find({
+      class: sourceClassName,
+      $or: [
+        { academicYear: academicYearValue },
+        { academicYear: { $exists: false } },
+        { academicYear: null }
+      ]
+    }).lean();
+
+    if (!sourceSubjects.length) {
+      return res.status(404).json({ message: 'No subjects found for this class and academic year.' });
+    }
+
+    const selectedSourceSubjects = Array.isArray(subjectIds) && subjectIds.length
+      ? sourceSubjects.filter((subject) => subjectIds.includes(String(subject._id)))
+      : sourceSubjects;
+
+    if (!selectedSourceSubjects.length) {
+      return res.status(400).json({ message: 'Select at least one subject to promote.' });
+    }
+
+    const existingDestinationSubjects = await Subject.find({
+      class: targetClassName,
+      $or: [
+        { academicYear: academicYearValue },
+        { academicYear: { $exists: false } },
+        { academicYear: null }
+      ]
+    }).select('_id name').lean();
+
+    const promotionPlan = buildSubjectPromotionPlan(selectedSourceSubjects, existingDestinationSubjects, targetClassName, academicYearValue);
+
+    if (promotionPlan.payloads.length) {
+      await Subject.insertMany(promotionPlan.payloads);
+    }
+
+    if (promotionPlan.sourceSubjectIdsToDelete.length) {
+      await Subject.deleteMany({ _id: { $in: promotionPlan.sourceSubjectIdsToDelete } });
+    }
+
+    res.json({
+      message: `${promotionPlan.payloads.length} subjects moved successfully to ${targetClassName} for Academic Year ${academicYearValue}.`,
+      copiedCount: promotionPlan.payloads.length,
+      removedCount: promotionPlan.sourceSubjectIdsToDelete.length,
+      promotedCount: selectedSourceSubjects.length
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Unable to promote subjects right now.' });
+  }
+});
+
 router.put('/:id', auth, roles(['superadmin','principal','admin']), async (req,res)=>{ try{ const s=await Subject.findByIdAndUpdate(req.params.id, req.body, {new:true}); res.json(s);}catch(err){res.status(500).send('Server error')} });
 router.delete('/:id', auth, roles(['superadmin','principal','admin']), async (req,res)=>{ try{ await Subject.findByIdAndDelete(req.params.id); res.json({message:'Deleted'});}catch(err){res.status(500).send('Server error')} });
 

@@ -12,6 +12,13 @@ const StudentSchema = new mongoose.Schema({
   class: { type: mongoose.Schema.Types.ObjectId, ref: 'Class' },
   classId: { type: mongoose.Schema.Types.ObjectId, ref: 'Class' },
   className: { type: String, trim: true },
+  academicYear: { type: String, trim: true },
+  promotionHistory: [{
+    academicYear: { type: String, trim: true },
+    fromClass: { type: String, trim: true },
+    toClass: { type: String, trim: true },
+    promotedAt: { type: Date, default: Date.now }
+  }],
   section: { type: String },
   dateOfBirth: { type: Date },
   gender: { type: String, enum: ['male','female','other'] },

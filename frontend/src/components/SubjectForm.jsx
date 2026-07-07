@@ -28,6 +28,9 @@ export default function SubjectForm({ existing, onSaved, defaultClass = 'Nursery
         res = await api.post('/subjects', form);
       }
       onSaved && onSaved(res?.data || res);
+      if (!existing || !existing._id) {
+        setForm({ name: '', class: defaultClass });
+      }
     }catch(err){ 
       console.error(err); 
       const msg = err.response?.data?.message || err.response?.data || err.message || 'Save failed'; 

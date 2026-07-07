@@ -9,6 +9,9 @@ const audit = require('../middleware/audit');
 const Student = require('../models/Student');
 const User = require('../models/User');
 const ExamResult = require('../models/ExamResult');
+const { isSameClass } = require('../utils/studentPromotion');
+const { buildSubjectPromotionPlan } = require('../utils/subjectPromotion');
+const Subject = require('../models/Subject');
 function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -43,6 +46,24 @@ async function findClassByName(className) {
 async function resolveClassId(className) {
   const classDoc = await findClassByName(className);
   return classDoc ? classDoc._id : null;
+}
+
+async function getStudentClassName(student) {
+  if (!student) return '';
+  if (student.className) return String(student.className).trim();
+  if (typeof student.class === 'string' && student.class.trim()) {
+    const classDoc = await findClassByName(student.class);
+    return classDoc?.name || student.class;
+  }
+  if (student.class && typeof student.class === 'object' && student.class !== null) {
+    return student.class.name || student.class.className || '';
+  }
+  if (student.class && mongoose.Types.ObjectId.isValid(String(student.class))) {
+    const Class = require('../models/Class');
+    const classDoc = await Class.findById(student.class).lean();
+    return classDoc?.name || '';
+  }
+  return '';
 }
 
 // Create student
@@ -395,6 +416,120 @@ router.get('/export/full-class/pdf', auth, roles(['superadmin','admin','principa
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.post('/promote', auth, roles(['superadmin','admin','principal']), async (req, res) => {
+  try {
+    const { className, academicYear, targetClass, studentIds = [] } = req.body;
+
+    if (!className || !targetClass || !academicYear || !Array.isArray(studentIds) || studentIds.length === 0) {
+      return res.status(400).json({ message: 'Current class, academic year, target class, and at least one student are required.' });
+    }
+
+    if (isSameClass(className, targetClass)) {
+      return res.status(400).json({ message: 'This student is already in the selected class.' });
+    }
+
+    const sourceClassName = String(className).trim();
+    const targetClassName = String(targetClass).trim();
+    const academicYearValue = String(academicYear).trim();
+    const targetClassDoc = await findClassByName(targetClassName);
+    const targetClassId = targetClassDoc ? targetClassDoc._id : null;
+
+    const students = await Student.find({ _id: { $in: studentIds } }).lean();
+    if (!students.length) {
+      return res.status(404).json({ message: 'No matching students were found.' });
+    }
+
+    const updates = [];
+    const errors = [];
+    let copiedSubjectCount = 0;
+
+    for (const student of students) {
+      const currentClassName = await getStudentClassName(student);
+      if (isSameClass(currentClassName || sourceClassName, targetClassName)) {
+        errors.push({ id: student._id, message: 'This student is already in the selected class.' });
+        continue;
+      }
+
+      updates.push({
+        id: student._id,
+        payload: {
+          className: targetClassName,
+          ...(targetClassId ? { class: targetClassId } : {}),
+          academicYear: academicYearValue,
+          promotionHistory: [
+            ...(student.promotionHistory || []),
+            {
+              academicYear: academicYearValue,
+              fromClass: currentClassName || sourceClassName,
+              toClass: targetClassName,
+              promotedAt: new Date()
+            }
+          ]
+        }
+      });
+    }
+
+    if (!updates.length) {
+      return res.status(400).json({ message: errors[0]?.message || 'This student is already in the selected class.', errors });
+    }
+
+    const session = await mongoose.startSession();
+    try {
+      await session.withTransaction(async () => {
+        for (const item of updates) {
+          await Student.updateOne({ _id: item.id }, { $set: item.payload }, { session });
+        }
+
+        const sourceSubjects = await Subject.find({
+          class: sourceClassName,
+          academicYear: academicYearValue
+        }).lean();
+
+        if (sourceSubjects.length) {
+          const normalizedSourceClass = sourceClassName;
+          const normalizedTargetClass = targetClassName;
+          const existingDestinationSubjects = await Subject.find({
+            class: normalizedTargetClass,
+            academicYear: academicYearValue
+          }).select('_id name').lean();
+
+          const promotionPlan = buildSubjectPromotionPlan(
+            sourceSubjects,
+            existingDestinationSubjects,
+            normalizedTargetClass,
+            academicYearValue
+          );
+
+          if (promotionPlan.payloads.length) {
+            await Subject.insertMany(promotionPlan.payloads, { session });
+            copiedSubjectCount = promotionPlan.payloads.length;
+          }
+        }
+      });
+    } catch (err) {
+      await session.endSession();
+      throw err;
+    }
+    await session.endSession();
+
+    const subjectMessage = copiedSubjectCount > 0
+      ? `${copiedSubjectCount} subjects copied successfully to ${targetClassName} for Academic Year ${academicYearValue}.`
+      : 'Subjects already exist for this class and academic year.';
+
+    res.json({
+      promotedCount: updates.length,
+      copiedSubjectCount,
+      targetClass: targetClassName,
+      sourceClass: sourceClassName,
+      academicYear: academicYearValue,
+      message: `${updates.length} students promoted successfully. ${subjectMessage}`
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Unable to promote students right now.' });
   }
 });
 
