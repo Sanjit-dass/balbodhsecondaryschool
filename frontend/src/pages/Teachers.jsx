@@ -15,7 +15,12 @@ export default function Teachers(){
     try {
       const suffix = query ? `?q=${encodeURIComponent(query)}` : '';
       const res = await api.get(`/teachers${suffix}`);
-      setList(res.data.teachers || []);
+      const teachersData = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data?.teachers)
+          ? res.data.teachers
+          : [];
+      setList(teachersData);
     } catch (err) {
       console.error(err);
     }
