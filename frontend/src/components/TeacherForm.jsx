@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import FileUploader from './FileUploader';
 import ResponsiveSelect from './ResponsiveSelect';
 
 const STATUS_OPTIONS = ['active', 'inactive', 'suspended'];
@@ -27,15 +26,7 @@ const defaultFormState = {
 
 export default function TeacherForm({ existing, onSaved }){
   const [form, setForm] = useState(defaultFormState);
-  const [uploadMeta, setUploadMeta] = useState(null);
   const [saveError, setSaveError] = useState('');
-  const [subjects, setSubjects] = useState([]);
-  const [classes, setClasses] = useState([]);
-
-  useEffect(() => {
-    loadSubjects();
-    loadClasses();
-  }, []);
 
   useEffect(() => {
     if (existing) {
@@ -57,48 +48,11 @@ export default function TeacherForm({ existing, onSaved }){
         status: existing.status || 'active',
         photoUrl: existing.photoUrl || ''
       });
-      setUploadMeta(null);
     } else {
       setForm(defaultFormState);
-      setUploadMeta(null);
     }
   }, [existing]);
 
-  const loadSubjects = async () => {
-    try {
-      const res = await api.get('/subjects');
-      setSubjects(res.data.subjects || []);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const loadClasses = async () => {
-    try {
-      const res = await api.get('/classes');
-      setClasses(res.data.classes || []);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const toggleSubject = (subjectId) => {
-    const current = form.assignedSubjects || [];
-    if (current.includes(subjectId)) {
-      setForm({ ...form, assignedSubjects: current.filter(id => id !== subjectId) });
-    } else {
-      setForm({ ...form, assignedSubjects: [...current, subjectId] });
-    }
-  };
-
-  const toggleClass = (classId) => {
-    const current = form.assignedClasses || [];
-    if (current.includes(classId)) {
-      setForm({ ...form, assignedClasses: current.filter(id => id !== classId) });
-    } else {
-      setForm({ ...form, assignedClasses: [...current, classId] });
-    }
-  };
 
   const submit = async (e) => {
     e && e.preventDefault();
@@ -122,7 +76,7 @@ export default function TeacherForm({ existing, onSaved }){
         assignedSubjects: form.assignedSubjects,
         assignedClasses: form.assignedClasses,
         status: form.status,
-        photoUrl: uploadMeta?.fileUrl || form.photoUrl
+        photoUrl: form.photoUrl
       };
 
       if (existing && existing._id) {
@@ -132,7 +86,6 @@ export default function TeacherForm({ existing, onSaved }){
       }
 
       setForm(defaultFormState);
-      setUploadMeta(null);
       setSaveError('');
       onSaved && onSaved();
     } catch (err) {
@@ -182,51 +135,6 @@ export default function TeacherForm({ existing, onSaved }){
 
         <div className="space-y-2 md:space-y-3">
           <h2 className="text-sm md:text-base lg:text-lg font-semibold text-slate-900">Assignments</h2>
-          <div>
-            <label className="block text-xs md:text-sm text-slate-600 font-medium mb-2">Assigned Subjects (for Marks Entry)</label>
-            <div className="max-h-32 overflow-y-auto border border-slate-300 rounded-lg p-2 space-y-1">
-              {subjects.length === 0 ? (
-                <p className="text-xs text-slate-500">No subjects available</p>
-              ) : (
-                subjects.map(sub => (
-                  <label key={sub._id} className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={form.assignedSubjects?.includes(sub._id)}
-                      onChange={() => toggleSubject(sub._id)}
-                      className="rounded border-slate-300"
-                    />
-                    {sub.name}
-                  </label>
-                ))
-              )}
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs md:text-sm text-slate-600 font-medium mb-2">Assigned Classes (for Marks Entry)</label>
-            <div className="max-h-32 overflow-y-auto border border-slate-300 rounded-lg p-2 space-y-1">
-              {classes.length === 0 ? (
-                <p className="text-xs text-slate-500">No classes available</p>
-              ) : (
-                classes.map(cls => (
-                  <label key={cls._id} className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={form.assignedClasses?.includes(cls._id)}
-                      onChange={() => toggleClass(cls._id)}
-                      className="rounded border-slate-300"
-                    />
-                    {cls.name}
-                  </label>
-                ))
-              )}
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs md:text-sm text-slate-600 font-medium mb-2">Profile Photo</label>
-            <FileUploader folder="teachers" accept="image/*" onUploaded={(data) => { setUploadMeta(data); setForm(prev => ({ ...prev, photoUrl: data.fileUrl })); }} />
-            {form.photoUrl && <img src={form.photoUrl} alt="preview" className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-lg mt-2" />}
-          </div>
           <button type="submit" className="w-full py-2.5 md:py-3 px-3 md:px-4 bg-green-600 hover:bg-green-700 text-white text-sm md:text-base font-medium rounded-lg transition">{existing ? 'Update Teacher' : 'Add Teacher'}</button>
         </div>
       </div>
