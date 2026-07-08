@@ -285,7 +285,7 @@ export default function App(){
           <Route path="fees" element={<StudentFees />} />
           <Route path="receipt/:receiptId" element={<ReceiptPage />} />
           <Route path="timetable" element={<Timetable />} />
-          <Route path="admit-card" element={<StudentAdmitCard />} />
+          <Route path="admit-card" element={<Navigate to="/student/dashboard" replace />} />
           <Route path="settings" element={<AccountSettings />} />
         </Route>
 

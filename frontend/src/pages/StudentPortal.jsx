@@ -277,15 +277,6 @@ export default function StudentPortal(){
               <p className="text-xs md:text-sm mt-1 md:mt-2" style={{ color: COLORS.slate }}>Class schedule and periods</p>
             </div>
           </Link>
-
-          <Link to="/student/admit-card" className="group relative overflow-hidden rounded-xl md:rounded-2xl bg-white p-4 md:p-6 shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `linear-gradient(135deg, ${COLORS.primary}10, transparent)` }}></div>
-            <div className="relative z-10">
-              <div className="text-3xl md:text-4xl mb-2 md:mb-3">🎫</div>
-              <h3 className="text-sm md:text-lg font-bold group-hover:transition-colors" style={{ color: COLORS.dark }}>Admit Card</h3>
-              <p className="text-xs md:text-sm mt-1 md:mt-2" style={{ color: COLORS.slate }}>Generate exam admit cards</p>
-            </div>
-          </Link>
         </div>
       </div>
 
