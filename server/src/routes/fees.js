@@ -5,6 +5,24 @@ const roles = require('../middleware/roles');
 const feeController = require('../controllers/feeController');
 const feeNewController = require('../controllers/feeNewController');
 
+// Compatibility endpoint for frontend requests that call /api/fees directly.
+// Return a safe payload with an empty fees array instead of a 404.
+router.get('/', async (req, res) => {
+  try {
+    res.json({
+      success: true,
+      fees: [],
+      message: 'No fee records available',
+      meta: {
+        source: 'compatibility-route'
+      }
+    });
+  } catch (error) {
+    console.error('Fees root compatibility route error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // Debug endpoint
 router.get('/debug/payments/:studentId', auth, roles(['superadmin','admin','principal','accountant']), feeController.debugPayments);
 

@@ -89,6 +89,7 @@ import AcademicExcellencePage from './pages/public/AcademicExcellencePage';
 import LanguageToggleTest from './pages/public/LanguageToggleTest';
 import PublicLayout from './components/public/PublicLayout';
 import ScrollToTop from './components/ScrollToTop';
+import Seo from './components/Seo';
 import Register from './pages/Register';
 import StudentResultsPublic from './pages/public/StudentResultsPublic';
 import TeacherMarksEntryPage from './pages/teacher/MarksEntry';
@@ -97,6 +98,7 @@ export default function App(){
   return (
     <LanguageProvider>
       <BrowserRouter>
+        <Seo />
         <ScrollToTop />
         <Routes>
         {/* Public Website Routes */}
