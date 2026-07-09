@@ -70,7 +70,7 @@ const PublicHeader = () => {
           <div className="w-full px-0 py-3 flex items-center" style={{ paddingTop: 12, paddingBottom: 12 }}>
             <div className="flex items-center">
               <Link to="/">
-                <img src="/logo.png" alt="logo" loading="eager" decoding="sync" fetchpriority="high" className="rounded-md object-cover" style={{ width: '44px', height: '44px', marginLeft: '12px' }} />
+                <img src="/logo.png" alt="Bal Bodh Secondary School logo" loading="eager" decoding="sync" fetchpriority="high" className="rounded-md object-cover" style={{ width: '44px', height: '44px', marginLeft: '12px' }} />
               </Link>
             </div>
             <div className="flex-1 text-center px-2">
@@ -127,7 +127,7 @@ const PublicHeader = () => {
         <div className="hidden md:flex items-center justify-between px-6 py-3 bg-transparent">
           <div className="flex items-center gap-4">
             <Link to="/" className="flex items-center gap-3">
-              <img src="/logo.png" alt="logo" className="w-12 h-12 object-cover rounded-lg" />
+              <img src="/logo.png" alt="Bal Bodh Secondary School logo" className="w-12 h-12 object-cover rounded-lg" />
               <div className="hidden lg:block">
                 <div className="font-bold text-lg text-slate-900">{SCHOOL_INFO.name}</div>
                 <div className="text-xs text-slate-500">ESTD. {SCHOOL_INFO.established}</div>
@@ -193,7 +193,7 @@ const PublicHeader = () => {
                     <div className="relative group">
                       <div className="absolute inset-0 rounded-full blur-xl opacity-60 group-hover:opacity-80 transition-opacity duration-300" style={{ backgroundColor: COLORS.accent }}></div>
                       <div className="relative h-14 w-14 rounded-full flex items-center justify-center shadow-2xl" style={{ background: `linear-gradient(135deg, ${COLORS.white}25, ${COLORS.white}10)`, border: `2px solid ${COLORS.accent}50` }}>
-                        <img src="/logo.png" alt="logo" loading="eager" decoding="sync" fetchpriority="high" className="h-10 w-10 rounded-full object-contain" width="40" height="40" />
+                        <img src="/logo.png" alt="Bal Bodh Secondary School logo" loading="eager" decoding="sync" fetchpriority="high" className="h-10 w-10 rounded-full object-contain" width="40" height="40" />
                       </div>
                     </div>
                     <div className="flex flex-col leading-tight">

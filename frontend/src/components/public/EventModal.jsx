@@ -1,5 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import api from '../../services/api';
+import { Helmet } from 'react-helmet-async';
+
+const SITE_URL = 'https://balbodhsecondaryschool.edu.np';
 
 const EventModal = ({ event, onClose }) => {
   useEffect(() => {
@@ -48,7 +51,22 @@ const EventModal = ({ event, onClose }) => {
   function onTouchStart(e){ touchStartX.current = e.touches[0].clientX; }
   function onTouchMove(e){ if(!touchStartX.current) return; const diff = e.touches[0].clientX - touchStartX.current; if(Math.abs(diff) > 50){ if(diff < 0) next(); else prev(); touchStartX.current = null; } }
 
+  const canonical = `${SITE_URL}/events/${current._id || current.id || ''}`;
+
   return (
+    <>
+      <Helmet>
+        <title>{`${current.title} | ${document.title.replace(/ \| .*$/,'') || 'Bal Bodh Secondary School'}`}</title>
+        <meta name="description" content={(current.fullDescription || current.shortDescription || '').slice(0,155)} />
+        <link rel="canonical" href={canonical} />
+        <meta property="og:title" content={current.title} />
+        <meta property="og:description" content={(current.fullDescription || current.shortDescription || '').slice(0,197)} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={canonical} />
+        {photos[0] && <meta property="og:image" content={photos[0].url} />}
+        <meta name="twitter:card" content="summary_large_image" />
+      </Helmet>
+
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose}></div>
 
@@ -58,7 +76,7 @@ const EventModal = ({ event, onClose }) => {
           <div className="flex-1 rounded-lg overflow-hidden mb-3 md:mb-4 relative" onTouchStart={onTouchStart} onTouchMove={onTouchMove}>
             {photos.length > 0 ? (
               <>
-                <img src={photos[index].url || photos[index].fileUrl || '/images/schoolphoto.png'} alt={current.title} className="w-full h-64 md:h-96 object-cover filter brightness-105" />
+                <img src={photos[index].url || photos[index].fileUrl || '/images/schoolphoto.png'} alt={current.title} loading="eager" className="w-full h-64 md:h-96 object-cover filter brightness-105" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/12 via-transparent to-black/6 pointer-events-none" />
                 <button onClick={prev} className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-2 md:p-2 shadow text-sm md:text-base">‹</button>
                 <button onClick={next} className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-2 md:p-2 shadow text-sm md:text-base">›</button>
@@ -71,7 +89,7 @@ const EventModal = ({ event, onClose }) => {
               <div className="mt-2 md:mt-3 overflow-x-auto flex gap-2">
                 {photos.map((p, i) => (
                   <button key={i} onClick={() => setIndex(i)} className={`flex-shrink-0 w-16 md:w-20 h-12 overflow-hidden rounded ${i===index? 'ring-2 ring-blue-500':'ring-0'}`}>
-                    <img src={p.url || p.fileUrl} alt={p.caption || `thumb-${i}`} className="w-full h-full object-cover" />
+                    <img src={p.url || p.fileUrl} alt={p.caption || `thumb-${i}`} loading="lazy" className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
@@ -128,6 +146,7 @@ const EventModal = ({ event, onClose }) => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

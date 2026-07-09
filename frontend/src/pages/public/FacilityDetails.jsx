@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
+const SITE_URL = 'https://balbodhsecondaryschool.edu.np';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaArrowLeft, FaArrowRight, FaTimes } from 'react-icons/fa';
@@ -93,6 +95,16 @@ const FacilityDetails = () => {
   return (
     <TranslateText>
       <div className="min-h-screen bg-gray-50 pt-24 pb-20">
+        <Helmet>
+          <title>{`${facility.facilityName} | ${document.title.replace(/ \| .*$/,'') || 'Bal Bodh Secondary School'}`}</title>
+          <meta name="description" content={(facility.shortDescription || facility.fullDescription || '').slice(0,155)} />
+          <link rel="canonical" href={`${SITE_URL}/facilities/${facility._id || id || ''}`} />
+          <meta property="og:title" content={facility.facilityName} />
+          <meta property="og:description" content={(facility.shortDescription || '').slice(0,197)} />
+          {currentImage && <meta property="og:image" content={currentImage} />}
+          <meta property="og:type" content="website" />
+          <meta name="twitter:card" content="summary_large_image" />
+        </Helmet>
       <div className="max-w-6xl mx-auto px-4">
         {/* Back Button */}
         <motion.button
@@ -128,6 +140,7 @@ const FacilityDetails = () => {
             <img
               src={currentImage}
               alt={facility.facilityName}
+              loading="eager"
               className="w-full h-full object-cover"
             />
 
@@ -172,10 +185,11 @@ const FacilityDetails = () => {
                   }`}
                 >
                   <img
-                    src={img}
-                    alt={`${facility.facilityName} ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+                      src={img}
+                      alt={`${facility.facilityName} ${index + 1}`}
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
                 </button>
               ))}
             </div>

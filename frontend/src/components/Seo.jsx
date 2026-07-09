@@ -1,10 +1,11 @@
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
+import { SCHOOL_INFO } from '../constants/schoolData';
 
 const SITE_URL = 'https://balbodhsecondaryschool.edu.np';
-const DEFAULT_TITLE = 'Bal Bodh Secondary School';
-const DEFAULT_DESCRIPTION = 'Official website of Bal Bodh Secondary School, Kanchanpur-08, Saptari, Nepal. Explore admissions, notices, events, academics, gallery, and contact information.';
-const DEFAULT_IMAGE = `${SITE_URL}/logo.png`;
+const DEFAULT_TITLE = SCHOOL_INFO.name || 'Bal Bodh Secondary School';
+const DEFAULT_DESCRIPTION = SCHOOL_INFO.about || 'Official website of Bal Bodh Secondary School, Kanchanpur-08, Saptari, Nepal. Explore admissions, notices, events, academics, gallery, and contact information.';
+const DEFAULT_IMAGE = `${SITE_URL}${SCHOOL_INFO.logo || '/logo.png'}`;
 
 const pageMeta = {
   '/': {
@@ -100,7 +101,10 @@ export default function Seo() {
   const title = `${meta.title} | ${DEFAULT_TITLE}`;
   const description = meta.description || DEFAULT_DESCRIPTION;
   const canonical = `${SITE_URL}${normalizedPath === '/' ? '' : normalizedPath}`;
-  const robots = meta.robots || 'index, follow';
+  // Mark private and portal routes as noindex
+  const privatePrefixes = ['/admin', '/student', '/teacher', '/parent', '/account', '/exam', '/fee-management'];
+  const isPrivate = privatePrefixes.some(p => normalizedPath.startsWith(p));
+  const robots = meta.robots || (isPrivate ? 'noindex, nofollow' : 'index, follow');
 
   const organizationSchema = {
     '@context': 'https://schema.org',
@@ -108,7 +112,23 @@ export default function Seo() {
     name: DEFAULT_TITLE,
     url: SITE_URL,
     description: DEFAULT_DESCRIPTION,
-    logo: `${SITE_URL}/logo.png`
+    logo: DEFAULT_IMAGE,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: SCHOOL_INFO.address || '',
+      addressLocality: '',
+      addressRegion: '',
+      postalCode: '',
+      addressCountry: 'NP'
+    },
+    telephone: SCHOOL_INFO.phone || '',
+    email: SCHOOL_INFO.email || '',
+    sameAs: [
+      SCHOOL_INFO.facebook,
+      SCHOOL_INFO.twitter,
+      SCHOOL_INFO.youtube,
+      SCHOOL_INFO.instagram
+    ].filter(Boolean)
   };
 
   return (
