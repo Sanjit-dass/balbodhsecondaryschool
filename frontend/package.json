@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "seo:images": "node scripts/optimize-images.js",
     "lint": "eslint ."
   },
   "dependencies": {

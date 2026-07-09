@@ -10,23 +10,23 @@ const DEFAULT_IMAGE = `${SITE_URL}${SCHOOL_INFO.logo || '/logo.png'}`;
 const pageMeta = {
   '/': {
     title: 'Home',
-    description: 'Official website of Bal Bodh Secondary School with admissions, notices, events, academics, gallery, and contact information.'
+    description: 'Official website of Bal Bodh Secondary School. Explore admissions, notices, events, academics, gallery, and contact information.'
   },
   '/about': {
     title: 'About Us',
-    description: 'Learn about Bal Bodh Secondary School, its mission, values, and commitment to quality education.'
+    description: 'Learn about Bal Bodh Secondary School — mission, values, history, and commitment to quality education.'
   },
   '/academics': {
     title: 'Academics',
-    description: 'Explore the school’s academic programs, curriculum, and learning opportunities.'
+    description: 'Explore Bal Bodh Secondary School academic programs, curriculum, and learning opportunities for all grades.'
   },
   '/admissions': {
     title: 'Admissions',
-    description: 'Find details about admissions, eligibility, and the application process for Bal Bodh Secondary School.'
+    description: 'Admissions information, eligibility, application process, important dates, and contact details for prospective students.'
   },
   '/facilities': {
     title: 'Facilities',
-    description: 'Discover the campus facilities, classrooms, laboratories, and learning spaces at Bal Bodh Secondary School.'
+    description: 'Discover the campus facilities, classrooms, laboratories, sports grounds, and learning spaces at Bal Bodh Secondary School.'
   },
   '/principal-message': {
     title: 'Principal’s Message',
@@ -34,7 +34,7 @@ const pageMeta = {
   },
   '/student-achievements': {
     title: 'Student Achievements',
-    description: 'Celebrate the achievements and accomplishments of students from Bal Bodh Secondary School.'
+    description: 'Celebrate student achievements, awards, and success stories from Bal Bodh Secondary School.'
   },
   '/academic-excellence': {
     title: 'Academic Excellence',
@@ -46,15 +46,15 @@ const pageMeta = {
   },
   '/gallery': {
     title: 'Gallery',
-    description: 'Browse photos and highlights from school events, programs, and campus life.'
+    description: 'Browse photos and highlights from school events, programs, and campus life at Bal Bodh Secondary School.'
   },
   '/notice-board': {
     title: 'Notice Board',
-    description: 'Stay updated with the latest notices, announcements, and school news.'
+    description: 'Latest notices, announcements, and school news for students, parents, and staff.'
   },
   '/events': {
     title: 'Events',
-    description: 'See upcoming school events, programs, and important academic and cultural activities.'
+    description: 'Upcoming and past school events, programs, and important academic and cultural activities.'
   },
   '/staff': {
     title: 'Staff',
@@ -62,11 +62,11 @@ const pageMeta = {
   },
   '/school-leadership': {
     title: 'School Leadership',
-    description: 'Learn about the school leadership team and their commitment to excellence.'
+    description: 'Learn about the school leadership team, principal, and administrative staff committed to excellence.'
   },
   '/contact': {
     title: 'Contact Us',
-    description: 'Get in touch with Bal Bodh Secondary School for admissions, inquiries, or support.'
+    description: 'Contact Bal Bodh Secondary School for admissions, inquiries, directions, and general information.'
   },
   '/student-results': {
     title: 'Student Results',
@@ -108,7 +108,7 @@ export default function Seo() {
 
   const organizationSchema = {
     '@context': 'https://schema.org',
-    '@type': 'EducationalOrganization',
+    '@type': 'School',
     name: DEFAULT_TITLE,
     url: SITE_URL,
     description: DEFAULT_DESCRIPTION,
@@ -128,7 +128,28 @@ export default function Seo() {
       SCHOOL_INFO.twitter,
       SCHOOL_INFO.youtube,
       SCHOOL_INFO.instagram
-    ].filter(Boolean)
+    ].filter(Boolean),
+    contactPoint: SCHOOL_INFO.phone ? [{
+      '@type': 'ContactPoint',
+      telephone: SCHOOL_INFO.phone,
+      contactType: 'customer service'
+    }] : [],
+    hasMap: SCHOOL_INFO.mapsLink || ''
+  };
+
+  // Add a LocalBusiness/Google Business Profile hint to help match GMB listings
+  const localBusinessSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: DEFAULT_TITLE,
+    url: SITE_URL,
+    telephone: SCHOOL_INFO.phone || '',
+    email: SCHOOL_INFO.email || '',
+    address: organizationSchema.address,
+    sameAs: organizationSchema.sameAs,
+    logo: DEFAULT_IMAGE,
+    openingHours: SCHOOL_INFO.openingHours || undefined,
+    hasMap: SCHOOL_INFO.mapsLink || undefined
   };
 
   return (

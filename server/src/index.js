@@ -160,6 +160,9 @@ app.use('/api/events', require('./routes/events'));
 // New dedicated events API (v2)
 app.use('/api/events-v2', require('./routes/events_api'));
 
+// Dynamic sitemap (includes events & facilities)
+app.use('/', require('./routes/sitemap'));
+
 // School Leadership (public + admin)
 app.use('/api/staff-leadership', require('./routes/staffLeadership'));
 
