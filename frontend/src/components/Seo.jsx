@@ -112,7 +112,7 @@ export default function Seo() {
     name: DEFAULT_TITLE,
     url: SITE_URL,
     description: DEFAULT_DESCRIPTION,
-    logo: `${SITE_URL}/favicon.png`,
+    logo: `${SITE_URL}/favicon-512.png`,
     address: {
       '@type': 'PostalAddress',
       streetAddress: SCHOOL_INFO.address || '',
@@ -137,7 +137,9 @@ export default function Seo() {
     hasMap: SCHOOL_INFO.mapsLink || '',
     image: {
       '@type': 'ImageObject',
-      url: DEFAULT_IMAGE
+      url: DEFAULT_IMAGE,
+      width: 1200,
+      height: 630
     }
   };
 

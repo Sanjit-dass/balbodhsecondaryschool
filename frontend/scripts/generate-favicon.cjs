@@ -8,6 +8,8 @@ const root = path.join(__dirname, '..');
 const logoPath = path.join(root, 'public', 'logo.png');
 const outPng = path.join(root, 'public', 'favicon.png');
 const outIco = path.join(root, 'public', 'favicon.ico');
+const out192 = path.join(root, 'public', 'favicon-192.png');
+const out512 = path.join(root, 'public', 'favicon-512.png');
 
 async function run(){
   if(!fs.existsSync(logoPath)){
@@ -20,6 +22,10 @@ async function run(){
       .resize(48,48, { fit: 'cover' })
       .png()
       .toFile(outPng);
+
+    // create 192x192 and 512x512 PNGs for Android/large icons
+    await sharp(logoPath).resize(192,192, { fit: 'cover' }).png().toFile(out192);
+    await sharp(logoPath).resize(512,512, { fit: 'cover' }).png().toFile(out512);
 
     // create ICO (contains 48x48)
     const icoBuffer = await pngToIco([outPng]);
