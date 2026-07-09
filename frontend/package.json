@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "seo:images": "node scripts/optimize-images.js",
+    "seo:generate-favicon": "node scripts/generate-favicon.js",
     "lint": "eslint ."
   },
   "dependencies": {
