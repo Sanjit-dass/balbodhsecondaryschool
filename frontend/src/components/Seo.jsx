@@ -9,7 +9,7 @@ const DEFAULT_IMAGE = `${SITE_URL}/images/schoolphoto.png`;
 
 const pageMeta = {
   '/': {
-    title: 'Kanchanrup Municipality-08, Kanchanpur Saptari Nepal',
+    title: 'Official Website',
     description: 'Official website of Bal Bodh Secondary School. Explore admissions, notices, events, academics, gallery, and contact information.'
   },
   '/about': {
