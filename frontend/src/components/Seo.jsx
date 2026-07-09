@@ -5,11 +5,11 @@ import { SCHOOL_INFO } from '../constants/schoolData';
 const SITE_URL = 'https://balbodhsecondaryschool.edu.np';
 const DEFAULT_TITLE = SCHOOL_INFO.name || 'Bal Bodh Secondary School';
 const DEFAULT_DESCRIPTION = SCHOOL_INFO.about || 'Official website of Bal Bodh Secondary School, Kanchanpur-08, Saptari, Nepal. Explore admissions, notices, events, academics, gallery, and contact information.';
-const DEFAULT_IMAGE = `${SITE_URL}${SCHOOL_INFO.logo || '/logo.png'}`;
+const DEFAULT_IMAGE = `${SITE_URL}/images/schoolphoto.png`;
 
 const pageMeta = {
   '/': {
-    title: 'Home',
+    title: 'Kanchanrup Municipality-08, Kanchanpur Saptari Nepal',
     description: 'Official website of Bal Bodh Secondary School. Explore admissions, notices, events, academics, gallery, and contact information.'
   },
   '/about': {
@@ -98,7 +98,7 @@ export default function Seo() {
     description: DEFAULT_DESCRIPTION
   };
 
-  const title = `${meta.title} | ${DEFAULT_TITLE}`;
+  const title = `${DEFAULT_TITLE} | ${meta.title}`;
   const description = meta.description || DEFAULT_DESCRIPTION;
   const canonical = `${SITE_URL}${normalizedPath === '/' ? '' : normalizedPath}`;
   // Mark private and portal routes as noindex
@@ -112,7 +112,7 @@ export default function Seo() {
     name: DEFAULT_TITLE,
     url: SITE_URL,
     description: DEFAULT_DESCRIPTION,
-    logo: DEFAULT_IMAGE,
+    logo: `${SITE_URL}/favicon.png`,
     address: {
       '@type': 'PostalAddress',
       streetAddress: SCHOOL_INFO.address || '',
@@ -134,7 +134,11 @@ export default function Seo() {
       telephone: SCHOOL_INFO.phone,
       contactType: 'customer service'
     }] : [],
-    hasMap: SCHOOL_INFO.mapsLink || ''
+    hasMap: SCHOOL_INFO.mapsLink || '',
+    image: {
+      '@type': 'ImageObject',
+      url: DEFAULT_IMAGE
+    }
   };
 
   // Add a LocalBusiness/Google Business Profile hint to help match GMB listings
@@ -147,7 +151,7 @@ export default function Seo() {
     email: SCHOOL_INFO.email || '',
     address: organizationSchema.address,
     sameAs: organizationSchema.sameAs,
-    logo: DEFAULT_IMAGE,
+    logo: `${SITE_URL}/favicon.png`,
     openingHours: SCHOOL_INFO.openingHours || undefined,
     hasMap: SCHOOL_INFO.mapsLink || undefined
   };
