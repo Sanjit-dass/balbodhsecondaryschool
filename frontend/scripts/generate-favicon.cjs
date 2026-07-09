@@ -1,5 +1,6 @@
 const sharp = require('sharp');
-const pngToIco = require('png-to-ico');
+const pngToIcoRaw = require('png-to-ico');
+const pngToIco = pngToIcoRaw.default || pngToIcoRaw;
 const path = require('path');
 const fs = require('fs');
 
@@ -21,7 +22,7 @@ async function run(){
       .toFile(outPng);
 
     // create ICO (contains 48x48)
-    const icoBuffer = await pngToIco(outPng);
+    const icoBuffer = await pngToIco([outPng]);
     await fs.promises.writeFile(outIco, icoBuffer);
 
     console.log('favicon.png created at', outPng);
