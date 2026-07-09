@@ -49,34 +49,50 @@ if (missingEnv.length > 0) {
 /* ========================
    CORS CONFIG
 ======================== */
-let allowedOrigins = [];
-if (process.env.CORS_ORIGIN && String(process.env.CORS_ORIGIN).trim()) {
-  allowedOrigins = process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim()).filter(Boolean);
-} else if ((process.env.NODE_ENV || 'development') === 'production') {
-  console.error('❌ CORS_ORIGIN is not set. In production you must set CORS_ORIGIN to the allowed origins.');
-  process.exit(1);
-} else {
-  // Development defaults: use only 127.0.0.1 and current hostname, avoid hardcoded localhost
+const normalizeOrigin = (value) => {
+  if (typeof value !== 'string') return '';
+  return value.trim().replace(/\/$/, '').toLowerCase();
+};
+
+const parseAllowedOrigins = () => {
+  const configuredValues = [process.env.CORS_ORIGIN, process.env.FRONTEND_URL]
+    .filter((value) => typeof value === 'string' && value.trim())
+    .flatMap((value) => String(value).split(',').map((origin) => origin.trim()).filter(Boolean));
+
+  if (configuredValues.length > 0) {
+    return [...new Set(configuredValues.map(normalizeOrigin))];
+  }
+
+  if ((process.env.NODE_ENV || 'development') === 'production') {
+    console.error('❌ CORS_ORIGIN is not set. In production you must set CORS_ORIGIN to the allowed origins.');
+    process.exit(1);
+  }
+
   const devOrigins = [
     'http://127.0.0.1:5173',
     'http://127.0.0.1:5177',
     'http://127.0.0.1:5000',
   ];
-  // Add current hostname dynamically in dev (if available)
-  if (typeof process.env.FRONTEND_URL === 'string' && process.env.FRONTEND_URL.trim()) {
-    devOrigins.push(process.env.FRONTEND_URL);
-  }
-  allowedOrigins = devOrigins;
-}
 
-// In development, use a permissive CORS policy for the known local frontends.
-// This ensures preflight responses include the correct Access-Control-Allow-* headers.
+  return devOrigins.map(normalizeOrigin);
+};
+
+const allowedOrigins = parseAllowedOrigins();
+
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like curl or native apps)
+    const normalizedOrigin = normalizeOrigin(origin);
+    const matched = !origin || allowedOrigins.includes(normalizedOrigin);
+
+    console.log(`[CORS DEBUG] process.env.CORS_ORIGIN=${process.env.CORS_ORIGIN || '(unset)'}`);
+    console.log(`[CORS DEBUG] req.headers.origin=${origin || '(none)'}`);
+    console.log(`[CORS DEBUG] allowedOrigins=${allowedOrigins.join(', ')}`);
+    console.log(`[CORS DEBUG] origin matched=${matched}`);
+
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    console.warn(`CORS blocked origin: ${origin}`);
+    if (matched) return callback(null, true);
+
+    console.warn(`[CORS DEBUG] blocked origin: ${origin}`);
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
