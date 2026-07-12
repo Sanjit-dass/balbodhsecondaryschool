@@ -390,7 +390,6 @@ export default function Students() {
                   students.map((student) => (
                     <div key={student._id} className="bg-white rounded-xl md:rounded-2xl border border-slate-100 p-3 md:p-4 shadow-sm">
                       <div className="flex items-start gap-3 md:gap-4">
-                        <img src={student.profilePhotoObj?.fileUrl || student.profilePhoto || student.photoUrl} alt="avatar" className="w-12 h-12 md:w-16 md:h-16 object-cover rounded-lg" />
                         <div className="flex-1 min-w-0">
                           <div className="font-semibold text-slate-900 text-sm md:text-base truncate">{student.fullName}</div>
                           <div className="text-xs md:text-sm text-slate-500">{student.section ? `Section ${student.section}` : 'No section'}</div>
