@@ -13,6 +13,7 @@ const Subject = require('../models/Subject');
 const User = require('../models/User');
 const TeacherSubjectAssignment = require('../models/TeacherSubjectAssignment');
 const { buildTeacherAssignmentQuery, getAcademicYearCandidates } = require('../utils/teacherAssignmentQuery');
+const { attachClassPositions } = require('../utils/examResultRanking');
 
 function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -1251,9 +1252,9 @@ router.get('/:examId/results', auth, async (req, res) => {
       return (a.student?.toString() || '').localeCompare(b.student?.toString() || '');
     });
 
-    const mappedResults = results.map((result, index) => ({
+    const rankedResults = attachClassPositions(results);
+    const mappedResults = rankedResults.map((result) => ({
       ...result,
-      classPosition: Number.isFinite(result.classPosition) ? result.classPosition : index + 1,
       student: {
         ...result.student,
         rollNumber: result.student?.rollNumber || result.student?.admissionNumber
@@ -1275,16 +1276,19 @@ router.get('/:examId/results/:studentId', auth, async (req, res) => {
       .populate('subjectMarks.subject', 'name');
 
     if (!result) return res.status(404).json({ message: 'Result not found' });
-    
+
+    const rankedResults = attachClassPositions([result.toObject ? result.toObject() : result]);
+    const rankedResult = rankedResults[0];
+
     // Ensure rollNumber is populated from admissionNumber if needed
-    if (result.student) {
-      result.student = {
-        ...result.student.toObject?.() || result.student,
-        rollNumber: result.student.rollNumber || result.student.admissionNumber
+    if (rankedResult.student) {
+      rankedResult.student = {
+        ...rankedResult.student,
+        rollNumber: rankedResult.student.rollNumber || rankedResult.student.admissionNumber
       };
     }
-    
-    res.json(result);
+
+    res.json(rankedResult);
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
