@@ -270,19 +270,19 @@ export default function AttendanceForm({ existing, onSaved }) {
 
         <div className="sm:col-span-2">
           <label className="block text-xs md:text-sm font-semibold text-slate-700">Subject</label>
-          <input
-            list="subject-options"
+          <select
             className="mt-1 w-full rounded-2xl md:rounded-3xl border border-slate-300 bg-slate-50 px-3 md:px-4 py-3 md:py-4 min-h-[48px] md:min-h-[54px] shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 text-sm md:text-base"
-            placeholder="Enter subject"
             value={form.subject}
-            disabled={isLocked}
+            disabled={isLocked || subjects.length === 0}
             onChange={e => setForm({ ...form, subject: e.target.value })}
-          />
-          <datalist id="subject-options">
+          >
+            <option value="">{subjects.length ? 'Select subject' : 'No subjects for this class'}</option>
             {subjects.map(subject => (
-              <option key={subject._id || subject.name || subject} value={subject.name || subject} />
+              <option key={subject._id || subject.name || subject} value={subject.name || subject}>
+                {subject.name || subject}
+              </option>
             ))}
-          </datalist>
+          </select>
           {teacherSubjectError && <p className="mt-2 text-xs text-rose-600">{teacherSubjectError}</p>}
         </div>
         <div className="hidden sm:block sm:col-span-3" />
