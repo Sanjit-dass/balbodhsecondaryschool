@@ -55,7 +55,7 @@ const PublicFooter = () => {
       <div className="max-w-7xl mx-auto px-4">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
-          {/* About Section - Premium School Branding */}
+          {/* About Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -63,47 +63,19 @@ const PublicFooter = () => {
             viewport={{ once: true }}
             className="lg:col-span-1"
           >
-            <Link to="/" className="flex items-center gap-3 mb-5 hover:opacity-90 transition-opacity group">
-              <div className="relative">
-                <div className="absolute inset-0 rounded-full blur-lg opacity-40" style={{ backgroundColor: COLORS.accent }}></div>
-                <img
-                  src="/logo.png"
-                  alt="Bal Bodh Secondary School Logo"
-                  className="relative h-14 w-14 rounded-full object-contain shadow-lg"
-                />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
-                  {SCHOOL_INFO.name}
-                </h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${COLORS.accent}20`, color: COLORS.accent }}>
-                    Est. {SCHOOL_INFO.established}
-                  </span>
-                </div>
-              </div>
+            <Link to="/" className="flex items-center gap-3 mb-4 hover:opacity-80 transition-opacity">
+              <img
+                src="/logo.png"
+                alt="Bal Bodh Secondary School Logo"
+                className="h-12 w-12 rounded-lg object-contain"
+              />
+              <h3 className="text-lg font-bold">{SCHOOL_INFO.name}</h3>
             </Link>
-            
-            <p className="text-gray-300 text-sm mb-4 font-medium tracking-wide">{t(SCHOOL_INFO.tagline)}</p>
-
-            {/* Contact Info */}
-            <div className="space-y-2 mb-4">
-              <div className="flex items-center gap-3 text-sm text-gray-300">
-                <FaPhone className="flex-shrink-0" style={{ color: COLORS.accent }} />
-                <a href={`tel:${SCHOOL_INFO.phone}`} className="hover:text-white transition-colors">
-                  {SCHOOL_INFO.phone}
-                </a>
-              </div>
-              <div className="flex items-center gap-3 text-sm text-gray-300">
-                <FaEnvelope className="flex-shrink-0" style={{ color: COLORS.accent }} />
-                <a href={`mailto:${SCHOOL_INFO.email}`} className="hover:text-white transition-colors break-all">
-                  {SCHOOL_INFO.email}
-                </a>
-              </div>
-            </div>
-
-            {/* Social Links */}
-            <div className="flex gap-2">
+            <p className="text-gray-400 text-sm mb-4">{t(SCHOOL_INFO.tagline)}</p>
+            <p className="text-gray-400 text-xs leading-relaxed mb-4">
+              {t(SCHOOL_INFO.about)}
+            </p>
+            <div className="flex gap-3">
               {[
                 SCHOOL_INFO.facebook ? { icon: FaFacebook, url: SCHOOL_INFO.facebook } : null,
                 SCHOOL_INFO.twitter ? { icon: FaTwitter, url: SCHOOL_INFO.twitter } : null,
@@ -115,15 +87,11 @@ const PublicFooter = () => {
                   href={social.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  whileHover={{ scale: 1.15, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-lg"
-                  style={{ 
-                    backgroundColor: `${COLORS.white}10`,
-                    border: `1px solid ${COLORS.white}20`
-                  }}
+                  whileHover={{ scale: 1.2, rotate: 5 }}
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
+                  style={{ backgroundColor: COLORS.secondary }}
                 >
-                  <social.icon size={16} style={{ color: COLORS.accent }} />
+                  <social.icon size={18} />
                 </motion.a>
               ))}
             </div>
@@ -205,59 +173,54 @@ const PublicFooter = () => {
         
 
         {/* Bottom Bar - Centered Professional Layout */}
-        <div className="border-t border-gray-800 pt-6 md:pt-8">
+        <div className="border-t border-gray-800 pt-8">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="max-w-4xl mx-auto text-center space-y-4 md:space-y-5 px-4"
+            className="max-w-3xl mx-auto text-center space-y-3 px-4"
           >
-            {/* Copyright */}
-            <p className="text-gray-300 text-xs md:text-sm font-medium">© 2026 Bal Bodh Secondary School. All Rights Reserved.</p>
-            
-            {/* ERP Tagline */}
-            <p className="text-gray-400 text-xs md:text-sm tracking-wide">School ERP • Educational Technology Solutions</p>
+            <p className="text-gray-300 text-sm">© 2026 Bal Bodh Secondary School. All Rights Reserved.</p>
+            <p className="text-gray-400 text-sm">School ERP • Educational Technology Solutions</p>
 
-            {/* Developer Credits */}
-            <div className="pt-2 md:pt-3">
-              <p className="text-gray-400 text-xs md:text-sm mb-3">Designed &amp; Developed by</p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4 text-xs md:text-sm">
+            <div className="pt-2">
+              <p className="text-gray-400 text-sm">Designed &amp; Developed by</p>
+              <p className="mt-1 flex items-center justify-center gap-3 text-sm">
                 <a
                   href="https://portfolio-sanjit.vercel.app/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-center gap-2 px-4 py-2 md:px-5 md:py-2.5 rounded-full transition-all duration-300 hover:scale-105"
-                  style={{ backgroundColor: `${COLORS.white}15`, border: `1px solid ${COLORS.white}20` }}
+                  aria-label="Open Sanjit Das portfolio in new tab"
+                  className="font-semibold hover:underline transition-colors duration-200"
+                  style={{ color: COLORS.accent }}
                 >
-                  <span className="text-lg">👨‍💻</span>
-                  <span className="font-semibold text-white group-hover:text-white/90 text-sm md:text-base">Sanjit Das</span>
+                  Sanjit Das
                 </a>
-                <span className="text-white/40 text-xl font-light">&</span>
+                <span className="text-gray-500">&amp;</span>
                 <a
-                  href="https://puspendra-portfolio.vercel.app/"
+                  href="#"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-center gap-2 px-4 py-2 md:px-5 md:py-2.5 rounded-full transition-all duration-300 hover:scale-105"
-                  style={{ backgroundColor: `${COLORS.white}15`, border: `1px solid ${COLORS.white}20` }}
+                  aria-label="Open Puspendra Birajee portfolio in new tab"
+                  className="font-semibold hover:underline transition-colors duration-200"
+                  style={{ color: COLORS.accent }}
                 >
-                  <span className="text-lg">👨‍💻</span>
-                  <span className="font-semibold text-white group-hover:text-white/90 text-sm md:text-base">Puspendra Birajee</span>
+                  Puspendra Birajee
                 </a>
-              </div>
+              </p>
             </div>
 
-            {/* Scroll to Top Button */}
-            <div className="pt-3 md:pt-4">
+            <div className="pt-3">
               <motion.button
                 onClick={scrollToTop}
-                whileHover={{ scale: 1.1, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-12 h-12 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all mx-auto shadow-lg"
+                whileHover={{ scale: 1.06 }}
+                whileTap={{ scale: 0.96 }}
+                className="w-10 h-10 rounded-full flex items-center justify-center transition-all mx-auto"
                 style={{ backgroundColor: COLORS.secondary }}
                 aria-label="Scroll to top"
               >
-                <FaArrowUp size={20} className="md:size-18" />
+                <FaArrowUp size={18} />
               </motion.button>
             </div>
           </motion.div>

@@ -1187,13 +1187,22 @@ router.post('/:examId/generate-results', auth, roles(['admin', 'examcontroller',
       await result.save();
     }
 
-    // Calculate class positions: pass students first (by percentage), then fail students (by percentage)
+    // Calculate class positions using actual marks/percentage so the leaderboard is accurate.
     const allResults = await ExamResult.find({ exam: req.params.examId });
     allResults.sort((a, b) => {
       const pa = (a.passStatus === 'Pass') ? 0 : 1;
       const pb = (b.passStatus === 'Pass') ? 0 : 1;
-      if (pa !== pb) return pa - pb; // passers first
-      return (b.totalPercentage || 0) - (a.totalPercentage || 0); // then percentage desc
+      if (pa !== pb) return pa - pb;
+
+      const marksA = Number(a.totalMarksObtained) || 0;
+      const marksB = Number(b.totalMarksObtained) || 0;
+      if (marksA !== marksB) return marksB - marksA;
+
+      const pctA = Number(a.totalPercentage) || 0;
+      const pctB = Number(b.totalPercentage) || 0;
+      if (pctA !== pctB) return pctB - pctA;
+
+      return (a.student?.toString() || '').localeCompare(b.student?.toString() || '');
     });
     for (let i = 0; i < allResults.length; i++) {
       allResults[i].classPosition = i + 1;
@@ -1224,15 +1233,27 @@ router.get('/:examId/results', auth, async (req, res) => {
       .lean();
 
     results.sort((a, b) => {
+      const pa = (a.passStatus === 'Pass') ? 0 : 1;
+      const pb = (b.passStatus === 'Pass') ? 0 : 1;
+      if (pa !== pb) return pa - pb;
+
+      const marksA = Number(a.totalMarksObtained) || 0;
+      const marksB = Number(b.totalMarksObtained) || 0;
+      if (marksA !== marksB) return marksB - marksA;
+
+      const pctA = Number(a.totalPercentage) || 0;
+      const pctB = Number(b.totalPercentage) || 0;
+      if (pctA !== pctB) return pctB - pctA;
+
       const posA = Number.isFinite(a.classPosition) ? a.classPosition : Number.MAX_SAFE_INTEGER;
       const posB = Number.isFinite(b.classPosition) ? b.classPosition : Number.MAX_SAFE_INTEGER;
       if (posA !== posB) return posA - posB;
-      return (b.totalPercentage || 0) - (a.totalPercentage || 0);
+      return (a.student?.toString() || '').localeCompare(b.student?.toString() || '');
     });
 
-    // Map results to ensure rollNumber is populated from admissionNumber if needed
-    const mappedResults = results.map(result => ({
+    const mappedResults = results.map((result, index) => ({
       ...result,
+      classPosition: Number.isFinite(result.classPosition) ? result.classPosition : index + 1,
       student: {
         ...result.student,
         rollNumber: result.student?.rollNumber || result.student?.admissionNumber

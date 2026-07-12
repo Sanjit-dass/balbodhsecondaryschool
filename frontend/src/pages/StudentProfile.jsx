@@ -1139,6 +1139,7 @@ export default function StudentProfile({ studentId }){
                         >
                           View
                         </button>
+
                         <button
                           type="button"
                           onClick={() => {

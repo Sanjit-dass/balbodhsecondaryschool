@@ -20,7 +20,7 @@ export default function Results() {
   const downloadCSV = () => {
     if (!selectedExam || !results.length) return;
     const headers = ['Roll No', 'Student Name', 'Total Marks', 'Grade', 'GPA', 'Status', 'Position'];
-    const rows = results.map((result) => {
+    const rows = results.map((result, index) => {
       const percentage = result.totalMaxMarks > 0 ? (result.totalMarksObtained / result.totalMaxMarks) * 100 : 0;
       const gradeInfo = calculateGrade(percentage);
       const statusInfo = calculateStatus(percentage, result.passStatus);
@@ -31,7 +31,7 @@ export default function Results() {
         gradeInfo.grade,
         gradeInfo.gpa.toFixed(1),
         statusInfo.text,
-        result.classPosition || 'N/A'
+        index + 1
       ];
     });
 
@@ -58,9 +58,19 @@ export default function Results() {
     const rowsHtml = results
       .slice()
       .sort((a, b) => {
-        const posA = Number.isFinite(a.classPosition) ? a.classPosition : Number.MAX_SAFE_INTEGER;
-        const posB = Number.isFinite(b.classPosition) ? b.classPosition : Number.MAX_SAFE_INTEGER;
-        return posA - posB;
+        const passA = a.passStatus === 'Pass' ? 0 : 1;
+        const passB = b.passStatus === 'Pass' ? 0 : 1;
+        if (passA !== passB) return passA - passB;
+
+        const marksA = Number(a.totalMarksObtained) || 0;
+        const marksB = Number(b.totalMarksObtained) || 0;
+        if (marksA !== marksB) return marksB - marksA;
+
+        const percentageA = Number(a.totalPercentage) || 0;
+        const percentageB = Number(b.totalPercentage) || 0;
+        if (percentageA !== percentageB) return percentageB - percentageA;
+
+        return (a.student?.user?.name || a.student?.fullName || '').localeCompare(b.student?.user?.name || b.student?.fullName || '');
       })
       .map((result, index) => {
         const totalMax = result.totalMaxMarks || 0;
@@ -71,7 +81,7 @@ export default function Results() {
         const statusColor = statusInfo.color;
         return `
           <tr>
-            <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${result.classPosition || index + 1}</td>
+            <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${index + 1}</td>
             <td style="border: 1px solid #d1d5db; padding: 10px; white-space: normal; word-break: break-word;">${result.student?.user?.name || result.student?.fullName || 'N/A'}</td>
             <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${obtained}/${totalMax}</td>
             <td style="border: 1px solid #d1d5db; padding: 10px; text-align: center; white-space: nowrap;">${gradeInfo.grade}</td>
@@ -202,10 +212,22 @@ export default function Results() {
 
   const sortResults = (results) => {
     return [...results].sort((a, b) => {
+      const passA = a.passStatus === 'Pass' ? 0 : 1;
+      const passB = b.passStatus === 'Pass' ? 0 : 1;
+      if (passA !== passB) return passA - passB;
+
+      const marksA = Number(a.totalMarksObtained) || 0;
+      const marksB = Number(b.totalMarksObtained) || 0;
+      if (marksA !== marksB) return marksB - marksA;
+
+      const percentageA = Number(a.totalPercentage) || 0;
+      const percentageB = Number(b.totalPercentage) || 0;
+      if (percentageA !== percentageB) return percentageB - percentageA;
+
       const positionA = Number.isFinite(a.classPosition) ? a.classPosition : Number.MAX_SAFE_INTEGER;
       const positionB = Number.isFinite(b.classPosition) ? b.classPosition : Number.MAX_SAFE_INTEGER;
       if (positionA !== positionB) return positionA - positionB;
-      return (b.totalPercentage || 0) - (a.totalPercentage || 0);
+      return (a.student?.user?.name || a.student?.fullName || '').localeCompare(b.student?.user?.name || b.student?.fullName || '');
     });
   };
 
@@ -349,47 +371,93 @@ export default function Results() {
                   <div className="text-center text-slate-500">No results found</div>
                 ) : (
                   <>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-slate-100 border-b">
-                        <tr>
-                          <th className="px-4 py-2 text-left text-sm font-semibold">Roll No.</th>
-                          <th className="px-4 py-2 text-left text-sm font-semibold">Student Name</th>
-                          <th className="px-4 py-2 text-center text-sm font-semibold">Total Marks</th>
-                          <th className="px-4 py-2 text-center text-sm font-semibold">Grade</th>
-                          <th className="px-4 py-2 text-center text-sm font-semibold">GPA</th>
-                          <th className="px-4 py-2 text-center text-sm font-semibold">Status</th>
-                          <th className="px-4 py-2 text-center text-sm font-semibold">Position</th>
-                          <th className="px-4 py-2 text-center text-sm font-semibold">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredResults.map((result, idx) => {
-                          const percentage = result.totalMaxMarks > 0 ? (result.totalMarksObtained / result.totalMaxMarks) * 100 : 0;
-                          const gradeInfo = calculateGrade(percentage);
-                          const statusInfo = calculateStatus(percentage, result.passStatus);
-                          return (
-                            <tr key={idx} className="border-b hover:bg-slate-50">
-                              <td className="px-4 py-2 text-sm">{result.student?.rollNumber || result.student?.admissionNumber || '-'}</td>
-                              <td className="px-4 py-2 text-sm">{result.student?.user?.name || result.student?.fullName || 'N/A'}</td>
-                              <td className="px-4 py-2 text-center text-sm">{result.totalMarksObtained || 0}</td>
-                              <td className={`px-4 py-2 text-center text-sm font-semibold ${getGradeColor(gradeInfo.grade)}`}>{gradeInfo.grade}</td>
-                              <td className="px-4 py-2 text-center text-sm font-semibold">{gradeInfo.gpa.toFixed(1)}</td>
-                              <td className={`px-4 py-2 text-center text-sm font-bold ${statusInfo.className}`}>{statusInfo.display}</td>
-                              <td className="px-4 py-2 text-center text-sm">{Number.isFinite(result.classPosition) ? result.classPosition : 'N/A'}</td>
-                              <td className="px-4 py-2 text-center">
-                                <button
-                                  onClick={() => setSelectedResult(result)}
-                                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                                >
-                                  View
-                                </button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                  <div className="space-y-3">
+                    <div className="hidden overflow-x-auto md:block">
+                      <table className="w-full">
+                        <thead className="bg-slate-100 border-b">
+                          <tr>
+                            <th className="px-4 py-2 text-left text-sm font-semibold">Roll No.</th>
+                            <th className="px-4 py-2 text-left text-sm font-semibold">Student Name</th>
+                            <th className="px-4 py-2 text-center text-sm font-semibold">Total Marks</th>
+                            <th className="px-4 py-2 text-center text-sm font-semibold">Grade</th>
+                            <th className="px-4 py-2 text-center text-sm font-semibold">GPA</th>
+                            <th className="px-4 py-2 text-center text-sm font-semibold">Status</th>
+                            <th className="px-4 py-2 text-center text-sm font-semibold">Position</th>
+                            <th className="px-4 py-2 text-center text-sm font-semibold">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredResults.map((result, idx) => {
+                            const percentage = result.totalMaxMarks > 0 ? (result.totalMarksObtained / result.totalMaxMarks) * 100 : 0;
+                            const gradeInfo = calculateGrade(percentage);
+                            const statusInfo = calculateStatus(percentage, result.passStatus);
+                            return (
+                              <tr key={idx} className="border-b hover:bg-slate-50">
+                                <td className="px-4 py-2 text-sm">{result.student?.rollNumber || result.student?.admissionNumber || '-'}</td>
+                                <td className="px-4 py-2 text-sm">{result.student?.user?.name || result.student?.fullName || 'N/A'}</td>
+                                <td className="px-4 py-2 text-center text-sm">{result.totalMarksObtained || 0}</td>
+                                <td className={`px-4 py-2 text-center text-sm font-semibold ${getGradeColor(gradeInfo.grade)}`}>{gradeInfo.grade}</td>
+                                <td className="px-4 py-2 text-center text-sm font-semibold">{gradeInfo.gpa.toFixed(1)}</td>
+                                <td className={`px-4 py-2 text-center text-sm font-bold ${statusInfo.className}`}>{statusInfo.display}</td>
+                                <td className="px-4 py-2 text-center text-sm">{idx + 1}</td>
+                                <td className="px-4 py-2 text-center">
+                                  <button
+                                    onClick={() => setSelectedResult(result)}
+                                    className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                                  >
+                                    View
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="space-y-3 md:hidden">
+                      {filteredResults.map((result, idx) => {
+                        const percentage = result.totalMaxMarks > 0 ? (result.totalMarksObtained / result.totalMaxMarks) * 100 : 0;
+                        const gradeInfo = calculateGrade(percentage);
+                        const statusInfo = calculateStatus(percentage, result.passStatus);
+                        return (
+                          <div key={idx} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">#{idx + 1}</div>
+                                <div className="text-sm font-semibold text-slate-900">{result.student?.user?.name || result.student?.fullName || 'N/A'}</div>
+                                <div className="text-xs text-slate-500">Roll No. {result.student?.rollNumber || result.student?.admissionNumber || '-'}</div>
+                              </div>
+                              <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusInfo.className}`}>{statusInfo.display}</span>
+                            </div>
+                            <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                              <div className="rounded-lg bg-slate-50 p-2">
+                                <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">Marks</div>
+                                <div className="font-semibold text-slate-900">{result.totalMarksObtained || 0}</div>
+                              </div>
+                              <div className="rounded-lg bg-slate-50 p-2">
+                                <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">Grade</div>
+                                <div className={`font-semibold ${getGradeColor(gradeInfo.grade)}`}>{gradeInfo.grade}</div>
+                              </div>
+                              <div className="rounded-lg bg-slate-50 p-2">
+                                <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">GPA</div>
+                                <div className="font-semibold text-slate-900">{gradeInfo.gpa.toFixed(1)}</div>
+                              </div>
+                              <div className="rounded-lg bg-slate-50 p-2">
+                                <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">Position</div>
+                                <div className="font-semibold text-slate-900">{idx + 1}</div>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => setSelectedResult(result)}
+                              className="mt-3 w-full rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                            >
+                              View details
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                   {selectedExam && results.length > 0 && (
                     <div className="mt-4 flex justify-end">

@@ -355,83 +355,141 @@ export default function Exams() {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="border-collapse text-sm min-w-max">
-                <thead className="bg-slate-100 text-slate-700">
-                  <tr>
-                    <th className="border border-slate-300 px-3 py-2 text-left font-semibold">Position</th>
-                    <th className="border border-slate-300 px-3 py-2 text-left font-semibold">Student Name</th>
-                    {selectedExam?.class?.subjects?.length > 0 ? (
-                      selectedExam.class.subjects.map((sub, idx) => (
-                        <th key={idx} colSpan={2} className="border border-slate-300 px-3 py-2 text-center font-semibold">
-                          {typeof sub === 'object' ? sub.name : sub}
-                        </th>
-                      ))
-                    ) : (
-                      <th className="border border-slate-300 px-3 py-2 text-right font-semibold">Total Marks</th>
-                    )}
-                    <th className="border border-slate-300 px-3 py-2 text-right font-semibold">Total</th>
-                    <th className="border border-slate-300 px-3 py-2 text-left font-semibold">Grade</th>
-                    <th className="border border-slate-300 px-3 py-2 text-right font-semibold">GPA</th>
-                    <th className="border border-slate-300 px-3 py-2 text-left font-semibold">Status</th>
-                  </tr>
-                  {selectedExam?.class?.subjects?.length > 0 && (
-                    <tr className="bg-slate-50">
-                      <th className="border border-slate-300 px-3 py-2"></th>
-                      <th className="border border-slate-300 px-3 py-2"></th>
-                      {selectedExam.class.subjects.map((sub, idx) => (
-                        <React.Fragment key={idx}>
-                          <th className="border border-slate-300 px-2 py-2 text-center text-xs font-semibold">T</th>
-                          <th className="border border-slate-300 px-2 py-2 text-center text-xs font-semibold">P</th>
-                        </React.Fragment>
-                      ))}
-                      <th className="border border-slate-300 px-3 py-2"></th>
-                      <th className="border border-slate-300 px-3 py-2"></th>
-                      <th className="border border-slate-300 px-3 py-2"></th>
-                      <th className="border border-slate-300 px-3 py-2"></th>
-                      <th className="border border-slate-300 px-3 py-2"></th>
+            <div className="space-y-3">
+              <div className="hidden overflow-x-auto md:block">
+                <table className="border-collapse text-sm min-w-max">
+                  <thead className="bg-slate-100 text-slate-700">
+                    <tr>
+                      <th className="border border-slate-300 px-3 py-2 text-left font-semibold">Position</th>
+                      <th className="border border-slate-300 px-3 py-2 text-left font-semibold">Student Name</th>
+                      {selectedExam?.class?.subjects?.length > 0 ? (
+                        selectedExam.class.subjects.map((sub, idx) => (
+                          <th key={idx} colSpan={2} className="border border-slate-300 px-3 py-2 text-center font-semibold">
+                            {typeof sub === 'object' ? sub.name : sub}
+                          </th>
+                        ))
+                      ) : (
+                        <th className="border border-slate-300 px-3 py-2 text-right font-semibold">Total Marks</th>
+                      )}
+                      <th className="border border-slate-300 px-3 py-2 text-right font-semibold">Total</th>
+                      <th className="border border-slate-300 px-3 py-2 text-left font-semibold">Grade</th>
+                      <th className="border border-slate-300 px-3 py-2 text-right font-semibold">GPA</th>
+                      <th className="border border-slate-300 px-3 py-2 text-left font-semibold">Status</th>
                     </tr>
-                  )}
-                </thead>
-                <tbody>
-                  {results.map((result, idx) => {
-                    const percentage = result.totalMaxMarks > 0 ? (result.totalMarksObtained / result.totalMaxMarks) * 100 : 0;
-                    const gradeInfo = calculateGrade(percentage);
-                    return (
-                      <tr key={idx} className="border-b border-slate-300">
-                        <td className="border border-slate-300 px-3 py-2 text-sm font-semibold">{result.classPosition || idx + 1}</td>
-                        <td className="border border-slate-300 px-3 py-2 text-sm">{result.student?.user?.name || result.student?.fullName || result.student?.name || 'N/A'}</td>
-                        {selectedExam?.class?.subjects?.length > 0 ? (
-                          selectedExam.class.subjects.map((sub, idx) => {
-                            const subjectMark = result.subjectMarks?.find(sm => {
-                              const subId = typeof sub === 'object' ? sub._id : sub;
-                              return sm.subject?.toString() === subId?.toString();
-                            });
-                            return (
-                              <React.Fragment key={idx}>
-                                <td className="border border-slate-300 px-2 py-2 text-center text-sm">
-                                  {subjectMark?.theoryMarks ?? '-'}
-                                </td>
-                                <td className="border border-slate-300 px-2 py-2 text-center text-sm">
-                                  {subjectMark?.practicalMarks ?? '-'}
-                                </td>
-                              </React.Fragment>
-                            );
-                          })
-                        ) : (
-                          <td className="border border-slate-300 px-3 py-2 text-right text-sm">{result.totalMarksObtained}/{result.totalMaxMarks}</td>
-                        )}
-                        <td className="border border-slate-300 px-3 py-2 text-right text-sm font-semibold">{result.totalMarksObtained}</td>
-                        <td className={`border border-slate-300 px-3 py-2 text-sm font-semibold ${getGradeColor(gradeInfo.grade)}`}>{gradeInfo.grade}</td>
-                        <td className="border border-slate-300 px-3 py-2 text-right text-sm font-semibold">{gradeInfo.gpa.toFixed(1)}</td>
-                        <td className="border border-slate-300 px-3 py-2 text-sm font-semibold" style={{color: result.passStatus === 'Pass' ? 'green' : 'red'}}>
-                          {result.passStatus}
-                        </td>
+                    {selectedExam?.class?.subjects?.length > 0 && (
+                      <tr className="bg-slate-50">
+                        <th className="border border-slate-300 px-3 py-2"></th>
+                        <th className="border border-slate-300 px-3 py-2"></th>
+                        {selectedExam.class.subjects.map((sub, idx) => (
+                          <React.Fragment key={idx}>
+                            <th className="border border-slate-300 px-2 py-2 text-center text-xs font-semibold">T</th>
+                            <th className="border border-slate-300 px-2 py-2 text-center text-xs font-semibold">P</th>
+                          </React.Fragment>
+                        ))}
+                        <th className="border border-slate-300 px-3 py-2"></th>
+                        <th className="border border-slate-300 px-3 py-2"></th>
+                        <th className="border border-slate-300 px-3 py-2"></th>
+                        <th className="border border-slate-300 px-3 py-2"></th>
+                        <th className="border border-slate-300 px-3 py-2"></th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                    )}
+                  </thead>
+                  <tbody>
+                    {results.map((result, idx) => {
+                      const percentage = result.totalMaxMarks > 0 ? (result.totalMarksObtained / result.totalMaxMarks) * 100 : 0;
+                      const gradeInfo = calculateGrade(percentage);
+                      return (
+                        <tr key={idx} className="border-b border-slate-300">
+                          <td className="border border-slate-300 px-3 py-2 text-sm font-semibold">{idx + 1}</td>
+                          <td className="border border-slate-300 px-3 py-2 text-sm">{result.student?.user?.name || result.student?.fullName || result.student?.name || 'N/A'}</td>
+                          {selectedExam?.class?.subjects?.length > 0 ? (
+                            selectedExam.class.subjects.map((sub, idx) => {
+                              const subjectMark = result.subjectMarks?.find(sm => {
+                                const subId = typeof sub === 'object' ? sub._id : sub;
+                                return sm.subject?.toString() === subId?.toString();
+                              });
+                              return (
+                                <React.Fragment key={idx}>
+                                  <td className="border border-slate-300 px-2 py-2 text-center text-sm">
+                                    {subjectMark?.theoryMarks ?? '-'}
+                                  </td>
+                                  <td className="border border-slate-300 px-2 py-2 text-center text-sm">
+                                    {subjectMark?.practicalMarks ?? '-'}
+                                  </td>
+                                </React.Fragment>
+                              );
+                            })
+                          ) : (
+                            <td className="border border-slate-300 px-3 py-2 text-right text-sm">{result.totalMarksObtained}/{result.totalMaxMarks}</td>
+                          )}
+                          <td className="border border-slate-300 px-3 py-2 text-right text-sm font-semibold">{result.totalMarksObtained}</td>
+                          <td className={`border border-slate-300 px-3 py-2 text-sm font-semibold ${getGradeColor(gradeInfo.grade)}`}>{gradeInfo.grade}</td>
+                          <td className="border border-slate-300 px-3 py-2 text-right text-sm font-semibold">{gradeInfo.gpa.toFixed(1)}</td>
+                          <td className="border border-slate-300 px-3 py-2 text-sm font-semibold" style={{color: result.passStatus === 'Pass' ? 'green' : 'red'}}>
+                            {result.passStatus}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="space-y-3 md:hidden">
+                {results.map((result, idx) => {
+                  const percentage = result.totalMaxMarks > 0 ? (result.totalMarksObtained / result.totalMaxMarks) * 100 : 0;
+                  const gradeInfo = calculateGrade(percentage);
+                  return (
+                    <div key={idx} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">#{idx + 1}</div>
+                          <div className="text-sm font-semibold text-slate-900">{result.student?.user?.name || result.student?.fullName || result.student?.name || 'N/A'}</div>
+                          <div className="text-xs text-slate-500">Roll No. {result.student?.rollNumber || result.student?.admissionNumber || '-'}</div>
+                        </div>
+                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">{result.passStatus || 'Pass'}</span>
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                        <div className="rounded-lg bg-slate-50 p-2">
+                          <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">Total</div>
+                          <div className="font-semibold text-slate-900">{result.totalMarksObtained}</div>
+                        </div>
+                        <div className="rounded-lg bg-slate-50 p-2">
+                          <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">Grade</div>
+                          <div className={`font-semibold ${getGradeColor(gradeInfo.grade)}`}>{gradeInfo.grade}</div>
+                        </div>
+                        <div className="rounded-lg bg-slate-50 p-2">
+                          <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">GPA</div>
+                          <div className="font-semibold text-slate-900">{gradeInfo.gpa.toFixed(1)}</div>
+                        </div>
+                        <div className="rounded-lg bg-slate-50 p-2">
+                          <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">Position</div>
+                          <div className="font-semibold text-slate-900">{idx + 1}</div>
+                        </div>
+                      </div>
+                      {selectedExam?.class?.subjects?.length > 0 && (
+                        <div className="mt-3 rounded-lg bg-slate-50 p-2">
+                          <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Subject marks</div>
+                          <div className="space-y-1 text-sm">
+                            {selectedExam.class.subjects.map((sub, subjectIdx) => {
+                              const subjectMark = result.subjectMarks?.find(sm => {
+                                const subId = typeof sub === 'object' ? sub._id : sub;
+                                return sm.subject?.toString() === subId?.toString();
+                              });
+                              return (
+                                <div key={subjectIdx} className="flex items-center justify-between gap-2 rounded bg-white px-2 py-1">
+                                  <span className="text-slate-700">{typeof sub === 'object' ? sub.name : sub}</span>
+                                  <span className="font-semibold text-slate-900">{subjectMark ? `${subjectMark.theoryMarks ?? '-'} / ${subjectMark.practicalMarks ?? '-'}` : '-'}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
             </div>
           )}

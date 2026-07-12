@@ -102,7 +102,6 @@ export default function NotificationBell() {
                 <button onClick={handleMarkAll} className="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Mark All As Read</button>
               </div>
             </div>
-
             <div className="max-h-[60vh] overflow-y-auto">
               {!notifications.length ? (
                 <div className="p-4 text-sm text-slate-500">No new notifications.</div>
