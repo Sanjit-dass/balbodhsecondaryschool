@@ -199,7 +199,7 @@ const PublicFooter = () => {
                 </a>
                 <span className="text-gray-500">&amp;</span>
                 <a
-                  href="https://puspendrabirajee.com.np/"
+                  href="https://puspendra-portfolio.vercel.app/"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Open Puspendra Birajee portfolio in new tab"
