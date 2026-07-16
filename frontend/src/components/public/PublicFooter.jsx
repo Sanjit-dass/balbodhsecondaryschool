@@ -188,7 +188,7 @@ const PublicFooter = () => {
               <p className="text-gray-400 text-sm">Designed &amp; Developed by</p>
               <p className="mt-1 flex items-center justify-center gap-3 text-sm">
                 <a
-                  href="https://portfolio-sanjit.vercel.app/"
+                  href="https://sanjitdas.com.np/"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Open Sanjit Das portfolio in new tab"
@@ -199,7 +199,7 @@ const PublicFooter = () => {
                 </a>
                 <span className="text-gray-500">&amp;</span>
                 <a
-                  href="#"
+                  href="https://puspendrabirajee.com.np/"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Open Puspendra Birajee portfolio in new tab"
