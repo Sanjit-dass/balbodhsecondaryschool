@@ -5,6 +5,27 @@
   .receipt-root, .receipt-root * { visibility: visible !important; }
   .receipt-root { position: absolute !important; left: 0; top: 0; width: 100% !important; }
 
+  .marksheet-container {
+    padding: 0.25rem !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    font-size: 12px !important;
+  }
+
+  .marksheet-container table {
+    font-size: 12px !important;
+    page-break-inside: avoid !important;
+  }
+
+  .marksheet-container th,
+  .marksheet-container td {
+    padding: 4px 6px !important;
+  }
+
+  .marksheet-container .summary-table td {
+    padding: 4px 6px !important;
+  }
+
   /* Ensure logo prints and is not clipped */
   .receipt-root img { display: block !important; max-width: 120px !important; height: auto !important; }
 
@@ -19,7 +40,7 @@
   /* Improve spacing for summary */
   .receipt-root .summary-line { line-height: 1.6 !important; margin: 6px 0 !important; }
 
-  @page { size: A4; margin: 12mm; }
+  @page { size: A4; margin: 6mm; }
 }
 
 /* Also apply nicer table layout and spacing for receipt-root on screen */

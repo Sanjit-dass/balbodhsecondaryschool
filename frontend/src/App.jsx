@@ -93,6 +93,8 @@ import Seo from './components/Seo';
 import Register from './pages/Register';
 import StudentResultsPublic from './pages/public/StudentResultsPublic';
 import TeacherMarksEntryPage from './pages/teacher/MarksEntry';
+import EcaMarksEntry from './pages/teacher/EcaMarksEntry';
+import EcaManagement from './pages/admin/EcaManagement';
 
 export default function App(){
   return (
@@ -227,6 +229,7 @@ export default function App(){
           <Route path="school-leadership" element={<AdminSchoolLeadership />} />
           <Route path="contact-messages" element={<ContactMessages />} />
           <Route path="teacher-subject-assignments" element={<TeacherSubjectAssignments />} />
+          <Route path="eca-management" element={<EcaManagement />} />
           <Route path="collect-fee" element={<CollectFee />} />
           <Route path="fee-categories" element={<FeeCategories />} />
           <Route path="payment-history" element={<FeeHistory />} />
@@ -304,6 +307,7 @@ export default function App(){
           <Route index element={<TeacherPortal />} />
           <Route path="dashboard" element={<TeacherPortal />} />
           <Route path="marks-entry" element={<TeacherMarksEntryPage />} />
+          <Route path="eca-marks-entry" element={<EcaMarksEntry />} />
           <Route path="attendance" element={<Attendance />} />
           <Route path="attendance/history" element={<AttendanceHistory />} />
           <Route path="assignments" element={<Assignments />} />

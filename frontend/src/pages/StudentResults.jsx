@@ -144,7 +144,9 @@ export default function StudentResults() {
         return;
       }
 
-      setResult(studentResult);
+      const ecaResponse = await api.get('/students/me/results');
+      const ecaMarks = ecaResponse?.data?.ecaMarks || [];
+      setResult({ ...studentResult, ecaMarks });
       setClassName(studentResult.student?.class?.name || studentResult.student?.className || studentResult.class?.name || '');
     } catch (err) {
       console.error('Error fetching result:', err);

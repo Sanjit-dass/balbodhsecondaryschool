@@ -141,6 +141,27 @@ export default function TeacherMarksEntryPage() {
     }
   }, [teacherAssignments, selectedClass, isVerified, classOptions]);
 
+  useEffect(() => {
+    if (!selectedExam || !teacherAssignments.classes?.length) return;
+
+    const matchClass = (examClass) => {
+      const examClassId = typeof examClass === 'string' ? examClass : (examClass?._id || '');
+      const examClassName = typeof examClass === 'string' ? (examClass) : (examClass?.name || '');
+      return teacherAssignments.classes.some((assignedClass) => {
+        const assignedId = assignedClass?._id || assignedClass?.id || '';
+        const assignedName = assignedClass?.name || '';
+        return String(assignedId) === String(examClassId) || String(assignedName).toLowerCase() === String(examClassName).toLowerCase();
+      });
+    };
+
+    if (selectedExam.class && matchClass(selectedExam.class)) {
+      const examClassId = typeof selectedExam.class === 'string' ? selectedExam.class : selectedExam.class?._id;
+      if (examClassId && String(selectedClass) !== String(examClassId)) {
+        setSelectedClass(String(examClassId));
+      }
+    }
+  }, [selectedExam, teacherAssignments.classes, selectedClass]);
+
   const loadTeachers = async () => {
     try {
       setLoadingTeachers(true);

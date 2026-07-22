@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import api from '../services/api';
 
 export default function MarksEntry({ examId, exam, initialSubject = '' }) {
@@ -19,6 +19,7 @@ export default function MarksEntry({ examId, exam, initialSubject = '' }) {
   const [practicalFullMarks, setPracticalFullMarks] = useState(String(exam?.practicalFullMarks ?? 50));
   const [practicalPassMarks, setPracticalPassMarks] = useState(String(exam?.practicalPassMarks ?? 20));
   const [loadedClass, setLoadedClass] = useState(false);
+  const loadRequestRef = useRef(0);
 
   const examClassName = exam?.class?.name || (typeof exam?.class === 'string' ? exam.class : '');
   const examClassId = typeof exam?.class === 'string' ? exam.class : exam?.class?._id || '';
@@ -37,6 +38,17 @@ export default function MarksEntry({ examId, exam, initialSubject = '' }) {
       }
     }
   }, [exam]);
+
+  useEffect(() => {
+    setSubjects([]);
+    setStudents([]);
+    setMarks([]);
+    setMarksMatrix([]);
+    setSelectedSubject('');
+    setSelectedClass(examClassId);
+    setLoadedClass(false);
+    setMessage('');
+  }, [examId, examClassId]);
 
   // Auto-load class data when a class is selected or when the exam already has a class assigned
 
@@ -68,7 +80,7 @@ export default function MarksEntry({ examId, exam, initialSubject = '' }) {
     }
   };
 
-  const loadSubjectsForClass = async (classArg) => {
+  const loadSubjectsForClass = async (classArg, requestId = null) => {
     try {
       console.debug('=== Frontend: Loading Subjects ===');
       console.debug('Class Argument:', classArg);
@@ -76,15 +88,17 @@ export default function MarksEntry({ examId, exam, initialSubject = '' }) {
       // Use the new exam-specific subjects endpoint
       const res = await api.get(`/exams/${examId}/subjects`, { params: { classId: classArg } });
       console.debug('Subjects Response:', res.data);
+      if (requestId !== null && requestId !== loadRequestRef.current) return;
       setSubjects(res.data.subjects || []);
       console.debug('Subjects loaded:', (res.data.subjects || []).length);
     } catch (err) {
       console.error('loadSubjectsForClass error:', err);
+      if (requestId !== null && requestId !== loadRequestRef.current) return;
       setSubjects([]);
     }
   };
 
-  const loadStudents = async (classArg) => {
+  const loadStudents = async (classArg, requestId = null) => {
     try {
       setLoading(true);
       console.debug('=== Frontend: Loading Students ===');
@@ -93,23 +107,35 @@ export default function MarksEntry({ examId, exam, initialSubject = '' }) {
       
       const res = await api.get(`/exams/${examId}/students`, { params: { classId: classParam } });
       console.debug('Students Response:', res.data);
+      if (requestId !== null && requestId !== loadRequestRef.current) return;
       setStudents(res.data.students || []);
       console.debug('Students loaded:', (res.data.students || []).length);
       console.debug('Resolved Class Name:', res.data.className);
     } catch (err) {
       console.error('loadStudents error:', err);
+      if (requestId !== null && requestId !== loadRequestRef.current) return;
       setStudents([]);
     } finally {
-      setLoading(false);
+      if (requestId === null || requestId === loadRequestRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   const loadClassData = async () => {
     if (!selectedClass) return;
+    const requestId = ++loadRequestRef.current;
     setLoadedClass(false);
-    await loadSubjectsForClass(selectedClass);
-    await loadStudents(selectedClass);
-    setLoadedClass(true);
+    setSubjects([]);
+    setStudents([]);
+    setMarks([]);
+    setMarksMatrix([]);
+    setMessage('');
+    await loadSubjectsForClass(selectedClass, requestId);
+    await loadStudents(selectedClass, requestId);
+    if (requestId === loadRequestRef.current) {
+      setLoadedClass(true);
+    }
   };
 
   // Auto-load class data when a class is selected (e.g., exam pre-selects class)
@@ -118,11 +144,13 @@ export default function MarksEntry({ examId, exam, initialSubject = '' }) {
       loadClassData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedClass]);
+  }, [selectedClass, examId]);
 
   const loadMarks = async () => {
     try {
+      const requestId = ++loadRequestRef.current;
       const res = await api.get(`/exams/${examId}/marks?classId=${selectedClass}&subjectId=${selectedSubject}`);
+      if (requestId !== loadRequestRef.current) return;
       const marksList = res.data.marks || [];
       
       // Create marks array for all students with existing marks
@@ -150,12 +178,14 @@ export default function MarksEntry({ examId, exam, initialSubject = '' }) {
 
   const loadAllMarks = async () => {
     try {
+      const requestId = ++loadRequestRef.current;
       console.debug('=== Frontend: Loading All Marks ===');
       console.debug('Selected Class:', selectedClass);
       console.debug('Students Count:', students.length);
       console.debug('Subjects Count:', subjects.length);
       
       const res = await api.get(`/exams/${examId}/marks?classId=${selectedClass}`);
+      if (requestId !== loadRequestRef.current) return;
       const marksList = res.data.marks || [];
       console.debug('Marks loaded:', marksList.length);
       

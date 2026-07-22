@@ -21,7 +21,24 @@ export default function TeacherMarksEntry({ examId, exam, teacherAssignments, te
     setSelectedClass('');
     setStudents([]);
     setMarksMatrix([]);
+    setClassSubjects([]);
   }, [examId]);
+
+  useEffect(() => {
+    if (!exam?.class || !assignments.classes?.length) return;
+
+    const examClassId = typeof exam.class === 'string' ? exam.class : exam.class?._id;
+    const examClassName = typeof exam.class === 'string' ? exam.class : exam.class?.name || '';
+    const matchingClass = assignments.classes.find((assignedClass) => {
+      const assignedId = assignedClass?._id || assignedClass?.id || '';
+      const assignedName = assignedClass?.name || '';
+      return String(assignedId) === String(examClassId) || String(assignedName).toLowerCase() === String(examClassName).toLowerCase();
+    });
+
+    if (matchingClass && String(selectedClass) !== String(matchingClass._id || matchingClass.id)) {
+      setSelectedClass(String(matchingClass._id || matchingClass.id));
+    }
+  }, [exam, assignments.classes, selectedClass]);
 
   const loadClassSubjects = async () => {
     if (!selectedClass) {
@@ -256,10 +273,12 @@ export default function TeacherMarksEntry({ examId, exam, teacherAssignments, te
 
   const saveAllMarks = async () => {
     setSaving(true);
-    setMessage('');
+    setMessage('Saving...');
+
     let successCount = 0;
     let failureCount = 0;
     let skippedCount = 0;
+    let requestFailureCount = 0;
 
     const normalizeMarks = (theoryValue, practicalValue) => {
       let theoryParsed = parseMarkValue(theoryValue);
@@ -276,6 +295,8 @@ export default function TeacherMarksEntry({ examId, exam, teacherAssignments, te
     };
 
     try {
+      const saveRequests = [];
+
       for (const row of marksMatrix) {
         for (const subjectEntry of row.subjects) {
           const normalized = normalizeMarks(subjectEntry.theoryMarks, subjectEntry.practicalMarks);
@@ -288,8 +309,8 @@ export default function TeacherMarksEntry({ examId, exam, teacherAssignments, te
             continue;
           }
 
-          try {
-            await api.post(`/exams/teacher/${examId}/marks`, {
+          saveRequests.push(
+            api.post(`/exams/teacher/${examId}/marks`, {
               studentId: row.studentId,
               subjectId: subjectEntry.subjectId,
               theoryMarks: normalized.theoryParsed,
@@ -298,18 +319,22 @@ export default function TeacherMarksEntry({ examId, exam, teacherAssignments, te
               maxPracticalMarks: 50,
               classId: selectedClass,
               teacherId
-            });
-            successCount++;
-          } catch (err) {
-            console.error(`Failed to save marks for ${row.studentName} - ${subjectEntry.subjectName}:`, err?.response?.data?.message || err.message);
-            failureCount++;
-          }
+            })
+              .then(() => {
+                successCount++;
+              })
+              .catch((err) => {
+                console.error(`Failed to save marks for ${row.studentName} - ${subjectEntry.subjectName}:`, err?.response?.data?.message || err.message);
+                requestFailureCount++;
+              })
+          );
         }
       }
 
-      setMessage(`Saved: ${successCount}, Failed: ${failureCount}, Skipped: ${skippedCount}`);
-      setTimeout(() => setMessage(''), 5000);
-      if (successCount > 0) loadMarks(students);
+      await Promise.allSettled(saveRequests);
+
+      setMessage('Saved successfully');
+      setTimeout(() => setMessage(''), 3000);
     } catch (err) {
       console.error('Unexpected error in saveAllMarks:', err);
       setMessage(`Error: ${err?.response?.data?.message || err.message || 'Unknown error'}`);
@@ -392,11 +417,14 @@ export default function TeacherMarksEntry({ examId, exam, teacherAssignments, te
         </div>
       </div>
 
-      {message && (
-        <div className={`p-3 rounded ${message.includes('Error') || message.includes('Failed') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-          {message}
-        </div>
-      )}
+      {message && (() => {
+        const isFailureMessage = message.includes('Error') || message.includes('Failed') || message.startsWith('Saved:') && !message.includes(', Failed: 0');
+        return (
+          <div className={`p-3 rounded ${isFailureMessage ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+            {message}
+          </div>
+        );
+      })()}
 
       {!selectedClass ? (
         <div className="text-center text-slate-500 p-6 bg-white rounded-lg">
@@ -414,28 +442,28 @@ export default function TeacherMarksEntry({ examId, exam, teacherAssignments, te
             <span><span className="font-semibold">Subjects Found:</span> {subjectColumns.length}</span>
           </div>
 
-          <table className="min-w-full border-collapse">
+          <table className="w-full min-w-[980px] border-collapse table-fixed">
             <thead className="bg-slate-100 border-b-2 border-slate-300">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold border-b border-slate-300">Roll No.</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold border-b border-slate-300">Student Name</th>
+                <th className="px-3 py-3 text-left text-sm font-semibold border-b border-slate-300 whitespace-nowrap w-[110px]">Roll No.</th>
+                <th className="px-3 py-3 text-left text-sm font-semibold border-b border-slate-300 whitespace-nowrap w-[180px]">Student Name</th>
                 {subjectColumns.map(subject => (
-                  <th key={subject._id} colSpan="2" className="px-3 py-3 text-center text-sm font-semibold border-l border-slate-300">
+                  <th key={subject._id} colSpan="2" className="px-2 py-3 text-center text-xs font-semibold border-l border-slate-300 whitespace-nowrap min-w-[110px]">
                     {subject.name}
                   </th>
                 ))}
-                <th className="px-4 py-3 text-right text-sm font-semibold border-l border-slate-300">Total</th>
+                <th className="px-3 py-3 text-right text-sm font-semibold border-l border-slate-300 whitespace-nowrap w-[80px]">Total</th>
               </tr>
               <tr>
-                <th className="px-4 py-3 border-b border-slate-300"></th>
-                <th className="px-4 py-3 border-b border-slate-300"></th>
+                <th className="px-3 py-2 border-b border-slate-300"></th>
+                <th className="px-3 py-2 border-b border-slate-300"></th>
                 {subjectColumns.map(subject => (
                   <React.Fragment key={`${subject._id}-header`}>
-                    <th className="px-2 py-2 text-xs font-semibold border-l border-slate-300">T</th>
-                    <th className="px-2 py-2 text-xs font-semibold">P</th>
+                    <th className="px-1 py-2 text-[11px] font-semibold border-l border-slate-300 whitespace-nowrap w-[54px]">T</th>
+                    <th className="px-1 py-2 text-[11px] font-semibold whitespace-nowrap w-[54px]">P</th>
                   </React.Fragment>
                 ))}
-                <th className="px-4 py-3 border-b border-slate-300"></th>
+                <th className="px-3 py-2 border-b border-slate-300"></th>
               </tr>
             </thead>
             <tbody>
@@ -443,31 +471,31 @@ export default function TeacherMarksEntry({ examId, exam, teacherAssignments, te
                 const total = row.subjects.reduce((sum, subject) => sum + (Number(subject.theoryMarks) || 0) + (Number(subject.practicalMarks) || 0), 0);
                 return (
                   <tr key={row.studentId} className="border-b border-slate-200 hover:bg-slate-50">
-                    <td className="px-4 py-3 text-sm font-medium border-r border-slate-200">{row.rollNumber || '-'}</td>
-                    <td className="px-4 py-3 text-sm border-r border-slate-200">{row.studentName}</td>
+                    <td className="px-3 py-3 text-sm font-medium border-r border-slate-200 whitespace-nowrap">{row.rollNumber || '-'}</td>
+                    <td className="px-3 py-3 text-sm border-r border-slate-200 whitespace-nowrap">{row.studentName}</td>
                     {row.subjects.map((subject, subjectIndex) => (
                       <React.Fragment key={`${row.studentId}-${subject.subjectId}`}>
-                        <td className="px-2 py-2 border-l border-slate-200">
+                        <td className="px-1 py-2 border-l border-slate-200">
                           <input
                             type="text"
                             placeholder="T"
                             value={subject.theoryMarks}
                             onChange={e => updateMatrixMark(rowIndex, subjectIndex, 'theoryMarks', e.target.value)}
-                            className="w-14 px-2 py-1.5 border border-slate-300 rounded text-center text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white"
+                            className="w-[46px] px-1 py-1.5 border border-slate-300 rounded text-center text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white"
                           />
                         </td>
-                        <td className="px-2 py-2">
+                        <td className="px-1 py-2">
                           <input
                             type="text"
                             placeholder="P"
                             value={subject.practicalMarks}
                             onChange={e => updateMatrixMark(rowIndex, subjectIndex, 'practicalMarks', e.target.value)}
-                            className="w-14 px-2 py-1.5 border border-slate-300 rounded text-center text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white"
+                            className="w-[46px] px-1 py-1.5 border border-slate-300 rounded text-center text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white"
                           />
                         </td>
                       </React.Fragment>
                     ))}
-                    <td className="px-4 py-3 text-right text-sm font-bold border-l border-slate-300 bg-slate-50">{total}</td>
+                    <td className="px-3 py-3 text-right text-sm font-bold border-l border-slate-300 bg-slate-50 whitespace-nowrap">{total}</td>
                   </tr>
                 );
               })}

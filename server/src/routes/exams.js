@@ -10,6 +10,7 @@ const ExamResult = require('../models/ExamResult');
 const Student = require('../models/Student');
 const ClassModel = require('../models/Class');
 const Subject = require('../models/Subject');
+const EcaMark = require('../models/EcaMark');
 const User = require('../models/User');
 const TeacherSubjectAssignment = require('../models/TeacherSubjectAssignment');
 const { buildTeacherAssignmentQuery, getAcademicYearCandidates } = require('../utils/teacherAssignmentQuery');
@@ -77,6 +78,18 @@ async function normalizeSubjectId(value) {
 
   const subject = await Subject.findOne({ name: new RegExp(`^${escapeRegex(normalized)}$`, 'i') }).select('_id').lean();
   return subject ? subject._id : null;
+}
+
+async function getPublishedEcaMarksForResult(studentId, academicYear) {
+  if (!studentId) return [];
+
+  const query = { student: studentId, status: 'published' };
+  if (academicYear) query.academicYear = academicYear;
+
+  return EcaMark.find(query)
+    .populate('category', 'name')
+    .sort({ academicYear: 1, createdAt: 1 })
+    .lean();
 }
 
 async function getTeacherAssignmentForClass(teacher, classId) {
@@ -1253,12 +1266,19 @@ router.get('/:examId/results', auth, async (req, res) => {
     });
 
     const rankedResults = attachClassPositions(results);
-    const mappedResults = rankedResults.map((result) => ({
-      ...result,
-      student: {
-        ...result.student,
-        rollNumber: result.student?.rollNumber || result.student?.admissionNumber
-      }
+    const mappedResults = await Promise.all(rankedResults.map(async (result) => {
+      const studentId = result.student?._id || result.student;
+      const academicYear = result.exam?.academicYear || '';
+      const ecaMarks = await getPublishedEcaMarksForResult(studentId, academicYear);
+
+      return {
+        ...result,
+        ecaMarks,
+        student: {
+          ...result.student,
+          rollNumber: result.student?.rollNumber || result.student?.admissionNumber
+        }
+      };
     }));
 
     res.json({ results: mappedResults });
@@ -1279,6 +1299,9 @@ router.get('/:examId/results/:studentId', auth, async (req, res) => {
 
     const rankedResults = attachClassPositions([result.toObject ? result.toObject() : result]);
     const rankedResult = rankedResults[0];
+    const studentId = rankedResult.student?._id || rankedResult.student;
+    const academicYear = rankedResult.exam?.academicYear || '';
+    const ecaMarks = await getPublishedEcaMarksForResult(studentId, academicYear);
 
     // Ensure rollNumber is populated from admissionNumber if needed
     if (rankedResult.student) {
@@ -1287,6 +1310,8 @@ router.get('/:examId/results/:studentId', auth, async (req, res) => {
         rollNumber: rankedResult.student.rollNumber || rankedResult.student.admissionNumber
       };
     }
+
+    rankedResult.ecaMarks = ecaMarks;
 
     res.json(rankedResult);
   } catch (err) {

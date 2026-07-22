@@ -148,6 +148,7 @@ app.use('/api/library', require('./routes/library'));
 app.use('/api/vehicles', require('./routes/vehicles'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/results', require('./routes/results'));
+app.use('/api/eca', require('./routes/eca'));
 app.use('/api/exports', require('./routes/exports'));
 app.use('/api/audit', require('./routes/audit'));
 app.use('/api/upload', require('./routes/upload'));

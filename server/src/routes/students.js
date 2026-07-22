@@ -9,6 +9,7 @@ const audit = require('../middleware/audit');
 const Student = require('../models/Student');
 const User = require('../models/User');
 const ExamResult = require('../models/ExamResult');
+const EcaMark = require('../models/EcaMark');
 const { isSameClass } = require('../utils/studentPromotion');
 const { buildSubjectPromotionPlan } = require('../utils/subjectPromotion');
 const Subject = require('../models/Subject');
@@ -178,7 +179,12 @@ router.get('/me/results', auth, roles(['student']), async (req, res) => {
       .populate('subjectMarks.subject', 'name code')
       .lean();
 
-    res.json({ studentId: student._id, results });
+    const ecaMarks = await EcaMark.find({ student: student._id, status: 'published' })
+      .populate('category', 'name')
+      .sort({ academicYear: 1, createdAt: 1 })
+      .lean();
+
+    res.json({ studentId: student._id, results, ecaMarks });
   } catch (err) {
     console.error('Error fetching student results:', err.message);
     res.status(500).send('Server error');
